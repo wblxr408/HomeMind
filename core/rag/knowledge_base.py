@@ -124,7 +124,11 @@ class KnowledgeBase:
         texts = [item["content"] for item in self.memory_store]
         query_emb = model.encode([text])[0]
         doc_embs = model.encode(texts)
-        sims = np.dot(doc_embs, query_emb)
+        norms = np.linalg.norm(doc_embs, axis=1, keepdims=True)
+        norms[norms == 0] = 1.0
+        doc_embs_norm = doc_embs / norms
+        query_norm = query_emb / (np.linalg.norm(query_emb) + 1e-8)
+        sims = np.dot(doc_embs_norm, query_norm)
         top_indices = np.argsort(sims)[-top_k:][::-1]
         return [self.memory_store[i] for i in top_indices if sims[i] > 0.1]
 
@@ -145,14 +149,17 @@ class KnowledgeBase:
         texts = [item["content"] for item in pool]
         query_emb = model.encode([text])[0]
         doc_embs = model.encode(texts)
-        sims = np.dot(doc_embs, query_emb)
+        norms = np.linalg.norm(doc_embs, axis=1, keepdims=True)
+        norms[norms == 0] = 1.0
+        doc_embs_norm = doc_embs / norms
+        query_norm = query_emb / (np.linalg.norm(query_emb) + 1e-8)
+        sims = np.dot(doc_embs_norm, query_norm)
         top_indices = np.argsort(sims)[-top_k:][::-1]
         return [pool[i] for i in top_indices if sims[i] > 0.1]
 
     def _keyword_search(self, pool: List[Dict], text: str, top_k: int,
                         category: Optional[str] = None) -> List[Dict]:
         """关键词精确匹配兜底搜索"""
-        import numpy as np
         scored = []
         text_lower = text.lower()
         for item in pool:
@@ -162,10 +169,6 @@ class KnowledgeBase:
             if score > 0:
                 scored.append((score, item))
         scored.sort(reverse=True)
-        rng = np.random.default_rng(0)
-        for i in range(len(scored), top_k):
-            if i < len(scored):
-                break
         return [item for _, item in scored[:top_k]]
 
     def _get_embedding(self, text: str) -> List[float]:
@@ -238,12 +241,18 @@ class KnowledgeBase:
         """
         获取用户历史偏好得分（供 LSR 使用）
         返回 0.0~1.0 的偏好置信度
+        综合考虑：历史接受率 + 时段一致性 + 温度一致性
         """
         score = 0.5
-        history = self.query(candidate_action, top_k=3, category="用户习惯")
+        history = self.query(candidate_action, top_k=5, category="用户习惯")
         if history:
             accepted_count = sum(1 for h in history if h.get("accepted"))
-            score = min(1.0, 0.5 + accepted_count * 0.25)
+            score = min(1.0, 0.5 + accepted_count * 0.2)
+        history_user_feedback = self.query(candidate_action, top_k=5, category="用户反馈")
+        if history_user_feedback:
+            accepted_fb = sum(1 for h in history_user_feedback
+                            if h.get("feedback") == "接受" or h.get("accepted"))
+            score = max(score, min(1.0, 0.5 + accepted_fb * 0.15))
         return score
 
     def count(self) -> int:

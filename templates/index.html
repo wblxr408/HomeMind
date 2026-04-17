@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HomeMind - 智能家居控制台</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏠 HomeMind</h1>
+            <p class="subtitle">端侧模糊意图理解智能体 · 兴享智家</p>
+        </header>
+
+        <div class="main-layout">
+            <!-- 左侧：上下文面板 -->
+            <aside class="context-panel">
+                <h2>📊 环境状态</h2>
+                <div class="context-grid">
+                    <div class="context-item">
+                        <span class="label">时间</span>
+                        <span class="value" id="ctx-hour">12:00</span>
+                    </div>
+                    <div class="context-item">
+                        <span class="label">温度</span>
+                        <span class="value" id="ctx-temp">26°C</span>
+                    </div>
+                    <div class="context-item">
+                        <span class="label">湿度</span>
+                        <span class="value" id="ctx-humidity">50%</span>
+                    </div>
+                    <div class="context-item">
+                        <span class="label">在家人数</span>
+                        <span class="value" id="ctx-members">1人</span>
+                    </div>
+                    <div class="context-item">
+                        <span class="label">上一场景</span>
+                        <span class="value" id="ctx-scene">-</span>
+                    </div>
+                    <div class="context-item">
+                        <span class="label">知识库</span>
+                        <span class="value" id="ctx-kb">0 条</span>
+                    </div>
+                </div>
+
+                <h2>💡 设备状态</h2>
+                <div class="device-list" id="device-list">
+                    <div class="device-item"><span>空调</span><span class="status off">关</span></div>
+                    <div class="device-item"><span>灯光</span><span class="status off">关</span></div>
+                    <div class="device-item"><span>电视</span><span class="status off">关</span></div>
+                    <div class="device-item"><span>音响</span><span class="status off">关</span></div>
+                    <div class="device-item"><span>风扇</span><span class="status off">关</span></div>
+                    <div class="device-item"><span>窗户</span><span class="status off">关</span></div>
+                </div>
+
+                <h2>🎯 DQN 推荐</h2>
+                <div class="dqn-section">
+                    <div id="dqn-result">点击「DQN 主动感知」获取推荐</div>
+                    <div class="dqn-actions">
+                        <button class="btn-secondary" onclick="dqnRecommend()">主动感知</button>
+                        <button class="btn-accept" onclick="dqnRespond('接受')">✓ 接受</button>
+                        <button class="btn-reject" onclick="dqnRespond('拒绝')">✗ 拒绝</button>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- 中间：聊天区域 -->
+            <main class="chat-panel">
+                <div class="chat-header">
+                    <h2>💬 智能对话</h2>
+                    <div class="chat-actions">
+                        <button class="btn-icon" onclick="clearChat()" title="清空对话">🗑️</button>
+                    </div>
+                </div>
+                <div class="chat-messages" id="chat-messages">
+                    <div class="welcome-message">
+                        <p>👋 欢迎使用 HomeMind 智能家居控制台</p>
+                        <p>你可以输入模糊指令，如「有点闷」「帮我切换睡眠模式」「像昨晚那样」</p>
+                    </div>
+                </div>
+
+                <div class="pipeline-stages" id="pipeline-stages">
+                    <div class="stage" id="stage-input">
+                        <div class="stage-dot"></div>
+                        <span>输入</span>
+                    </div>
+                    <div class="stage-line" id="line-1"></div>
+                    <div class="stage" id="stage-bsr">
+                        <div class="stage-dot"></div>
+                        <span>BSR</span>
+                    </div>
+                    <div class="stage-line" id="line-2"></div>
+                    <div class="stage" id="stage-lsr">
+                        <div class="stage-dot"></div>
+                        <span>LSR</span>
+                    </div>
+                    <div class="stage-line" id="line-3"></div>
+                    <div class="stage" id="stage-llm">
+                        <div class="stage-dot"></div>
+                        <span>LLM</span>
+                    </div>
+                    <div class="stage-line" id="line-4"></div>
+                    <div class="stage" id="stage-action">
+                        <div class="stage-dot"></div>
+                        <span>执行</span>
+                    </div>
+                    <div class="stage-line" id="line-5"></div>
+                    <div class="stage" id="stage-rag">
+                        <div class="stage-dot"></div>
+                        <span>RAG</span>
+                    </div>
+                </div>
+
+                <div class="pipeline-detail" id="pipeline-detail"></div>
+
+                <form class="chat-input-area" id="chat-form">
+                    <input type="text" id="chat-input" placeholder="输入指令..." autocomplete="off" autofocus>
+                    <button type="submit" id="send-btn">发送</button>
+                </form>
+            </main>
+
+            <!-- 右侧：候选动作面板 -->
+            <aside class="candidates-panel">
+                <h2>📋 当前候选</h2>
+                <div id="candidates-list">
+                    <div class="empty-hint">等待输入...</div>
+                </div>
+
+                <h2>🧠 推理过程</h2>
+                <div id="reasoning-list" class="reasoning-list">
+                    <div class="empty-hint">等待推理...</div>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

@@ -12,6 +12,19 @@ _EMBEDDING_MODEL: Optional[Any] = None
 _ACTION_POOL: Optional[List[str]] = None
 _ACTION_EMBS: Optional[Any] = None
 
+# 设备与动作关键词的映射（用于从内容中提取设备）
+_DEVICE_ACTION_KEYWORDS = [
+    "打开空调", "关闭空调", "调高空调温度", "调低空调温度",
+    "打开灯光", "关闭灯光", "调亮灯光", "调暗灯光",
+    "打开电视", "关闭电视",
+    "打开风扇", "关闭风扇",
+    "打开窗户", "关闭窗户",
+    "打开音响", "关闭音响",
+    "打开暖气", "打开热水器",
+    "切换睡眠模式", "切换待客模式", "切换离家模式",
+    "切换观影模式", "切换起床模式", "切换回家模式",
+]
+
 
 def _get_embedding_model():
     """Embedding 模型单例，避免每次推理重复加载"""
@@ -159,26 +172,17 @@ class BSRecall:
         for rec in history_records:
             action_from_content = self._extract_action_from_content(rec.get("content", ""))
             if action_from_content:
+                accepted = rec.get("accepted", False)
                 results.append({
                     "action": action_from_content,
                     "source": "history",
-                    "score": 0.85,
+                    "score": 0.9 if accepted else 0.6,
                 })
         return results
 
     def _extract_action_from_content(self, content: str) -> str:
         """从知识库记录内容中提取动作名称"""
-        action_keywords = [
-            "打开空调", "关闭空调", "调高空调温度", "调低空调温度",
-            "打开灯光", "关闭灯光", "调亮灯光", "调暗灯光",
-            "打开电视", "关闭电视",
-            "打开风扇", "关闭风扇",
-            "打开窗户", "关闭窗户",
-            "打开音响", "关闭音响",
-            "切换睡眠模式", "切换待客模式", "切换离家模式",
-            "切换观影模式", "切换起床模式", "切换回家模式",
-        ]
-        for action in action_keywords:
+        for action in _DEVICE_ACTION_KEYWORDS:
             if action in content:
                 return action
         return ""

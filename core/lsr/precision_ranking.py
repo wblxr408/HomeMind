@@ -34,9 +34,9 @@ class LSRecify:
         f2 = (context.temperature - 15.0) / 20.0
         f3 = (context.humidity - 30.0) / 50.0
 
-        hour_sin = np.sin(2 * np.pi * context.hour / 24)
-        hour_cos = np.cos(2 * np.pi * context.hour / 24)
-        f4 = (hour_sin + 1) / 2
+        hour_sin = np.sin(2 * np.pi * context.hour / 24.0)
+        hour_cos = np.cos(2 * np.pi * context.hour / 24.0)
+        f4 = (hour_sin + 1.0) / 2.0
 
         if kb is not None:
             f5 = kb.get_user_preference_score(candidate.get("action", ""), context)
