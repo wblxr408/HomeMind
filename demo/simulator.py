@@ -10,6 +10,7 @@ from typing import Dict, Any, Optional, TYPE_CHECKING
 
 from demo.device_simulator import DeviceSimulator
 from demo.context import HomeContext
+from core.constants import SCENE_INDEX_MAP
 
 if TYPE_CHECKING:
     from main import HomeMindAgent
@@ -88,6 +89,12 @@ class HomeSimulator:
             },
             "起床模式": {
                 "灯光": {"status": "开", "brightness": 80},
+                "音响": {"status": "开"},
+            },
+            "回家模式": {
+                "灯光": {"status": "开", "brightness": 70},
+                "空调": {"status": "开", "temperature": 26},
+                "电视": {"status": "关"},
                 "音响": {"status": "开"},
             },
         }

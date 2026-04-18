@@ -111,7 +111,7 @@ class LLMDecider:
         top = candidates[0]["action"] if candidates else ""
         confidence = candidates[0].get("final_score", 0.8) if candidates else 0.5
 
-        device_map = {
+        scene_map = {
             "打开空调":    ("设备控制", "空调",    "on",     {"temperature": 26}),
             "关闭空调":    ("设备控制", "空调",    "off",    {}),
             "调高空调温度":("设备控制", "空调",    "adjust", {"temperature": 28}),
@@ -129,18 +129,27 @@ class LLMDecider:
             "打开音响":    ("设备控制", "音响",    "on",     {"volume": 30}),
             "关闭音响":    ("设备控制", "音响",    "off",    {}),
             "打开暖气":    ("设备控制", "空调",    "on",     {"temperature": 24, "mode": "制热"}),
-            "切换睡眠模式":("场景切换", "睡眠模式", "",      {}),
-            "切换待客模式":("场景切换", "待客模式", "",      {}),
-            "切换离家模式":("场景切换", "离家模式", "",      {}),
-            "切换观影模式":("场景切换", "观影模式", "",      {}),
-            "切换起床模式":("场景切换", "起床模式", "",      {}),
-            "切换回家模式":("场景切换", "回家模式", "",      {}),
+            "打开热水器":  ("设备控制", "热水器",  "on",     {"temperature": 45}),
+            "切换睡眠模式":("场景切换", "睡眠模式", "scene",  {"scene": "睡眠模式"}),
+            "切换待客模式":("场景切换", "待客模式", "scene",  {"scene": "待客模式"}),
+            "切换离家模式":("场景切换", "离家模式", "scene",  {"scene": "离家模式"}),
+            "切换观影模式":("场景切换", "观影模式", "scene",  {"scene": "观影模式"}),
+            "切换起床模式":("场景切换", "起床模式", "scene",  {"scene": "起床模式"}),
+            "切换回家模式":("场景切换", "回家模式", "scene",  {"scene": "回家模式"}),
         }
 
         if top in device_map:
-            action, device, device_action, params = device_map[top]
+            action, _, device_action, params = device_map[top]
+            if action == "场景切换":
+                return {
+                    "action": action,
+                    "scene": params["scene"],
+                    "device_action": device_action,
+                    "params": {},
+                    "confidence": confidence,
+                }
             return {
-                "action": action, "device": device,
+                "action": action, "device": _,
                 "device_action": device_action, "params": params,
                 "confidence": confidence
             }

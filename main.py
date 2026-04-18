@@ -14,6 +14,7 @@ from core.lsr.precision_ranking import LSRecify
 from core.llm.decision import LLMDecider
 from core.dqn.policy import DQNPolicy
 from core.rag.knowledge_base import KnowledgeBase
+from core.constants import SCENE_INDEX_MAP, SCENE_NAMES
 from tools.device_control import DeviceController
 from tools.info_query import InfoQuery
 from tools.scene_switch import SceneSwitcher
@@ -124,18 +125,30 @@ class HomeMindAgent:
         if action == "设备控制":
             device = decision.get("device", "")
             device_action = decision.get("device_action", "")
-            result = self.device_ctrl.execute(device, device_action, params)
-            self._sync_devices_from_controller()
+            try:
+                result = self.device_ctrl.execute(device, device_action, params)
+                self._sync_devices_from_controller()
+            except Exception as e:
+                logger.error(f"设备控制失败: {e}")
+                result = f"设备控制失败，请稍后重试"
 
         elif action == "场景切换":
             scene = decision.get("scene", "")
-            result = self.scene_switcher.execute(scene)
-            self._sync_scene_to_simulator(scene)
-            self.context.last_scene = self._scene_to_index(scene)
+            try:
+                result = self.scene_switcher.execute(scene)
+                self._sync_scene_to_simulator(scene)
+                self.context.last_scene = SCENE_INDEX_MAP.get(scene, -1)
+            except Exception as e:
+                logger.error(f"场景切换失败: {e}")
+                result = f"场景切换失败，请稍后重试"
 
         elif action == "信息查询":
             query_type = decision.get("query_type", "")
-            result = self.info_query.execute(query_type, params)
+            try:
+                result = self.info_query.execute(query_type, params)
+            except Exception as e:
+                logger.error(f"信息查询失败: {e}")
+                result = f"信息查询失败"
 
         else:
             result = f"执行了: {action}，参数: {params}"
@@ -175,9 +188,7 @@ class HomeMindAgent:
         if recommended_scene_idx == 5:
             return None
 
-        scene_names = {0: "睡眠模式", 1: "待客模式", 2: "离家模式",
-                       3: "观影模式", 4: "起床模式", 5: "无推荐"}
-        scene_name = scene_names[recommended_scene_idx]
+        scene_name = SCENE_NAMES[recommended_scene_idx]
 
         if confidence > 0.8:
             self.scene_switcher.execute(scene_name)
@@ -197,12 +208,9 @@ class HomeMindAgent:
         if self._last_dqn_action is None:
             return "（无待确认的推荐）"
 
-        scene_names = {0: "睡眠模式", 1: "待客模式", 2: "离家模式",
-                       3: "观影模式", 4: "起床模式", 5: "无推荐"}
-
         if user_response in ("好", "是", "好的", "可以", "接受"):
             self.dqn_feedback.record(self.context, self._last_dqn_action, "接受")
-            scene_name = scene_names.get(self._last_dqn_action, "")
+            scene_name = SCENE_NAMES.get(self._last_dqn_action, "")
             return f"已确认{scene_name}。"
         elif user_response in ("不要", "否", "不用", "拒绝"):
             self.dqn_feedback.record(self.context, self._last_dqn_action, "拒绝")

@@ -11,32 +11,20 @@ import logging
 from typing import List, Dict, Any, Optional
 from datetime import datetime
 
+from core.utils.embedding import get_model, encode
+
 logger = logging.getLogger(__name__)
 
 DATA_DIR = "data"
 os.makedirs(DATA_DIR, exist_ok=True)
 
 CHROMA_AVAILABLE = False
-_EMBEDDING_MODEL: Optional[Any] = None
 
 try:
     import chromadb
     CHROMA_AVAILABLE = True
 except ImportError:
     pass
-
-
-def _get_embedding_model():
-    """Embedding 模型单例，避免每次推理重复加载"""
-    global _EMBEDDING_MODEL
-    if _EMBEDDING_MODEL is None:
-        try:
-            from sentence_transformers import SentenceTransformer
-            _EMBEDDING_MODEL = SentenceTransformer("all-MiniLM-L6-v2")
-            logger.info("MiniLM-L6-v2 加载完成")
-        except Exception as e:
-            logger.warning(f"MiniLM-L6-v2 加载失败: {e}")
-    return _EMBEDDING_MODEL
 
 
 class KnowledgeBase:
@@ -47,8 +35,9 @@ class KnowledgeBase:
       - 用户积累知识库（持续更新）
     """
 
-    def __init__(self, persist_dir: str = os.path.join(DATA_DIR, "chroma_db")):
+    def __init__(self, persist_dir: str = os.path.join(DATA_DIR, "chroma_db"), embedding_fn=None):
         self.persist_dir = persist_dir
+        self.embedding_fn = embedding_fn
         self.preset_knowledge = self._init_preset_kb()
         self.memory_store: List[Dict] = []
         self._client = None
@@ -111,7 +100,7 @@ class KnowledgeBase:
             except Exception as e:
                 logger.warning(f"ChromaDB 检索失败: {e}")
 
-        model = _get_embedding_model()
+        model = get_model()
         if model is not None:
             return self._vector_search_memory(text, top_k, model)
         return self._keyword_search(self.memory_store, text, top_k)
@@ -122,15 +111,17 @@ class KnowledgeBase:
         if not self.memory_store:
             return []
         texts = [item["content"] for item in self.memory_store]
-        query_emb = model.encode([text])[0]
-        doc_embs = model.encode(texts)
+        query_emb = encode(text)
+        if isinstance(query_emb, list):
+            query_emb = np.array(query_emb)
+        doc_embs = encode(texts)
         sims = np.dot(doc_embs, query_emb)
         top_indices = np.argsort(sims)[-top_k:][::-1]
         return [self.memory_store[i] for i in top_indices if sims[i] > 0.1]
 
     def _search_preset(self, text: str, top_k: int, category: Optional[str] = None) -> List[Dict]:
         """在预置知识库中检索"""
-        model = _get_embedding_model()
+        model = get_model()
         if model is not None:
             return self._vector_search_preset(text, top_k, category, model)
         return self._keyword_search(self.preset_knowledge, text, top_k, category)
@@ -143,8 +134,10 @@ class KnowledgeBase:
         if not pool:
             return []
         texts = [item["content"] for item in pool]
-        query_emb = model.encode([text])[0]
-        doc_embs = model.encode(texts)
+        query_emb = encode(text)
+        if isinstance(query_emb, list):
+            query_emb = np.array(query_emb)
+        doc_embs = encode(texts)
         sims = np.dot(doc_embs, query_emb)
         top_indices = np.argsort(sims)[-top_k:][::-1]
         return [pool[i] for i in top_indices if sims[i] > 0.1]
@@ -152,7 +145,6 @@ class KnowledgeBase:
     def _keyword_search(self, pool: List[Dict], text: str, top_k: int,
                         category: Optional[str] = None) -> List[Dict]:
         """关键词精确匹配兜底搜索"""
-        import numpy as np
         scored = []
         text_lower = text.lower()
         for item in pool:
@@ -161,21 +153,15 @@ class KnowledgeBase:
             score = sum(1 for kw in text_lower if kw in item.get("content", "").lower())
             if score > 0:
                 scored.append((score, item))
-        scored.sort(reverse=True)
-        rng = np.random.default_rng(0)
-        for i in range(len(scored), top_k):
-            if i < len(scored):
-                break
+        scored.sort(key=lambda x: (x[0], id(x[1])), reverse=True)
         return [item for _, item in scored[:top_k]]
 
     def _get_embedding(self, text: str) -> List[float]:
-        """获取文本向量（使用单例模型缓存）"""
-        model = _get_embedding_model()
-        if model is not None:
-            return model.encode(text).tolist()
-        import numpy as np
-        rng = np.random.default_rng(hash(text) % 2**32)
-        return rng.random(384).tolist()
+        """获取文本向量（使用统一 Embedding 服务）"""
+        emb = encode(text)
+        if isinstance(emb, list):
+            return emb
+        return emb.tolist()
 
     def add(self, content: str, category: str = "用户习惯", accepted: bool = True, **metadata) -> bool:
         """添加新知识到积累库"""

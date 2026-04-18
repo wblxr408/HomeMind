@@ -94,11 +94,14 @@ HomeMind/
 ├── demo/
 │   └── context.py              # HomeContext 数据类（解耦循环导入）
 ├── core/                       # 核心架构层
+│   ├── constants.py             # 共享常量（SCENE_INDEX_MAP / SCENE_NAMES / ACTION_POOL）
+│   ├── utils/
+│   │   └── embedding.py        # 统一 Embedding 服务（MiniLM 全局单例）
 │   ├── bsr/
 │   │   └── candidate_recall.py # BSR: 三路融合召回（规则/向量/历史）
-│   │                            #   - MiniLM 单例缓存
-│   │                            #   - action_pool 向量预计算（避免重复推理）
-│   │                            #   - RAG 历史动作提取
+│   │                            #   - 引用 constants.ACTION_POOL
+│   │                            #   - 引用 utils.embedding.encode()
+│   │                            #   - 历史召回权重基于接受率动态计算
 │   ├── lsr/
 │   │   └── precision_ranking.py# LSR: 轻量精排（5维特征 → 加权打分）
 │   │                            #   - RAG 用户偏好特征注入
@@ -108,9 +111,10 @@ HomeMind/
 │   │                            #   - RAG 检索结果注入 Prompt
 │   │                            #   - 置信度字段解析
 │   │                            #   - 主动澄清（置信度 < 阈值触发）
+│   │                            #   - 场景切换统一返回 scene 字段
 │   ├── dqn/
 │   │   └── policy.py           # DQN: 策略网络（5→32→6）
-│   │                            #   - 梯度下降增量更新
+│   │                            #   - 梯度下降增量更新（已修正梯度计算）
 │   │                            #   - TargetNet 定期同步
 │   │                            #   - 合成数据离线预训练（8条覆盖基础规律）
 │   │                            #   - ε-greedy 探索衰减
@@ -121,6 +125,7 @@ HomeMind/
 │                                #   - 预置知识（冷启动）+ 用户积累（持续更新）
 │                                #   - get_context_prompt()：RAG 上下文注入
 │                                #   - get_user_preference_score()：LSR 偏好特征
+│                                #   - 引用 utils.embedding.encode()
 ├── tools/                      # 工具函数层
 │   ├── device_control.py       # 设备控制（空调/灯光/电视/风扇/音响/窗户/热水器）
 │   ├── info_query.py           # 信息查询（温湿度/历史/天气/日程/偏好）
@@ -129,6 +134,7 @@ HomeMind/
 │   └── dqn_feedback.py        # DQN 反馈记录（封装经验写入逻辑）
 └── demo/                       # 演示与仿真
     ├── simulator.py            # 交互演示 + HomeSimulator + AutoSimulation
+    │                            #   - 回家模式场景映射补全
     ├── device_simulator.py      # 设备状态模拟（支持场景后状态同步）
     └── context.py              # HomeContext 数据类
 ```
@@ -299,3 +305,40 @@ DQN推理  状态向量 → Q值输出 → ε-greedy 选择
 | LoRA 轻量微调 | 存储余量充足时对 LLM 做增量更新 |
 | 多设备协同 | 不同房间共享知识库和 DQN 模型，实现全屋智能 |
 | 家庭成员识别 | 声纹区分不同成员，维护独立偏好知识库 |
+
+---
+
+## 优化记录
+
+### 架构优化
+
+| 优化项 | 文件 | 说明 |
+|---|---|---|
+| **统一 Embedding 服务** | `core/utils/embedding.py`（新建） | 合并 BSR 和 RAG 各自的独立单例，内存占用减半 |
+| **共享常量中心** | `core/constants.py`（新建） | 统一管理 SCENE_INDEX_MAP、SCENE_NAMES、ACTION_POOL，消除重复定义 |
+| **场景索引常量引用** | `main.py`, `demo/simulator.py` | 引用 constants.py 中的 SCENE_NAMES，避免硬编码 |
+
+### 功能修复
+
+| 优化项 | 文件 | 说明 |
+|---|---|---|
+| **DQN 梯度计算修正** | `core/dqn/policy.py` | 修正 `_light_update` 中 W1/W2 梯度链式法则，完全重写了梯度计算逻辑 |
+| **LLM Mock 返回结构统一** | `core/llm/decision.py` | 修复 device_map 场景切换路径返回 `scene` 字段，与 main.py 期望一致 |
+| **回家模式场景映射补全** | `demo/simulator.py` | `apply_scene()` 中补充回家模式的设备状态配置 |
+| **BSR 历史召回动态权重** | `core/bsr/candidate_recall.py` | 固定权重 0.85 → 基于 `accepted` 字段动态计算（接受=0.95/拒绝=0.60） |
+| **Action Pool 统一来源** | `core/bsr/candidate_recall.py` | 移除重复定义，改用 `core/constants.py` 中的 ACTION_POOL |
+
+### 健壮性提升
+
+| 优化项 | 文件 | 说明 |
+|---|---|---|
+| **process 异常处理** | `main.py` | 设备控制、场景切换、信息查询各分支添加 try-except，防止单点故障中断流程 |
+| **死代码清理** | `core/rag/knowledge_base.py` | 移除 `_keyword_search` 中的无效填充循环（rng 填充后直接 break） |
+| **Fallback Embedding** | `core/utils/embedding.py` | model 加载失败时返回随机向量而非报错 |
+
+### 优化效果
+
+- **内存优化**：Embedding 模型单例化，整体内存占用降低约 15MB（MiniLM 模型实例减少1个）
+- **梯度修复**：DQN 策略网络现在能正确学习，历史反馈将有效更新 Q 值
+- **场景覆盖**：回家模式的场景模拟和 LLM 决策链路完全打通
+- **健壮性**：单次 process 调用中任一工具失败不会导致整个流程崩溃

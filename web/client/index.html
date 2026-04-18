@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HomeMind 中央指令器</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,500&family=DM+Serif+Display&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* 宣纸质感底色 */
+            --paper: #f5f2ec;
+            --paper-dark: #ebe7df;
+            --paper-line: #d4cfc5;
+            
+            /* 字体家族 */
+            --font-title: 'DM Serif Display', serif;
+            --font-mono: 'IBM Plex Mono', monospace;
+            --font-narrative: 'Cormorant Garamond', serif;
+            
+            /* 颜色两极 */
+            --amber: #c4873a;
+            --amber-light: #d4a55a;
+            --cyan: #2a8a7e;
+            --cyan-light: #3aa89d;
+            --cyan-dark: #1a6b5f;
+            
+            /* 文字 */
+            --text-dark: #2c2418;
+            --text-mid: #5a5040;
+            --text-light: #8a8070;
+        }
+
+        body {
+            font-family: var(--font-title);
+            background: var(--paper);
+            color: var(--text-dark);
+            min-height: 100vh;
+            line-height: 1.6;
+            background-image: 
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 28px,
+                    var(--paper-line) 28px,
+                    var(--paper-line) 29px
+                );
+        }
+
+        /* ===== 顶部标题栏 ===== */
+        .header {
+            padding: 40px 56px 32px;
+            border-bottom: 0.5px solid var(--text-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .brand {
+            position: relative;
+        }
+
+        .brand::before {
+            content: 'EST. 2024';
+            font-family: var(--font-mono);
+            font-size: 10px;
+            letter-spacing: 3px;
+            color: var(--text-light);
+            position: absolute;
+            top: -20px;
+        }
+
+        .brand h1 {
+            font-size: 52px;
+            font-weight: 400;
+            letter-spacing: -1px;
+            margin-bottom: 6px;
+        }
+
+        .brand-sub {
+            font-family: var(--font-narrative);
+            font-style: italic;
+            font-size: 17px;
+            color: var(--text-mid);
+        }
+
+        .system-status {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            text-align: right;
+        }
+
+        .status-line {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 6px;
+            justify-content: flex-end;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--cyan);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        /* ===== 主内容区 ===== */
+        .main {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+        }
+
+        /* ===== 左侧面板 ===== */
+        .panel-left {
+            padding: 40px 48px;
+            border-right: 0.5px solid var(--paper-line);
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+
+        /* ===== 右侧面板 ===== */
+        .panel-right {
+            padding: 40px 48px;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+
+        /* ===== 区块标题 ===== */
+        .block-title {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--text-light);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 0.5px solid var(--paper-line);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .block-title::after {
+            content: '';
+            flex: 1;
+            height: 0.5px;
+            background: var(--paper-line);
+        }
+
+        /* ===== 传感器数据 ===== */
+        .sensor-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            border: 0.5px solid var(--paper-line);
+        }
+
+        .sensor-cell {
+            background: var(--paper);
+            padding: 28px 16px;
+            text-align: center;
+            position: relative;
+        }
+
+        .sensor-cell + .sensor-cell {
+            border-left: 0.5px solid var(--paper-line);
+        }
+
+        .sensor-label {
+            font-family: var(--font-mono);
+            font-size: 9px;
+            letter-spacing: 1px;
+            color: var(--text-light);
+            margin-bottom: 12px;
+        }
+
+        .sensor-value {
+            font-family: var(--font-mono);
+            font-size: 32px;
+            font-weight: 600;
+            color: var(--cyan);
+        }
+
+        .sensor-unit {
+            font-size: 13px;
+            color: var(--text-mid);
+            margin-left: 2px;
+        }
+
+        /* ===== 设备控制表 ===== */
+        .device-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .device-table th,
+        .device-table td {
+            text-align: left;
+            padding: 14px 0;
+            border-bottom: 0.5px solid var(--paper-line);
+        }
+
+        .device-table th {
+            font-family: var(--font-mono);
+            font-size: 9px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--text-light);
+            font-weight: 400;
+        }
+
+        .device-name {
+            font-family: var(--font-title);
+            font-size: 17px;
+        }
+
+        .device-state {
+            font-family: var(--font-mono);
+            font-size: 11px;
+        }
+
+        .device-state.on { color: var(--cyan); }
+        .device-state.off { color: var(--text-light); }
+
+        /* 设备开关 */
+        .device-toggle {
+            width: 44px;
+            height: 22px;
+            border: 0.5px solid var(--text-light);
+            background: transparent;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s;
+        }
+
+        .device-toggle::after {
+            content: '';
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            border: 0.5px solid var(--text-dark);
+            top: 1px;
+            left: 1px;
+            background: var(--paper);
+            transition: all 0.2s;
+        }
+
+        .device-toggle.on {
+            border-color: var(--cyan);
+            background: var(--cyan);
+        }
+
+        .device-toggle.on::after {
+            left: 23px;
+        }
+
+        /* ===== 操作日志 ===== */
+        .log-box {
+            background: var(--paper-dark);
+            border: 0.5px solid var(--paper-line);
+            padding: 16px;
+            max-height: 220px;
+            overflow-y: auto;
+            font-family: var(--font-mono);
+            font-size: 11px;
+        }
+
+        .log-item {
+            padding: 8px 0;
+            border-bottom: 0.5px dashed var(--paper-line);
+            display: flex;
+            gap: 12px;
+            line-height: 1.5;
+        }
+
+        .log-item:last-child {
+            border-bottom: none;
+        }
+
+        .log-time {
+            color: var(--text-light);
+            flex-shrink: 0;
+        }
+
+        .log-user { color: var(--amber); }
+        .log-agent { color: var(--cyan); }
+        .log-system { color: var(--text-mid); font-style: italic; }
+
+        /* ===== 场景列表 ===== */
+        .scene-list {
+            list-style: none;
+            border: 0.5px solid var(--paper-line);
+        }
+
+        .scene-item {
+            padding: 16px 20px;
+            border-bottom: 0.5px solid var(--paper-line);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.15s;
+        }
+
+        .scene-item:last-child {
+            border-bottom: none;
+        }
+
+        .scene-item:hover {
+            background: var(--paper-dark);
+            padding-left: 24px;
+        }
+
+        .scene-item.active {
+            border-left: 3px solid var(--amber);
+            background: var(--paper-dark);
+        }
+
+        .scene-name {
+            font-family: var(--font-title);
+            font-size: 17px;
+        }
+
+        .scene-item.active .scene-name {
+            color: var(--amber);
+        }
+
+        .scene-desc {
+            font-family: var(--font-narrative);
+            font-style: italic;
+            font-size: 13px;
+            color: var(--text-light);
+            margin-top: 2px;
+        }
+
+        .scene-check {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--amber);
+            opacity: 0;
+        }
+
+        .scene-item.active .scene-check {
+            opacity: 1;
+        }
+
+        /* ===== 语音输入 ===== */
+        .voice-section {
+            margin-top: auto;
+        }
+
+        .voice-prompt {
+            font-family: var(--font-narrative);
+            font-style: italic;
+            font-size: 15px;
+            color: var(--text-mid);
+            margin-bottom: 14px;
+        }
+
+        .voice-input-row {
+            display: flex;
+            border: 0.5px solid var(--text-dark);
+        }
+
+        .voice-input {
+            flex: 1;
+            padding: 14px 18px;
+            border: none;
+            background: transparent;
+            font-family: var(--font-title);
+            font-size: 15px;
+            color: var(--text-dark);
+            outline: none;
+        }
+
+        .voice-input::placeholder {
+            font-style: italic;
+            color: var(--text-light);
+        }
+
+        .voice-btn {
+            padding: 14px 28px;
+            border: none;
+            background: var(--text-dark);
+            color: var(--paper);
+            font-family: var(--font-mono);
+            font-size: 11px;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .voice-btn:hover {
+            background: var(--amber);
+        }
+
+        /* ===== Agent 通知 ===== */
+        .agent-notification {
+            position: fixed;
+            bottom: 28px;
+            right: 28px;
+            max-width: 380px;
+            padding: 22px 26px;
+            background: var(--paper);
+            border: 0.5px solid var(--amber);
+            box-shadow: 4px 4px 0 var(--paper-dark);
+            display: none;
+        }
+
+        .agent-label {
+            font-family: var(--font-mono);
+            font-size: 9px;
+            letter-spacing: 2px;
+            color: var(--amber);
+            margin-bottom: 10px;
+        }
+
+        .agent-message {
+            font-family: var(--font-narrative);
+            font-style: italic;
+            font-size: 17px;
+            line-height: 1.5;
+            color: var(--text-dark);
+        }
+
+        /* ===== Toast ===== */
+        .toast {
+            position: fixed;
+            bottom: 28px;
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            padding: 14px 24px;
+            background: var(--text-dark);
+            color: var(--paper);
+            font-family: var(--font-mono);
+            font-size: 11px;
+            opacity: 0;
+            transition: all 0.3s;
+            border: 0.5px solid var(--text-mid);
+        }
+
+        .toast.visible {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        /* ===== 流水线可视化 ===== */
+        .pipeline-bar {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            padding: 0 48px;
+            border-top: 0.5px solid var(--paper-line);
+            border-bottom: 0.5px solid var(--paper-line);
+            background: var(--paper-dark);
+        }
+
+        .pipeline-step {
+            flex: 1;
+            padding: 20px 16px;
+            text-align: center;
+            position: relative;
+            opacity: 0.4;
+            transition: opacity 0.3s;
+        }
+
+        .pipeline-step + .pipeline-step::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 0;
+            height: 0;
+            border-top: 6px solid transparent;
+            border-bottom: 6px solid transparent;
+            border-left: 8px solid var(--paper-line);
+        }
+
+        .pipeline-step.active { opacity: 1; }
+        .pipeline-step.done { opacity: 0.85; }
+
+        .step-icon {
+            font-size: 20px;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .step-name {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--text-mid);
+            margin-bottom: 4px;
+        }
+
+        .step-title {
+            font-family: var(--font-title);
+            font-size: 15px;
+            color: var(--text-dark);
+            margin-bottom: 6px;
+        }
+
+        .step-desc {
+            font-family: var(--font-narrative);
+            font-style: italic;
+            font-size: 12px;
+            color: var(--text-light);
+        }
+
+        .step-status {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            margin-top: 8px;
+            color: var(--text-light);
+        }
+
+        .step-results {
+            margin-top: 8px;
+            text-align: left;
+            font-family: var(--font-mono);
+            font-size: 10px;
+            color: var(--text-mid);
+            line-height: 1.6;
+            display: none;
+        }
+
+        .pipeline-step.done .step-results,
+        .pipeline-step.active .step-results {
+            display: block;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 2px 0;
+        }
+
+        .result-score {
+            color: var(--cyan);
+            font-weight: 500;
+        }
+
+        .result-score.selected {
+            color: var(--amber);
+        }
+
+        /* 流水线状态指示 */
+        .pipeline-step.running .step-status {
+            color: var(--amber);
+        }
+        .pipeline-step.running .step-status::after {
+            content: '...';
+            animation: blink 0.6s infinite;
+        }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+        .pipeline-step.done .step-status { color: var(--cyan); }
+        .pipeline-step.error .step-status { color: #c0392b; }
+
+        /* 决策卡片 */
+        .decision-card {
+            margin-top: 6px;
+            padding: 8px;
+            background: var(--paper);
+            border: 0.5px solid var(--amber);
+            font-size: 10px;
+            text-align: left;
+            display: none;
+        }
+
+        .pipeline-step.done .decision-card {
+            display: block;
+        }
+
+        .decision-device {
+            font-weight: 600;
+            color: var(--amber);
+            font-family: var(--font-mono);
+        }
+
+        .decision-conf {
+            font-family: var(--font-mono);
+            font-size: 9px;
+            color: var(--cyan);
+        }
+
+        /* ===== 响应式 ===== */
+        @media (max-width: 1024px) {
+            .main { grid-template-columns: 1fr; }
+            
+            .panel-left, .panel-right {
+                padding: 32px 24px;
+                border-right: none;
+            }
+            
+            .panel-left {
+                border-bottom: 0.5px solid var(--paper-line);
+            }
+            
+            .header { padding: 28px 24px 24px; }
+            .brand h1 { font-size: 36px; }
+            .sensor-value { font-size: 26px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部标题栏 -->
+    <header class="header">
+        <div class="brand">
+            <h1>HomeMind</h1>
+            <p class="brand-sub">智能家居中央指令器</p>
+        </div>
+        <div class="system-status">
+            <div class="status-line">
+                <span>系统在线</span>
+                <span class="status-dot"></span>
+            </div>
+            <div class="status-line" style="color: var(--text-light)">
+                <span id="current-time">--:--:--</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- 流水线可视化 -->
+    <div class="pipeline-bar" id="pipeline-bar">
+        <div class="pipeline-step" id="step-bsr" data-step="bsr">
+            <span class="step-icon">&#128269;</span>
+            <div class="step-name">STEP 01</div>
+            <div class="step-title">BSR 召回</div>
+            <div class="step-desc">向量检索候选动作</div>
+            <div class="step-status">等待</div>
+            <div class="step-results" id="results-bsr"></div>
+        </div>
+        <div class="pipeline-step" id="step-lsr" data-step="lsr">
+            <span class="step-icon">&#128202;</span>
+            <div class="step-name">STEP 02</div>
+            <div class="step-title">LSR 精排</div>
+            <div class="step-desc">相关性排序打分</div>
+            <div class="step-status">等待</div>
+            <div class="step-results" id="results-lsr"></div>
+        </div>
+        <div class="pipeline-step" id="step-llm" data-step="llm">
+            <span class="step-icon">&#129504;</span>
+            <div class="step-name">STEP 03</div>
+            <div class="step-title">LLM 决策</div>
+            <div class="step-desc">意图识别与参数提取</div>
+            <div class="step-status">等待</div>
+            <div class="decision-card" id="decision-card"></div>
+        </div>
+        <div class="pipeline-step" id="step-exec" data-step="exec">
+            <span class="step-icon">&#9889;</span>
+            <div class="step-name">STEP 04</div>
+            <div class="step-title">执行反馈</div>
+            <div class="step-desc">设备操作 + DQN 强化学习</div>
+            <div class="step-status">等待</div>
+            <div class="step-results" id="results-exec"></div>
+        </div>
+    </div>
+
+    <!-- 主内容区 -->
+    <main class="main">
+        <!-- 左侧面板 -->
+        <section class="panel-left">
+            <!-- 传感器数据 -->
+            <div class="block-group">
+                <h2 class="block-title">传感器数据</h2>
+                <div class="sensor-grid">
+                    <div class="sensor-cell">
+                        <div class="sensor-label">TEMPERATURE</div>
+                        <div class="sensor-value">
+                            <span id="current-temp">--</span><span class="sensor-unit">°C</span>
+                        </div>
+                    </div>
+                    <div class="sensor-cell">
+                        <div class="sensor-label">HUMIDITY</div>
+                        <div class="sensor-value">
+                            <span id="current-humidity">--</span><span class="sensor-unit">%</span>
+                        </div>
+                    </div>
+                    <div class="sensor-cell">
+                        <div class="sensor-label">OCCUPANCY</div>
+                        <div class="sensor-value">
+                            <span id="current-occupancy">--</span><span class="sensor-unit">人</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 设备控制 -->
+            <div class="block-group">
+                <h2 class="block-title">设备控制</h2>
+                <table class="device-table">
+                    <thead>
+                        <tr>
+                            <th>设备</th>
+                            <th>状态</th>
+                            <th>开关</th>
+                        </tr>
+                    </thead>
+                    <tbody id="devices-tbody"></tbody>
+                </table>
+            </div>
+
+            <!-- 操作日志 -->
+            <div class="block-group">
+                <h2 class="block-title">操作日志</h2>
+                <div class="log-box" id="log-messages">
+                    <div class="log-item log-system">
+                        <span class="log-time">--:--:--</span>
+                        <span>系统初始化完成，等待指令...</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 右侧面板 -->
+        <section class="panel-right">
+            <!-- 场景模式 -->
+            <div class="block-group">
+                <h2 class="block-title">场景模式</h2>
+                <ul class="scene-list" id="scene-list">
+                    <li class="scene-item" data-scene="sleep" onclick="switchScene('sleep')">
+                        <div>
+                            <div class="scene-name">睡眠模式</div>
+                            <div class="scene-desc">关闭灯光、调节温度、安防布控</div>
+                        </div>
+                        <span class="scene-check">&#10003;</span>
+                    </li>
+                    <li class="scene-item" data-scene="entertainment" onclick="switchScene('entertainment')">
+                        <div>
+                            <div class="scene-name">观影模式</div>
+                            <div class="scene-desc">调暗灯光、启动电视、音响就绪</div>
+                        </div>
+                        <span class="scene-check">&#10003;</span>
+                    </li>
+                    <li class="scene-item" data-scene="work" onclick="switchScene('work')">
+                        <div>
+                            <div class="scene-name">工作模式</div>
+                            <div class="scene-desc">明亮环境、关闭娱乐设备</div>
+                        </div>
+                        <span class="scene-check">&#10003;</span>
+                    </li>
+                    <li class="scene-item" data-scene="away" onclick="switchScene('away')">
+                        <div>
+                            <div class="scene-name">离家模式</div>
+                            <div class="scene-desc">全关设备、安防启动</div>
+                        </div>
+                        <span class="scene-check">&#10003;</span>
+                    </li>
+                    <li class="scene-item" data-scene="morning" onclick="switchScene('morning')">
+                        <div>
+                            <div class="scene-name">早安模式</div>
+                            <div class="scene-desc">窗帘打开、轻柔音乐、温度适宜</div>
+                        </div>
+                        <span class="scene-check">&#10003;</span>
+                    </li>
+                    <li class="scene-item" data-scene="evening" onclick="switchScene('evening')">
+                        <div>
+                            <div class="scene-name">晚归模式</div>
+                            <div class="scene-desc">门廊亮起、室温预调、氛围灯光</div>
+                        </div>
+                        <span class="scene-check">&#10003;</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- 语音输入 -->
+            <div class="voice-section">
+                <h2 class="block-title">语音指令</h2>
+                <p class="voice-prompt">"告诉我你想要什么..."</p>
+                <div class="voice-input-row">
+                    <input type="text" class="voice-input" id="user-input" 
+                           placeholder="打开客厅灯光，温度调到26度">
+                    <button class="voice-btn" onclick="submitQuery()">发送</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Agent 通知 -->
+    <div class="agent-notification" id="agent-notification">
+        <div class="agent-label">AGENT</div>
+        <div class="agent-message" id="agent-message"></div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        let socket = null;
+        let currentScene = 'sleep';
+        let devices = {};
+        let activePipeline = null;
+
+        const deviceList = [
+            { id: 'air_conditioner', name: '空调' },
+            { id: 'light', name: '灯光' },
+            { id: 'tv', name: '电视' },
+            { id: 'water_heater', name: '热水器' },
+            { id: 'fan', name: '风扇' },
+            { id: 'speaker', name: '音响' },
+            { id: 'window', name: '窗户' }
+        ];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initWebSocket();
+            initDevices();
+            loadStatus();
+            updateTime();
+            setInterval(updateTime, 1000);
+            
+            document.getElementById('user-input').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') submitQuery();
+            });
+        });
+
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('current-time').textContent = 
+                now.toLocaleTimeString('zh-CN', { hour12: false });
+        }
+
+        function initWebSocket() {
+            socket = io('http://localhost:5000');
+
+            socket.on('connect', () => addLog('系统已连接', 'system'));
+            socket.on('disconnect', () => addLog('连接已断开', 'system'));
+            socket.on('message', (msg) => handleMessage(msg));
+            socket.on('pipeline_update', (msg) => handlePipelineUpdate(msg));
+        }
+
+        function handlePipelineUpdate(msg) {
+            const { type, data } = msg;
+            const { step, data: stepData } = data;
+
+            if (type === 'pipeline_start') {
+                resetPipeline();
+                const { steps } = data;
+                steps._query = data.query;
+                activePipeline = steps;
+                document.getElementById('step-bsr').classList.add('active');
+                return;
+            }
+
+            if (!activePipeline) return;
+
+            if (type === 'pipeline_error') {
+                document.querySelectorAll('.pipeline-step').forEach(el => {
+                    el.classList.remove('active', 'running');
+                    el.classList.add('error');
+                    el.querySelector('.step-status').textContent = '错误';
+                });
+                activePipeline = null;
+                return;
+            }
+
+            if (type === 'pipeline_step' && step && stepData) {
+                activePipeline[step] = stepData;
+                renderPipelineStep(step, stepData);
+
+                // 标记完成，推进下一步
+                const stepEl = document.getElementById(`step-${step}`);
+                stepEl.classList.remove('active', 'running');
+                stepEl.classList.add('done');
+
+                const stepOrder = ['bsr', 'lsr', 'llm', 'exec'];
+                const nextIdx = stepOrder.indexOf(step) + 1;
+                if (nextIdx < stepOrder.length) {
+                    document.getElementById(`step-${stepOrder[nextIdx]}`).classList.add('active');
+                } else {
+                    activePipeline = null;
+                }
+            }
+        }
+
+        function resetPipeline() {
+            document.querySelectorAll('.pipeline-step').forEach(el => {
+                el.classList.remove('active', 'done', 'running', 'error');
+            });
+            document.querySelectorAll('.step-status').forEach(el => {
+                el.textContent = '等待';
+            });
+            document.querySelectorAll('.step-results').forEach(el => {
+                el.innerHTML = '';
+            });
+            document.getElementById('decision-card').innerHTML = '';
+        }
+
+        function renderPipelineStep(step, data) {
+            const statusEl = document.getElementById(`step-${step}`);
+            const resultsEl = document.getElementById(`results-${step}`);
+
+            if (step === 'bsr') {
+                statusEl.querySelector('.step-status').textContent = `${data.candidates.length} 个候选`;
+                if (data.candidates.length > 0) {
+                    resultsEl.innerHTML = data.candidates.map(c =>
+                        `<div class="result-item">
+                            <span>${c.action}</span>
+                            <span class="result-score">${(c.score * 100).toFixed(1)}%</span>
+                        </div>`
+                    ).join('');
+                }
+            } else if (step === 'lsr') {
+                statusEl.querySelector('.step-status').textContent = `${data.ranked.length} 个排序`;
+                if (data.ranked.length > 0) {
+                    resultsEl.innerHTML = data.ranked.map(r =>
+                        `<div class="result-item">
+                            <span>${r.action}</span>
+                            <span class="result-score">${(r.score * 100).toFixed(1)}%</span>
+                        </div>`
+                    ).join('');
+                }
+            } else if (step === 'llm') {
+                const decision = data.decision || {};
+                statusEl.querySelector('.step-status').textContent = decision.device
+                    ? `${decision.device} ${decision.device_action}`
+                    : '未识别意图';
+                const card = document.getElementById('decision-card');
+                card.innerHTML = decision.device
+                    ? `<div class="decision-device">${decision.device} / ${decision.device_action}</div>
+                        <div class="decision-conf">置信度: ${(decision.confidence * 100).toFixed(0)}%</div>
+                        ${decision.reasoning ? `<div style="margin-top:4px;font-style:italic;color:var(--text-mid)">${decision.reasoning}</div>` : ''}`
+                    : `<div style="font-style:italic;color:var(--text-light)">无匹配决策</div>`;
+            } else if (step === 'exec') {
+                const result = data.result || {};
+                statusEl.querySelector('.step-status').textContent =
+                    result.status === 'success' ? '执行成功' : '无操作';
+                if (result.status === 'success') {
+                    resultsEl.innerHTML = `<div class="result-item">
+                        <span>${result.device} ${result.device_action}</span>
+                        <span class="result-score selected">DONE</span>
+                    </div>`;
+                }
+            }
+        }
+
+        function handleMessage(msg) {
+            const { type, data } = msg;
+
+            switch(type) {
+                case 'connected':
+                    updateContext(data.context);
+                    updateDevices(data.devices);
+                    break;
+                case 'agent_response':
+                    showAgentNotification(data.result);
+                    addLog(data.result, 'agent');
+                    loadStatus();
+                    break;
+                case 'device_update':
+                    updateDeviceState(data.device, data.state);
+                    break;
+                case 'scene_update':
+                    setActiveScene(data.scene);
+                    updateDevices(data.devices);
+                    break;
+                case 'agent_clarification':
+                    showAgentNotification(data.question);
+                    addLog(data.question, 'agent');
+                    break;
+            }
+        }
+
+        function initDevices() {
+            const tbody = document.getElementById('devices-tbody');
+            tbody.innerHTML = '';
+
+            deviceList.forEach(device => {
+                const row = document.createElement('tr');
+                row.id = `device-row-${device.id}`;
+                row.innerHTML = `
+                    <td class="device-name">${device.name}</td>
+                    <td class="device-state off" id="state-${device.id}">关闭</td>
+                    <td>
+                        <button class="device-toggle" id="toggle-${device.id}" 
+                                onclick="toggleDevice('${device.id}')"></button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function toggleDevice(deviceId) {
+            const toggle = document.getElementById(`toggle-${deviceId}`);
+            const isOn = toggle.classList.contains('on');
+            controlDevice(deviceId, isOn ? 'off' : 'on');
+        }
+
+        function controlDevice(deviceId, action, params = {}) {
+            socket.emit('message', {
+                type: 'device_control',
+                data: { device: deviceId, action, params }
+            });
+            addLog(`${getDeviceName(deviceId)}: ${action === 'on' ? '开启' : '关闭'}`, 'user');
+        }
+
+        function updateDeviceState(deviceId, state) {
+            devices[deviceId] = state;
+            
+            const toggle = document.getElementById(`toggle-${deviceId}`);
+            const status = document.getElementById(`state-${deviceId}`);
+            
+            if (state.is_on) {
+                toggle.classList.add('on');
+                status.textContent = '开启';
+                status.className = 'device-state on';
+            } else {
+                toggle.classList.remove('on');
+                status.textContent = '关闭';
+                status.className = 'device-state off';
+            }
+        }
+
+        function updateDevices(deviceStates) {
+            Object.entries(deviceStates).forEach(([deviceId, state]) => {
+                updateDeviceState(deviceId, state);
+            });
+        }
+
+        function submitQuery() {
+            const input = document.getElementById('user-input');
+            const query = input.value.trim();
+            if (!query) return;
+            
+            socket.emit('user_input', { text: query });
+            addLog(query, 'user');
+            input.value = '';
+        }
+
+        function switchScene(scene) {
+            socket.emit('message', { type: 'scene_switch', data: { scene } });
+            addLog(`切换至${getSceneName(scene)}`, 'user');
+            setActiveScene(scene);
+        }
+
+        function setActiveScene(scene) {
+            currentScene = scene;
+            document.querySelectorAll('.scene-item').forEach(item => {
+                item.classList.toggle('active', item.dataset.scene === scene);
+            });
+        }
+
+        function loadStatus() {
+            fetch('http://localhost:5000/api/status')
+                .then(res => res.json())
+                .then(data => {
+                    updateContext(data.context);
+                    updateDevices(data.devices);
+                    setActiveScene(data.context.scene);
+                })
+                .catch(err => console.error('加载状态失败:', err));
+        }
+
+        function updateContext(context) {
+            document.getElementById('current-temp').textContent = context.temperature || '--';
+            document.getElementById('current-humidity').textContent = context.humidity || '--';
+            document.getElementById('current-occupancy').textContent = context.occupancy || '--';
+        }
+
+        function showAgentNotification(message) {
+            const notification = document.getElementById('agent-notification');
+            document.getElementById('agent-message').textContent = message;
+            notification.style.display = 'block';
+            setTimeout(() => { notification.style.display = 'none'; }, 5000);
+        }
+
+        function addLog(message, type) {
+            const container = document.getElementById('log-messages');
+            const time = new Date().toLocaleTimeString('zh-CN', { hour12: false });
+            
+            const item = document.createElement('div');
+            item.className = `log-item log-${type}`;
+            item.innerHTML = `<span class="log-time">${time}</span><span class="log-${type}">${message}</span>`;
+            
+            container.insertBefore(item, container.firstChild);
+            while (container.children.length > 50) container.removeChild(container.lastChild);
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('visible');
+            setTimeout(() => toast.classList.remove('visible'), 3000);
+        }
+
+        function getDeviceName(deviceId) {
+            const device = deviceList.find(d => d.id === deviceId);
+            return device ? device.name : deviceId;
+        }
+
+        function getSceneName(scene) {
+            const names = {
+                sleep: '睡眠模式', entertainment: '观影模式', work: '工作模式',
+                away: '离家模式', morning: '早安模式', evening: '晚归模式'
+            };
+            return names[scene] || scene;
+        }
+    </script>
+</body>
+</html>

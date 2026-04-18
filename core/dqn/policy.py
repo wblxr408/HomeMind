@@ -198,33 +198,51 @@ class DQNPolicy:
         return True
 
     def _light_update(self):
-        """增量更新策略网络（梯度下降法）"""
+        """增量更新策略网络（梯度下降法）
+
+        网络: input(5) -> W1(5x32) -> tanh -> h(32) -> W2(32x6) -> q(6)
+        loss = (q_target - q_current)² / 2
+        q_current = q_values[a]
+
+        梯度链式法则:
+          grad_q[a]    = delta = q_target - q_current
+          grad_b2[a]   = delta
+          grad_W2[:,a] = delta * h
+          grad_h       = delta * W2[a,:] * (1 - tanh²)   [tanh 梯度]
+          grad_b1      = grad_h
+          grad_W1      = s.T @ grad_h.reshape(1, -1)     [s: (5,), grad_h: (32,)]
+        """
         batch = self.replay.sample(16)
         for exp in batch:
-            s = exp["state"].astype(np.float32)
+            s = exp["state"].astype(np.float32)        # (5,)
             a = int(exp["action"])
             r = float(exp["reward"])
-            s_next = exp["next_state"].astype(np.float32)
+            s_next = exp["next_state"].astype(np.float32)  # (5,)
 
             q_next_max = float(np.max(self.target_net.forward(s_next)))
             q_target = r + self.gamma * q_next_max
 
-            h = np.tanh(s @ self.q_net.W1 + self.q_net.b1)
+            h = np.tanh(s @ self.q_net.W1 + self.q_net.b1)  # (32,)
             q_current = float(self.q_net.forward(s)[a])
             delta = q_target - q_current
 
-            grad_h = delta * (1 - h ** 2)
-            grad_W2 = np.outer(h, np.zeros(6))
-            grad_W2[:, a] = delta
-            grad_b2 = np.zeros(6)
+            # W2 梯度: grad_W2[:,a] = delta * h
+            grad_W2 = np.zeros((32, 6), dtype=np.float32)
+            grad_W2[:, a] = delta * h
+            # b2 梯度: grad_b2[a] = delta
+            grad_b2 = np.zeros(6, dtype=np.float32)
             grad_b2[a] = delta
-            grad_s = delta * (self.q_net.W2[a] * grad_h)
-            grad_W1 = np.outer(s, np.zeros(32))
-            grad_b1 = grad_s
 
-            self.q_net.W2 += self.lr * grad_W2.T
+            # tanh 梯度: (1 - h²)，再乘以 W2 第 a 行
+            grad_h = delta * (self.q_net.W2[:, a] * (1 - h ** 2))  # (32,)
+            # b1 梯度: 直接传递
+            grad_b1 = grad_h
+            # W1 梯度: s.T @ grad_h.reshape(1,-1) -> (5,32)
+            grad_W1 = np.outer(s, grad_h)
+
+            self.q_net.W2 += self.lr * grad_W2
             self.q_net.b2 += self.lr * grad_b2
-            self.q_net.W1 += self.lr * grad_W1.T
+            self.q_net.W1 += self.lr * grad_W1
             self.q_net.b1 += self.lr * grad_b1
 
         self.epsilon = max(self.epsilon_min, self.epsilon * 0.99)
