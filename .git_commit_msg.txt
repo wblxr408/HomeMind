@@ -1,0 +1,25 @@
+feat: 修复bug、优化CoT/框架、添加Web前端+SSE流式输出
+
+【Bug修复】
+- BSR: 历史召回根据accepted状态设置不同score
+- LSR: 时间特征使用24.0浮点除法
+- DQN: 修正梯度计算(grad_h = δ * W2[a] * (1-h²))
+- RAG: 移除keyword_search中的死代码, 改用余弦相似度
+
+【CoT优化】
+- LLM层引入Chain of Thought推理链Prompt
+- decision.py/_parse_output增加CoT提取
+- 设备映射增加"凉/风/通风/热水器"关键词
+
+【框架优化】
+- RAG偏好得分综合用户习惯+反馈两类记录
+- BSR提取动作的关键词列表抽取到模块级常量
+
+【新增功能】
+- web_server.py: Flask+SSE流式输出, REST API
+- templates/index.html: 现代深色风格UI
+- static/style.css: 完整样式
+- static/app.js: 前端交互+SSE处理
+
+【依赖更新】
+- requirements.txt: 添加flask, flask-cors
