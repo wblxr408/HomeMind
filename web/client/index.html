@@ -250,6 +250,28 @@
             border-radius: 4px;
         }
 
+        .voice-feedback {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .voice-feedback button {
+            border: 0.5px solid var(--border-light);
+            background: var(--bg-primary);
+            color: var(--text-secondary);
+            border-radius: 999px;
+            padding: 4px 9px;
+            font-size: 11px;
+            cursor: pointer;
+        }
+
+        .voice-feedback button:hover {
+            color: #0F6E56;
+            border-color: rgba(29, 158, 117, 0.35);
+        }
+
         .chat-input-wrap {
             border-top: 0.5px solid var(--border-light);
             padding: 10px 12px;
@@ -734,6 +756,9 @@
         let activePipeline = null;
         let recognition = null;
         let isListening = false;
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let lastVoiceResult = null;
         let toastTimer = null;
         let currentModal = null;
 
@@ -769,6 +794,29 @@
                 <div class="bubble">
                     ${escapeHtml(html)}
                     ${tag ? `<span class="action-tag">${tag}</span>` : ""}
+                </div>
+                <div class="msg-time">${getTime()}</div>
+            `;
+            const msgs = document.getElementById("messages");
+            msgs.appendChild(el);
+            msgs.scrollTop = msgs.scrollHeight;
+        }
+
+        function addVoiceFeedbackMsg(data) {
+            lastVoiceResult = data;
+            const el = document.createElement("div");
+            el.className = "msg system";
+            const asrText = escapeHtml(data.text || "");
+            const normalized = escapeHtml(data.normalized || data.text || "");
+            el.innerHTML = `
+                <div class="bubble">
+                    语音识别：${asrText}<br>
+                    归一化：${normalized}
+                    <div class="voice-feedback">
+                        <button onclick="sendVoiceFeedback('accepted')">正确</button>
+                        <button onclick="sendVoiceFeedback('corrected')">纠正</button>
+                        <button onclick="sendVoiceFeedback('ignored')">忽略</button>
+                    </div>
                 </div>
                 <div class="msg-time">${getTime()}</div>
             `;
@@ -953,46 +1001,119 @@
             currentModal = null;
         }
 
-        function initVoiceRecognition() {
-            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SR) {
-                return;
+        async function initVoiceRecognition() {
+            if (!navigator.mediaDevices || !window.MediaRecorder) {
+                showToast("当前浏览器不支持录音上传");
             }
-            recognition = new SR();
-            recognition.lang = "zh-CN";
-            recognition.continuous = false;
-            recognition.interimResults = true;
-            recognition.onstart = () => {
-                isListening = true;
-                document.getElementById("mic-btn").classList.add("listening");
-            };
-            recognition.onresult = (e) => {
-                const transcript = Array.from(e.results).map((result) => result[0].transcript).join("");
-                if (transcript) {
-                    document.getElementById("inputBox").value = transcript.trim();
-                    autoResize();
-                }
-            };
-            recognition.onerror = () => showToast("语音识别出错，请重试");
-            recognition.onend = () => {
-                isListening = false;
-                document.getElementById("mic-btn").classList.remove("listening");
-            };
         }
 
-        function toggleVoiceInput() {
-            if (!recognition) {
-                showToast("当前浏览器不支持语音识别");
+        async function toggleVoiceInput() {
+            if (!navigator.mediaDevices || !window.MediaRecorder) {
+                showToast("当前浏览器不支持录音上传");
                 return;
             }
             if (isListening) {
-                recognition.stop();
-            } else {
-                try {
-                    recognition.start();
-                } catch (e) {
-                    showToast("语音识别暂不可用");
+                mediaRecorder.stop();
+                return;
+            }
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                audioChunks = [];
+                mediaRecorder = new MediaRecorder(stream);
+                mediaRecorder.ondataavailable = (event) => {
+                    if (event.data && event.data.size > 0) {
+                        audioChunks.push(event.data);
+                    }
+                };
+                mediaRecorder.onstop = async () => {
+                    isListening = false;
+                    document.getElementById("mic-btn").classList.remove("listening");
+                    stream.getTracks().forEach((track) => track.stop());
+                    await uploadVoiceRecording();
+                };
+                mediaRecorder.start();
+                isListening = true;
+                document.getElementById("mic-btn").classList.add("listening");
+                showToast("正在录音，再点一次结束");
+            } catch (e) {
+                showToast("无法访问麦克风");
+            }
+        }
+
+        async function uploadVoiceRecording() {
+            if (!audioChunks.length) {
+                showToast("没有录到声音");
+                return;
+            }
+            const mimeType = mediaRecorder && mediaRecorder.mimeType ? mediaRecorder.mimeType : "audio/webm";
+            const blob = new Blob(audioChunks, { type: mimeType });
+            const form = new FormData();
+            form.append("audio", blob, mimeType.includes("wav") ? "voice.wav" : "voice.webm");
+            form.append("lang", "auto");
+            showToast("正在本地识别语音");
+            try {
+                const response = await fetch("/api/voice/transcribe", {
+                    method: "POST",
+                    body: form
+                });
+                const data = await response.json();
+                if (!response.ok || data.status !== "success") {
+                    showToast(data.hint || data.error || "语音识别失败");
+                    return;
                 }
+                const text = data.normalized || data.text || "";
+                if (!text) {
+                    showToast("没有识别到有效指令");
+                    return;
+                }
+                document.getElementById("inputBox").value = text;
+                autoResize();
+                addLog("语音", data.text || text);
+                addVoiceFeedbackMsg(data);
+                submitQuery();
+            } catch (e) {
+                showToast("语音上传失败");
+            }
+        }
+
+        async function sendVoiceFeedback(feedback) {
+            if (!lastVoiceResult) {
+                showToast("没有可反馈的语音记录");
+                return;
+            }
+            let correctedText = "";
+            let correctedNormalized = "";
+            if (feedback === "corrected") {
+                correctedText = window.prompt("请输入正确的识别文本或标准指令", lastVoiceResult.normalized || lastVoiceResult.text || "") || "";
+                correctedText = correctedText.trim();
+                if (!correctedText) {
+                    showToast("已取消纠正");
+                    return;
+                }
+            }
+            try {
+                const response = await fetch("/api/voice/feedback", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        asr_text: lastVoiceResult.text || "",
+                        normalized: lastVoiceResult.normalized || "",
+                        corrected_text: correctedText,
+                        corrected_normalized: correctedNormalized,
+                        language: lastVoiceResult.language || "unknown",
+                        confidence: lastVoiceResult.confidence || 0,
+                        engine: lastVoiceResult.engine || "vosk",
+                        feedback
+                    })
+                });
+                const data = await response.json();
+                if (!response.ok || data.status !== "success") {
+                    showToast(data.error || "反馈记录失败");
+                    return;
+                }
+                showToast("语音反馈已记入历史");
+            } catch (e) {
+                showToast("反馈提交失败");
             }
         }
 

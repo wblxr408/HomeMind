@@ -15,6 +15,7 @@ from core.llm.decision import LLMDecider
 from core.dqn.policy import DQNPolicy
 from core.rag.knowledge_base import KnowledgeBase
 from core.constants import SCENE_INDEX_MAP, SCENE_NAMES
+from core.language.normalizer import LanguageNormalizer
 from tools.device_control import DeviceController
 from tools.info_query import InfoQuery
 from tools.scene_switch import SceneSwitcher
@@ -45,6 +46,7 @@ class HomeMindAgent:
         self.scene_switcher = SceneSwitcher(self.device_ctrl)
         self.kb_writer = KBWriter(self.kb)
         self.dqn_feedback = DQNFeedback(self.dqn)
+        self.language_normalizer = LanguageNormalizer()
 
         self.context = HomeContext()
         self._simulator: Optional[HomeSimulator] = None
@@ -102,20 +104,24 @@ class HomeMindAgent:
         if self._simulator:
             self.context = self._simulator.get_context()
 
+        normalized = self.language_normalizer.normalize(user_input)
+        query_for_ai = normalized.normalized or user_input
         logger.info(f"收到输入: {user_input}")
+        if query_for_ai != user_input:
+            logger.info(f"归一化输入: {query_for_ai}")
 
-        candidates = self.bsr.recall(user_input, self.context)
+        candidates = self.bsr.recall(query_for_ai, self.context)
         logger.info(f"BSR 召回 {len(candidates)} 个候选: {[c['action'] for c in candidates]}")
 
-        ranked = self.lsr.rank(user_input, candidates, self.context, kb=self.kb)
+        ranked = self.lsr.rank(query_for_ai, candidates, self.context, kb=self.kb)
         logger.info(f"LSR 精排 Top: {ranked[0]['action']} (score={ranked[0].get('final_score', 0):.3f})")
 
-        rag_context = self.kb.get_context_prompt(user_input, self.context)
-        decision = self.llm.decide(user_input, ranked, self.context, rag_context=rag_context)
+        rag_context = self.kb.get_context_prompt(query_for_ai, self.context)
+        decision = self.llm.decide(query_for_ai, ranked, self.context, rag_context=rag_context)
         logger.info(f"LLM 决策: confidence={decision.get('confidence', 0):.3f}, {decision}")
 
         if decision.get("confidence", 0) < self.confidence_threshold:
-            clarification = self.llm.ask_clarification(user_input, ranked)
+            clarification = self.llm.ask_clarification(query_for_ai, ranked)
             return clarification
 
         action = decision.get("action", "")
