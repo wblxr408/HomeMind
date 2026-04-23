@@ -111,7 +111,7 @@ class LLMDecider:
         top = candidates[0]["action"] if candidates else ""
         confidence = candidates[0].get("final_score", 0.8) if candidates else 0.5
 
-        scene_map = {
+        action_map = {
             "打开空调":    ("设备控制", "空调",    "on",     {"temperature": 26}),
             "关闭空调":    ("设备控制", "空调",    "off",    {}),
             "调高空调温度":("设备控制", "空调",    "adjust", {"temperature": 28}),
@@ -138,18 +138,20 @@ class LLMDecider:
             "切换回家模式":("场景切换", "回家模式", "scene",  {"scene": "回家模式"}),
         }
 
-        if top in device_map:
-            action, _, device_action, params = device_map[top]
+        if top in action_map:
+            action, device_name, device_action, params = action_map[top]
             if action == "场景切换":
                 return {
                     "action": action,
+                    "device": "",
                     "scene": params["scene"],
                     "device_action": device_action,
                     "params": {},
                     "confidence": confidence,
                 }
             return {
-                "action": action, "device": _,
+                "action": action,
+                "device": device_name,
                 "device_action": device_action, "params": params,
                 "confidence": confidence
             }
