@@ -1,4 +1,4 @@
-"""
+﻿"""
 RAG 知识库模块
 ChromaDB 本地向量数据库 + all-MiniLM-L6-v2
 承担双重角色：
@@ -43,6 +43,10 @@ class KnowledgeBase:
         self._client = None
         self._collection = None
         self._init_chroma()
+        
+        # 延迟导入加密存储（避免循环导入）
+        from core.security import get_encrypted_storage
+        self._storage = get_encrypted_storage()
 
     def _init_chroma(self):
         if not CHROMA_AVAILABLE:
@@ -79,7 +83,7 @@ class KnowledgeBase:
         """检索相关知识，优先用户积累 > 预置知识"""
         results = []
 
-        user_results = self._search_memory(text, top_k)
+        user_results = self._search_memory(text, top_k, category)
         results.extend(user_results)
 
         if len(results) < top_k:
@@ -88,7 +92,7 @@ class KnowledgeBase:
 
         return results[:top_k]
 
-    def _search_memory(self, text: str, top_k: int) -> List[Dict]:
+    def _search_memory(self, text: str, top_k: int, category: Optional[str] = None) -> List[Dict]:
         """在用户积累知识中检索"""
         if self._collection is not None:
             try:
@@ -96,28 +100,35 @@ class KnowledgeBase:
                 results = self._collection.query(query_embeddings=[emb], n_results=top_k)
                 docs = results.get("documents", [[]])[0]
                 metas = results.get("metadatas", [[]])[0]
-                return [{"content": d, **m} for d, m in zip(docs, metas)]
+                records = [{"content": d, **m} for d, m in zip(docs, metas)]
+                if category is not None:
+                    records = [record for record in records if record.get("category") == category]
+                return records[:top_k]
             except Exception as e:
                 logger.warning(f"ChromaDB 检索失败: {e}")
 
         model = get_model()
         if model is not None:
-            return self._vector_search_memory(text, top_k, model)
-        return self._keyword_search(self.memory_store, text, top_k)
+            return self._vector_search_memory(text, top_k, model, category)
+        return self._keyword_search(self.memory_store, text, top_k, category)
 
-    def _vector_search_memory(self, text: str, top_k: int, model) -> List[Dict]:
+    def _vector_search_memory(self, text: str, top_k: int, model, category: Optional[str] = None) -> List[Dict]:
         """基于 MiniLM 向量相似度搜索用户积累"""
         import numpy as np
-        if not self.memory_store:
+        pool = [
+            item for item in self.memory_store
+            if category is None or item.get("category") == category
+        ]
+        if not pool:
             return []
-        texts = [item["content"] for item in self.memory_store]
+        texts = [item["content"] for item in pool]
         query_emb = encode(text)
         if isinstance(query_emb, list):
             query_emb = np.array(query_emb)
         doc_embs = encode(texts)
         sims = np.dot(doc_embs, query_emb)
         top_indices = np.argsort(sims)[-top_k:][::-1]
-        return [self.memory_store[i] for i in top_indices if sims[i] > 0.1]
+        return [pool[i] for i in top_indices if sims[i] > 0.1]
 
     def _search_preset(self, text: str, top_k: int, category: Optional[str] = None) -> List[Dict]:
         """在预置知识库中检索"""
@@ -158,7 +169,10 @@ class KnowledgeBase:
 
     def _get_embedding(self, text: str) -> List[float]:
         """获取文本向量（使用统一 Embedding 服务）"""
-        emb = encode(text)
+        if self.embedding_fn is not None:
+            emb = self.embedding_fn(text)
+        else:
+            emb = encode(text)
         if isinstance(emb, list):
             return emb
         return emb.tolist()
@@ -234,3 +248,28 @@ class KnowledgeBase:
 
     def count(self) -> int:
         return len(self.memory_store) + len(self.preset_knowledge)
+
+    def backup(self, path: str = None) -> bool:
+        """加密备份知识库"""
+        if path is None:
+            path = os.path.join(DATA_DIR, "kb_backup.enc")
+        data = {
+            "memory_store": self.memory_store,
+            "timestamp": datetime.now().isoformat(),
+        }
+        success = self._storage.save_pickle(data, path)
+        if success:
+            logger.info(f"知识库已加密备份: {path}")
+        return success
+
+    def restore(self, path: str = None) -> bool:
+        """从加密备份恢复知识库"""
+        if path is None:
+            path = os.path.join(DATA_DIR, "kb_backup.enc")
+        data = self._storage.load_pickle(path)
+        if data and "memory_store" in data:
+            self.memory_store = data["memory_store"]
+            logger.info(f"知识库已从备份恢复，共 {len(self.memory_store)} 条记录")
+            return True
+        logger.warning(f"知识库恢复失败或备份文件不存在: {path}")
+        return False

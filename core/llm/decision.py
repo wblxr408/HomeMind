@@ -106,7 +106,7 @@ class LLMDecider:
             f'{{"action": "", "device": "", "device_action": "", "params": {{}}, "confidence": 0.0}}'
         )
 
-    def _mock_decide(self, query: str, candidates: List[Dict[str, Any]], context) -> Dict[str, Any]:
+    def _mock_decide(self, query: str, candidates: List[Dict[str, Any]], context, rag_context: str = "") -> Dict[str, Any]:
         """演示模式：基于规则的模拟决策"""
         top = candidates[0]["action"] if candidates else ""
         confidence = candidates[0].get("final_score", 0.8) if candidates else 0.5
@@ -139,6 +139,7 @@ class LLMDecider:
         }
 
         if top in action_map:
+            confidence = max(confidence, 0.9)
             action, device_name, device_action, params = action_map[top]
             if action == "场景切换":
                 return {

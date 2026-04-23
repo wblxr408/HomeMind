@@ -153,7 +153,10 @@ class HomeMindAgent:
         else:
             result = f"执行了: {action}，参数: {params}"
 
-        self.kb_writer.write_feedback(user_input, decision, "接受")
+        # 根据置信度决定反馈：高于阈值记录"接受"，否则记录"忽略"
+        confidence = decision.get("confidence", 0)
+        feedback = "接受" if confidence >= 0.85 else "忽略"
+        self.kb_writer.write_feedback(user_input, decision, feedback)
 
         return result
 

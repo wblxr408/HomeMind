@@ -1,4 +1,4 @@
-"""
+﻿"""
 DQN 策略网络（强化学习主动推荐）
 5维状态输入 → 32隐层 → 6维输出（对应6个场景动作）
 参数量 < 1000，模型文件 < 5MB
@@ -7,8 +7,9 @@ DQN 策略网络（强化学习主动推荐）
 import numpy as np
 from typing import Tuple, Optional, List, Dict
 import logging
-import pickle
 import os
+
+from core.security import get_encrypted_storage
 
 logger = logging.getLogger(__name__)
 
@@ -111,6 +112,7 @@ class DQNPolicy:
         self.update_counter = 0
         self.update_freq = 50
         self.model_dir = model_dir
+        self._storage = get_encrypted_storage()
         os.makedirs(model_dir, exist_ok=True)
         self._load_if_exists()
         self._pretrain_if_needed()
@@ -120,8 +122,6 @@ class DQNPolicy:
         """若回放池为空，用合成数据做离线预训练，覆盖基础场景规律"""
         if len(self.replay) > 0:
             return
-
-        rng = np.random.default_rng(42)
         synthetic_data = [
             {"hour": 22, "members": 2, "temp": 25, "last_scene": 3, "day": 4, "action": 0},
             {"hour": 23, "members": 2, "temp": 24, "last_scene": 0, "day": 4, "action": 0},
@@ -254,22 +254,23 @@ class DQNPolicy:
     def save(self, path: str = ""):
         if not path:
             path = os.path.join(self.model_dir, "dqn_policy.pkl")
-        with open(path, "wb") as f:
-            pickle.dump({
-                "q_net": self.q_net.state_dict(),
-                "epsilon": self.epsilon,
-            }, f)
-        logger.info(f"DQN 策略已保存: {path}")
+        data = {
+            "q_net": self.q_net.state_dict(),
+            "epsilon": self.epsilon,
+        }
+        self._storage.save_pickle(data, path)
 
     def _load_if_exists(self):
         path = os.path.join(self.model_dir, "dqn_policy.pkl")
         if os.path.exists(path):
             try:
-                with open(path, "rb") as f:
-                    data = pickle.load(f)
-                self.q_net.load_state_dict(data["q_net"])
-                self.epsilon = data.get("epsilon", self.epsilon)
-                self._sync_target()
-                logger.info("DQN 策略从文件加载")
+                data = self._storage.load_pickle(path)
+                if data:
+                    self.q_net.load_state_dict(data["q_net"])
+                    self.epsilon = data.get("epsilon", self.epsilon)
+                    self._sync_target()
+                    logger.info("DQN 策略已加密加载")
+                    return True
             except Exception as e:
                 logger.warning(f"DQN 加载失败: {e}")
+        return False

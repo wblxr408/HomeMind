@@ -1,4 +1,4 @@
-"""
+﻿"""
 HomeMind Web 服务 - 中央指令器
 提供 REST API 和 WebSocket 接口，连接智能家居 Agent 与前端控制面板
 """
@@ -37,17 +37,18 @@ socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
 
 # 全局消息队列（Agent ↔ Web 前端）
 agent_queue = Queue()
-frontend_queue = Queue()
 
 # 全局 Agent 实例
 agent = None
 device_simulator = None
+protocol_gateway = None
 
 
 class HomeMindWebAgent:
     """支持 Web 接口的 HomeMind Agent"""
     
-    def __init__(self):
+    def __init__(self, protocol_gateway=None):
+        self._gateway = protocol_gateway
         self._init_components()
         self._start_agent_loop()
     
@@ -60,26 +61,27 @@ class HomeMindWebAgent:
         self.context.current_scene = "sleep"
         self.context.temperature = 25.0
         self.context.humidity = 60.0
-        self.context.occupancy = 1
+        self.context.members_home = 1
         
         # 初始化设备模拟器
         self.device_simulator = DeviceSimulator()
         self.simulator = self.device_simulator
         
-        # 初始化工具
-        self.device_control = device_ctrl.DeviceController()
+        # 初始化工具（传入协议网关）
+        self.device_control = device_ctrl.DeviceController(protocol_gateway=self._gateway)
         self.info_query = info_query.InfoQuery()
         self.scene_switcher = scene_switch.SceneSwitcher(self.device_control)
         
         # 尝试初始化 Embedding 和知识库
         self.embedding_model = None
         self.kb = None
+        self.kb_writer = None
         try:
             self.embedding_model = get_embedding_model()
-            if self.embedding_model:
-                self.kb = KnowledgeBase(embedding_fn=self.embedding_model.encode)
-                self.kb_writer = kb_writer.KBWriter(self.kb)
-                print("[初始化] ChromaDB 知识库已加载")
+            embedding_fn = self.embedding_model.encode if self.embedding_model else None
+            self.kb = KnowledgeBase(embedding_fn=embedding_fn)
+            self.kb_writer = kb_writer.KBWriter(self.kb)
+            print("[初始化] 知识库已加载")
         except Exception as e:
             print(f"[警告] 知识库初始化失败: {e}")
             self.kb = None
@@ -113,7 +115,6 @@ class HomeMindWebAgent:
         
         try:
             self.dqn = DQNPolicy()
-            # DQNPolicy 初始化时自动加载模型
             self.dqn_fb = DQNFeedbackTool(self.dqn)
             print("[初始化] DQN 策略模块已加载")
         except Exception as e:
@@ -177,7 +178,7 @@ class HomeMindWebAgent:
         if self.bsr and self.lsr and self.llm:
             try:
                 # Step 1: BSR 召回
-                candidates = self.bsr.recall(user_text, self.context, top_k=5)
+                candidates = self.bsr.recall(user_text, self.context)
                 pipeline["steps"]["bsr"] = {
                     "status": "done",
                     "candidates": [
@@ -194,11 +195,11 @@ class HomeMindWebAgent:
                     return
 
                 # Step 2: LSR 精排
-                ranked = self.lsr.rank(candidates, user_text, self.context)
+                ranked = self.lsr.rank(user_text, candidates, self.context, kb=self.kb)
                 pipeline["steps"]["lsr"] = {
                     "status": "done",
                     "ranked": [
-                        {"id": i, "action": r.get("action", ""), "score": float(r.get("score", 0))}
+                        {"id": i, "action": r.get("action", ""), "score": float(r.get("final_score", 0))}
                         for i, r in enumerate(ranked)
                     ]
                 }
@@ -211,9 +212,11 @@ class HomeMindWebAgent:
                     return
 
                 # Step 3: LLM 决策
-                decision = self.llm.decide(user_text, ranked, self.context)
+                decision = self.llm.decide(user_text, ranked, self.context, rag_context="")
+                action_type = decision.get("action", "")
                 device = decision.get("device", "")
                 device_action = decision.get("device_action", "")
+                scene = decision.get("scene", "")
                 params = decision.get("params", {})
                 confidence = decision.get("confidence", 0.9)
                 reasoning = decision.get("reasoning", "")
@@ -233,9 +236,26 @@ class HomeMindWebAgent:
                 }})
 
                 # Step 4: 执行
-                if device and device_action:
-                    self.device_control.execute(device, device_action, params)
-                    result = {"status": "success", "action": f"{device}_{device_action}", "device": device, "device_action": device_action, "params": params}
+                if action_type == "设备控制" and device and device_action:
+                    message = self.device_control.execute(device, device_action, params)
+                    result = {
+                        "status": "success",
+                        "action": f"{device}_{device_action}",
+                        "device": device,
+                        "device_action": device_action,
+                        "params": params,
+                        "message": message,
+                    }
+                elif action_type == "场景切换" and scene:
+                    message = self.scene_switcher.execute(scene)
+                    self.context.current_scene = scene
+                    result = {
+                        "status": "success",
+                        "action": "scene_switch",
+                        "scene": scene,
+                        "params": params,
+                        "message": message,
+                    }
                 else:
                     result = {"status": "no_action", "candidates": [r["action"] for r in ranked[:3]]}
 
@@ -246,11 +266,12 @@ class HomeMindWebAgent:
 
                 # 最终响应
                 if result["status"] == "success":
+                    result_text = result.get("message", f"已执行: {device} {device_action}")
                     socketio.emit("message", {
                         "type": "agent_response",
                         "data": {
                             "action": result["action"],
-                            "result": f"已执行: {device} {device_action}",
+                            "result": result_text,
                             "confidence": confidence,
                             "scene": self.context.current_scene,
                             "query_id": query_id
@@ -301,10 +322,10 @@ class HomeMindWebAgent:
         action_taken = False
         
         if "开" in user_text and "灯" in user_text:
-            self.device_control.execute("light", "on", {})
+            self.device_control.execute("灯光", "on", {})
             action_taken = True
         elif "关" in user_text and "灯" in user_text:
-            self.device_control.execute("light", "off", {})
+            self.device_control.execute("灯光", "off", {})
             action_taken = True
         elif "空调" in user_text:
             if "开" in user_text:
@@ -314,17 +335,17 @@ class HomeMindWebAgent:
                     match = re.search(r'(\d+)度', user_text)
                     if match:
                         temp = int(match.group(1))
-                self.device_control.execute("air_conditioner", "on", {"temperature": temp})
+                self.device_control.execute("空调", "on", {"temperature": temp})
                 action_taken = True
             elif "关" in user_text:
-                self.device_control.execute("air_conditioner", "off", {})
+                self.device_control.execute("空调", "off", {})
                 action_taken = True
         elif "电视" in user_text or "tv" in user_text_lower:
             if "开" in user_text:
-                self.device_control.execute("tv", "on", {})
+                self.device_control.execute("电视", "on", {})
                 action_taken = True
             elif "关" in user_text:
-                self.device_control.execute("tv", "off", {})
+                self.device_control.execute("电视", "off", {})
                 action_taken = True
         
         if action_taken:
@@ -379,12 +400,10 @@ class HomeMindWebAgent:
         scene_id = data.get("scene")
         scene = self.SCENE_ID_MAP.get(scene_id, scene_id)
         
-        # 通过 BSR 获取场景相关知识（用中文名检索）
         if self.bsr:
-            candidates = self.bsr.recall(f"切换到{scene}场景", self.context, top_k=3)
+            self.bsr.recall(f"切换到{scene}场景", self.context)
         
-        self.scene_switcher.switch(scene)
-        # context 存英文ID，保持前后端一致
+        self.scene_switcher.execute(scene)
         self.context.current_scene = scene_id
         
         socketio.emit("message", {
@@ -398,11 +417,10 @@ class HomeMindWebAgent:
     def _handle_dqn_response(self, data: dict):
         """处理用户对 DQN 推荐的响应"""
         recommendation_id = data.get("id", "")
-        response = data.get("response", "")  # accept / reject / ignore
+        response = data.get("response", "")
         user_input = data.get("user_input", "")
         
-        # 从推荐ID提取场景动作（格式: dqn_<timestamp>_<action>）
-        action = 5  # 默认"无推荐"
+        action = 5
         parts = recommendation_id.rsplit("_", 1)
         if len(parts) == 2:
             try:
@@ -415,16 +433,15 @@ class HomeMindWebAgent:
     
     def _execute_action(self, action: str):
         """执行动作"""
-        # 解析动作字符串，如 "ac_on_26" -> 空调开到26度
         if "ac" in action:
             if "on" in action:
                 temp = int(action.split("_")[-1]) if "_" in action else 26
-                self.device_control.execute("air_conditioner", "on", {"temperature": temp})
+                self.device_control.execute("空调", "on", {"temperature": temp})
         elif "light" in action:
-            self.device_control.execute("light", "on", {})
+            self.device_control.execute("灯光", "on", {})
         elif "scene" in action:
             scene_name = action.replace("scene_", "")
-            self.scene_switcher.switch(scene_name)
+            self.scene_switcher.execute(scene_name)
     
     # 设备英文ID → 中文名映射
     DEVICE_ID_MAP = {
@@ -451,7 +468,6 @@ class HomeMindWebAgent:
     def get_all_states(self) -> dict:
         """获取所有状态，返回前端统一的设备格式"""
         raw_states = self.device_control.get_all_state()
-        # 转换为 { deviceId: { is_on, ... } } 格式
         devices = {}
         for dev_id, dev_name in self.DEVICE_ID_MAP.items():
             raw = raw_states.get(dev_name, {})
@@ -465,7 +481,7 @@ class HomeMindWebAgent:
                 "scene": self.context.current_scene,
                 "temperature": self.context.temperature,
                 "humidity": self.context.humidity,
-                "occupancy": self.context.occupancy,
+                "occupancy": self.context.members_home,
                 "hour": datetime.now().hour
             },
             "devices": devices
@@ -483,22 +499,33 @@ class HomeMindWebAgent:
             return {"status": "no_action", "message": "AI 模块未加载"}
         
         try:
-            candidates = self.bsr.recall(query, self.context, top_k=5)
-            ranked = self.lsr.rank(candidates, query, self.context)
+            candidates = self.bsr.recall(query, self.context)
+            ranked = self.lsr.rank(query, candidates, self.context, kb=self.kb)
             
             if ranked:
-                decision = self.llm.decide(query, ranked, self.context)
+                decision = self.llm.decide(query, ranked, self.context, rag_context="")
                 
+                action_type = decision.get("action", "")
                 device = decision.get("device", "")
                 device_action = decision.get("device_action", "")
+                scene = decision.get("scene", "")
                 params = decision.get("params", {})
                 
-                if device and device_action:
-                    self.device_control.execute(device, device_action, params)
+                if action_type == "设备控制" and device and device_action:
+                    message = self.device_control.execute(device, device_action, params)
                     return {
                         "status": "success",
                         "action": f"{device}_{device_action}",
-                        "response": f"已执行: {device} {device_action}",
+                        "response": message,
+                        "confidence": decision.get("confidence", 0.9)
+                    }
+                elif action_type == "场景切换" and scene:
+                    message = self.scene_switcher.execute(scene)
+                    self.context.current_scene = scene
+                    return {
+                        "status": "success",
+                        "action": "scene_switch",
+                        "response": message,
                         "confidence": decision.get("confidence", 0.9)
                     }
                 else:
@@ -564,7 +591,7 @@ def switch_scene(scene):
     """场景切换接口"""
     if agent:
         scene_name = agent.SCENE_ID_MAP.get(scene, scene)
-        agent.scene_switcher.switch(scene_name)
+        agent.scene_switcher.execute(scene_name)
         agent.context.current_scene = scene
         return jsonify({
             "status": "success",
@@ -579,7 +606,7 @@ def switch_scene(scene):
 def query_info(info_type):
     """信息查询接口"""
     if agent:
-        result = agent.info_query.query(info_type)
+        result = agent.info_query.execute(info_type)
         return jsonify({
             "status": "success",
             "type": info_type,
@@ -592,11 +619,11 @@ def query_info(info_type):
 @app.route("/api/dqn/recommend", methods=["GET"])
 def dqn_recommend():
     """DQN 主动推荐"""
-    if agent:
+    if agent and agent.dqn:
         agent.context.hour = datetime.now().hour
-        action = agent.dqn.recommend(agent.context)
+        action_idx, confidence = agent.dqn.recommend(agent.context)
         
-        if action:
+        if action_idx != 5:
             scene_map = {
                 0: "sleep",
                 1: "entertainment", 
@@ -605,14 +632,15 @@ def dqn_recommend():
                 4: "morning",
                 5: "evening"
             }
-            recommended_scene = scene_map.get(action, "sleep")
+            recommended_scene = scene_map.get(action_idx, "sleep")
             
             return jsonify({
                 "status": "success",
                 "recommendation": {
-                    "id": f"dqn_{int(time.time())}",
+                    "id": f"dqn_{action_idx}",
                     "scene": recommended_scene,
-                    "reason": f"基于当前环境状态推荐{recommended_scene}场景"
+                    "reason": f"基于当前环境状态推荐{recommended_scene}场景",
+                    "confidence": confidence,
                 }
             })
         
@@ -628,8 +656,15 @@ def dqn_feedback():
     rec_id = data.get("id")
     response = data.get("response")
     
-    if agent:
-        agent.dqn_fb.record(rec_id, response, "", agent.context)
+    if agent and agent.dqn_fb:
+        action = 5
+        parts = str(rec_id or "").rsplit("_", 1)
+        if len(parts) == 2:
+            try:
+                action = int(parts[1])
+            except ValueError:
+                pass
+        agent.dqn_fb.record(agent.context, action, response)
         return jsonify({"status": "success"})
     
     return jsonify({"error": "Agent 未初始化"}), 500
@@ -642,7 +677,7 @@ def kb_query():
     query_text = data.get("query", "")
     top_k = data.get("top_k", 3)
     
-    if agent:
+    if agent and agent.kb:
         results = agent.kb.query(query_text, top_k=top_k)
         return jsonify({
             "status": "success",
@@ -659,13 +694,38 @@ def kb_add():
     text = data.get("text", "")
     category = data.get("category", "general")
     
-    if agent:
-        agent.kb_writer.write(text, category)
+    if agent and agent.kb:
+        agent.kb.add(text, category=category, accepted=True)
         return jsonify({"status": "success"})
     
     return jsonify({"error": "Agent 未初始化"}), 500
 
 
+@app.route("/api/gateway/status", methods=["GET"])
+def gateway_status():
+    """获取协议网关状态"""
+    if protocol_gateway:
+        return jsonify({
+            "status": "success",
+            "gateway": protocol_gateway.get_status_info()
+        })
+    return jsonify({
+        "status": "success",
+        "gateway": {"connected": False, "mode": "simulated"}
+    })
+
+
+
+@app.route("/api/voice/transcribe", methods=["POST"])
+def voice_transcribe():
+    """语音转文字接口（预留，未来支持 faster-whisper）。"""
+    # 目前使用浏览器端 Web Speech API 进行语音识别
+    # 此接口为未来服务器端语音识别预留
+    return jsonify({
+        "error": "服务器端语音识别尚未配置",
+        "hint": "前端已使用浏览器 Web Speech API 进行语音识别",
+        "status": "browser_only"
+    }), 501
 # ==================== WebSocket 事件 ====================
 
 @socketio.on("connect")
@@ -692,7 +752,6 @@ def on_message(data):
     
     if agent:
         agent_queue.put(data)
-        # 直接响应（用于同步操作）
         if data.get("type") == "device_control":
             device_id = data.get("data", {}).get("device")
             emit("message", {
@@ -713,10 +772,19 @@ def on_user_input(data):
 
 # ==================== 主程序 ====================
 
-def init_agent():
+def init_agent(mode: str = None, protocol_gateway=None):
     """初始化全局 Agent"""
     global agent, device_simulator
-    agent = HomeMindWebAgent()
+    globals()["protocol_gateway"] = protocol_gateway
+
+    # 从环境变量读取模式（如果未指定）
+    if mode is None:
+        mode = os.environ.get("HOMEMIND_MODE", "simulated")
+
+
+    print(f"[初始化] Agent 模式: {mode}")
+
+    agent = HomeMindWebAgent(protocol_gateway=protocol_gateway)
     device_simulator = agent.device_simulator
 
 
@@ -884,8 +952,11 @@ if __name__ == "__main__":
     print("  Web 控制面板 + 智能家居协议支持")
     print("=" * 50)
     
+    # 从环境变量读取模式
+    mode = os.environ.get("HOMEMIND_MODE", "simulated")
+    
     # 初始化 Agent
-    init_agent()
+    init_agent(mode=mode)
     
     # 启动服务
     print("\n[启动] Web 服务运行在 http://localhost:5000")

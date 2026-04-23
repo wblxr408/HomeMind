@@ -67,3 +67,7 @@ class SceneSwitcher:
 
         logger.info(f"场景切换: {scene}，执行了{len(results)}项操作")
         return f"已切换到{scene}。" + " ".join(results)
+
+    def switch(self, scene: str) -> str:
+        """兼容旧调用名。"""
+        return self.execute(scene)
