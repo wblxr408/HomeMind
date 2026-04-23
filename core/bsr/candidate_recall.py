@@ -1,21 +1,25 @@
 """
-BSR: Broad Stage Recall（广召回）
-三路融合召回候选动作：规则召回 + 向量召回 + 用户历史(RAG)
+BSR: Broad Stage Recall.
+
+Recall candidate smart-home actions from three sources:
+- rule recall
+- vector recall
+- user history from RAG
 """
 
 import logging
-from typing import List, Dict, Any
+from typing import Any, Dict, List, Optional
 
 from core.constants import ACTION_POOL
-from core.utils.embedding import get_model, encode
+from core.utils.embedding import encode, get_model
 
 logger = logging.getLogger(__name__)
 
-_ACTION_EMBS = None
+_ACTION_EMBS: Optional[Any] = None
 
 
 def _get_action_embeddings():
-    """预计算 action_pool 向量，单例缓存"""
+    """Pre-compute action pool embeddings once."""
     global _ACTION_EMBS
     if _ACTION_EMBS is not None:
         return ACTION_POOL, _ACTION_EMBS
@@ -24,7 +28,7 @@ def _get_action_embeddings():
     _ACTION_EMBS = None
     if model is not None:
         _ACTION_EMBS = encode(ACTION_POOL)
-        logger.info(f"action_pool 向量预计算完成，共 {len(ACTION_POOL)} 个动作")
+        logger.info("action_pool embeddings initialized, count=%s", len(ACTION_POOL))
     return ACTION_POOL, _ACTION_EMBS
 
 
@@ -35,11 +39,15 @@ class BSRecall:
         self._init_rules()
 
     def _init_rules(self):
-        """基于设备能力和专家知识的规则映射（零成本、极稳定）"""
+        """High-precision keyword rules for common smart-home commands."""
         self.rule_map = {
             "闷": ["打开空调", "打开风扇", "打开窗户"],
             "热": ["打开空调", "打开风扇"],
             "冷": ["调高空调温度", "打开暖气"],
+            "调亮灯光": ["调亮灯光", "打开灯光"],
+            "调暗灯光": ["调暗灯光", "关闭部分灯光"],
+            "亮点": ["调亮灯光", "打开灯光"],
+            "暗点": ["调暗灯光", "关闭部分灯光"],
             "暗": ["打开灯光", "调亮灯光"],
             "亮": ["调暗灯光", "关闭部分灯光"],
             "吵": ["调低音量", "关闭音响"],
@@ -67,10 +75,7 @@ class BSRecall:
 
     def recall(self, query: str, context) -> List[Dict[str, Any]]:
         """
-        三路融合召回
-        1. 规则召回（最高优先级，权重 0.9）
-        2. 向量召回（MiniLM，权重来自相似度）
-        3. 用户历史（RAG，权重来自历史接受率）
+        Merge candidates from rule, vector, and history recall.
         """
         candidates = []
         seen = set()
@@ -80,10 +85,11 @@ class BSRecall:
             self._vector_recall(query),
             self._history_recall(query),
         ]:
-            for c in route_cands:
-                if c["action"] not in seen:
-                    seen.add(c["action"])
-                    candidates.append(c)
+            for candidate in route_cands:
+                action = candidate["action"]
+                if action not in seen:
+                    seen.add(action)
+                    candidates.append(candidate)
 
         if not candidates:
             candidates.append({"action": "无法理解", "source": "fallback", "score": 0.0})
@@ -91,7 +97,6 @@ class BSRecall:
         return candidates[:self.top_k]
 
     def _rule_recall(self, query: str) -> List[Dict[str, Any]]:
-        """规则召回：基于关键词匹配，优先级最高"""
         results = []
         for keyword, actions in self.rule_map.items():
             if keyword in query:
@@ -105,7 +110,6 @@ class BSRecall:
         return results
 
     def _vector_recall(self, query: str) -> List[Dict[str, Any]]:
-        """向量召回：基于语义相似度（MiniLM），使用预计算向量"""
         results = []
         action_pool, action_embs = _get_action_embeddings()
 
@@ -114,6 +118,7 @@ class BSRecall:
 
         try:
             import numpy as np
+
             model = get_model()
             if model is None:
                 return results
@@ -129,29 +134,26 @@ class BSRecall:
                         "source": "vector",
                         "score": float(np.clip(sims[idx], 0, 1)),
                     })
-        except Exception as e:
-            logger.warning(f"向量召回失败: {e}")
+        except Exception as exc:
+            logger.warning("vector recall failed: %s", exc)
 
         return results
 
     def _history_recall(self, query: str) -> List[Dict[str, Any]]:
-        """用户历史召回：基于 RAG 检索，根据历史接受率动态计算权重"""
         results = []
         history_records = self.kb.query(query, top_k=3, category="用户习惯")
-        for rec in history_records:
-            action_from_content = self._extract_action_from_content(rec.get("content", ""))
-            if action_from_content:
-                accepted = rec.get("accepted", False)
-                weight = 0.95 if accepted else 0.60
+        for record in history_records:
+            action = self._extract_action_from_content(record.get("content", ""))
+            if action:
+                accepted = record.get("accepted", False)
                 results.append({
-                    "action": action_from_content,
+                    "action": action,
                     "source": "history",
-                    "score": weight,
+                    "score": 0.95 if accepted else 0.60,
                 })
         return results
 
     def _extract_action_from_content(self, content: str) -> str:
-        """从知识库记录内容中提取动作名称"""
         for action in ACTION_POOL:
             if action in content:
                 return action

@@ -12,6 +12,13 @@ uploads/floor-plans/*
 data/.key
 data/.key.salt
 data/chroma_db/
+data/voice_feedback.jsonl
+
+models/
+!models/
+models/*
+!models/asr/
+!models/asr/README.md
 
 .DS_Store
 Thumbs.db

@@ -1,4 +1,4 @@
-﻿"""
+"""
 HomeMind Web 服务 - 中央指令器
 提供 REST API 和 WebSocket 接口，连接智能家居 Agent 与前端控制面板
 """
@@ -29,6 +29,10 @@ from core.schema import (
     validate_tap_code as validate_tap_code_payload,
     validate_tap_rule_payload,
 )
+from core.utils.embedding import get_model as get_embedding_model
+from core.language.normalizer import LanguageNormalizer
+from core.voice.vosk_asr import VoskASR
+from core.voice.feedback_store import VoiceFeedbackStore
 from demo.context import HomeContext
 from demo.device_simulator import DeviceSimulator
 import tools.device_control as device_ctrl
@@ -328,38 +332,6 @@ def compress_text_content(text: str, options: dict | None = None) -> dict:
     }
 
 
-def build_tap_plan(message: str, device_mapping=None) -> tuple[str, dict]:
-    raw_message = str(message or "").strip()
-    lowered = raw_message.lower()
-    normalized = normalize_device_mapping_to_tuples(device_mapping or [])
-    tuples = normalized.get("tuples", []) if normalized.get("ok") else []
-    first_entity = tuples[0][0] if tuples else "switch.default"
-    first_area = tuples[0][1] if tuples else "living_room"
-    first_type = normalize_room_name(tuples[0][2]) if tuples else "switch"
-
-    if any(word in raw_message for word in ("睡", "晚安", "休息")):
-        alias = "睡眠模式自动化"
-        trigger = '  - platform: time\n    at: "22:30:00"'
-        condition = 'condition:\n  - condition: state\n    entity_id: group.family\n    state: home'
-        action = 'action:\n  - service: scene.turn_on\n    target:\n      entity_id: scene.sleep_mode'
-        summary = {"trigger": "22:30 定时触发", "actions": ["切换到睡眠模式"]}
-    elif any(word in raw_message for word in ("热", "闷", "空调", "温度")):
-        alias = "高温自动开启空调"
-        trigger = '  - platform: numeric_state\n    entity_id: sensor.indoor_temperature\n    above: 30'
-        condition = 'condition:\n  - condition: state\n    entity_id: group.family\n    state: home'
-        action = f'action:\n  - service: climate.set_temperature\n    target:\n      entity_id: {first_entity}\n    data:\n      temperature: 26'
-        summary = {"trigger": "室内温度高于 30°C", "actions": [f"开启 {first_type} 并设定 26°C"]}
-    else:
-        alias = "自定义设备自动化"
-        trigger = '  - platform: state\n    entity_id: input_boolean.homemind_trigger\n    to: "on"'
-        condition = f'condition:\n  - condition: template\n    value_template: "{{{{ true }}}}"'
-        action = f'action:\n  - service: homeassistant.turn_on\n    target:\n      entity_id: {first_entity}'
-        summary = {"trigger": "自定义触发开关打开", "actions": [f"控制 {first_area} 区域设备 {first_entity}"]}
-
-    yaml_code = f"alias: {alias}\ntrigger:\n{trigger}\n{condition}\n{action}\n"
-    return yaml_code, summary
-
-
 def dump_tap_rule_yaml(node, indent: int = 0) -> str:
     prefix = " " * indent
     lines = []
@@ -557,6 +529,11 @@ def evaluate_automation_event(event: dict) -> dict:
     return result.to_dict()
 
 
+voice_asr = VoskASR()
+voice_feedback_store = VoiceFeedbackStore()
+language_normalizer = LanguageNormalizer(feedback_store=voice_feedback_store)
+
+
 class HomeMindWebAgent:
     """支持 Web 接口的 HomeMind Agent"""
     
@@ -584,6 +561,7 @@ class HomeMindWebAgent:
         self.device_control = device_ctrl.DeviceController(protocol_gateway=self._gateway)
         self.info_query = info_query.InfoQuery()
         self.scene_switcher = scene_switch.SceneSwitcher(self.device_control)
+        self.language_normalizer = language_normalizer
         
         # 启动阶段不强制初始化 embedding，避免首次模型加载阻塞 Web 服务。
         self.embedding_model = None
@@ -666,6 +644,8 @@ class HomeMindWebAgent:
     def _process_user_input(self, data: dict):
         """处理用户自然语言输入"""
         user_text = data.get("text", "")
+        normalized = self.language_normalizer.normalize(user_text)
+        query_text = normalized.normalized or user_text
         query_id = f"q_{int(time.time() * 1000)}"
         print(f"[Agent] 收到用户输入: {user_text}")
 
@@ -676,6 +656,7 @@ class HomeMindWebAgent:
         pipeline = {
             "query_id": query_id,
             "query": user_text,
+            "normalized_query": normalized.to_dict(),
             "steps": {
                 "bsr": {"status": "pending", "candidates": []},
                 "lsr": {"status": "pending", "ranked": []},
@@ -689,7 +670,7 @@ class HomeMindWebAgent:
         if self.bsr and self.lsr and self.llm:
             try:
                 # Step 1: BSR 召回
-                candidates = self.bsr.recall(user_text, self.context)
+                candidates = self.bsr.recall(query_text, self.context)
                 pipeline["steps"]["bsr"] = {
                     "status": "done",
                     "candidates": [
@@ -702,11 +683,11 @@ class HomeMindWebAgent:
                 }})
 
                 if not candidates:
-                    self._emit_fallback(query_id, user_text)
+                    self._emit_fallback(query_id, query_text)
                     return
 
                 # Step 2: LSR 精排
-                ranked = self.lsr.rank(user_text, candidates, self.context, kb=self.kb)
+                ranked = self.lsr.rank(query_text, candidates, self.context, kb=self.kb)
                 pipeline["steps"]["lsr"] = {
                     "status": "done",
                     "ranked": [
@@ -719,11 +700,11 @@ class HomeMindWebAgent:
                 }})
 
                 if not ranked:
-                    self._emit_fallback(query_id, user_text)
+                    self._emit_fallback(query_id, query_text)
                     return
 
                 # Step 3: LLM 决策
-                decision = self.llm.decide(user_text, ranked, self.context, rag_context="")
+                decision = self.llm.decide(query_text, ranked, self.context, rag_context="")
                 action_type = decision.get("action", "")
                 device = decision.get("device", "")
                 device_action = decision.get("device_action", "")
@@ -803,10 +784,10 @@ class HomeMindWebAgent:
                 import traceback
                 traceback.print_exc()
                 self._emit_pipeline_error(query_id, str(e))
-                self._simple_process(user_text)
+                self._simple_process(query_text)
         else:
             self._emit_pipeline_error(query_id, "AI 模块未加载，降级为规则匹配")
-            self._simple_process(user_text)
+            self._simple_process(query_text)
 
     def _emit_pipeline_error(self, query_id: str, error: str):
         pipeline = {
@@ -1005,16 +986,18 @@ class HomeMindWebAgent:
     def process_query(self, query: str) -> dict:
         """处理自然语言查询（供 API 调用）"""
         self.context.hour = datetime.now().hour
+        normalized = self.language_normalizer.normalize(query)
+        query_for_ai = normalized.normalized or query
         
         if not self.bsr or not self.lsr or not self.llm:
             return {"status": "no_action", "message": "AI 模块未加载"}
         
         try:
-            candidates = self.bsr.recall(query, self.context)
-            ranked = self.lsr.rank(query, candidates, self.context, kb=self.kb)
+            candidates = self.bsr.recall(query_for_ai, self.context)
+            ranked = self.lsr.rank(query_for_ai, candidates, self.context, kb=self.kb)
             
             if ranked:
-                decision = self.llm.decide(query, ranked, self.context, rag_context="")
+                decision = self.llm.decide(query_for_ai, ranked, self.context, rag_context="")
                 
                 action_type = decision.get("action", "")
                 device = decision.get("device", "")
@@ -1028,7 +1011,8 @@ class HomeMindWebAgent:
                         "status": "success",
                         "action": f"{device}_{device_action}",
                         "response": message,
-                        "confidence": decision.get("confidence", 0.9)
+                        "confidence": decision.get("confidence", 0.9),
+                        "normalized_query": normalized.to_dict(),
                     }
                 elif action_type == "场景切换" and scene:
                     message = self.scene_switcher.execute(scene)
@@ -1037,13 +1021,15 @@ class HomeMindWebAgent:
                         "status": "success",
                         "action": "scene_switch",
                         "response": message,
-                        "confidence": decision.get("confidence", 0.9)
+                        "confidence": decision.get("confidence", 0.9),
+                        "normalized_query": normalized.to_dict(),
                     }
                 else:
                     return {
                         "status": "clarification",
                         "question": "我需要更多信息",
-                        "candidates": [r["action"] for r in ranked[:3]]
+                        "candidates": [r["action"] for r in ranked[:3]],
+                        "normalized_query": normalized.to_dict(),
                     }
         except Exception as e:
             print(f"[Agent] 处理出错: {e}")
@@ -1744,14 +1730,77 @@ def gateway_status():
 
 @app.route("/api/voice/transcribe", methods=["POST"])
 def voice_transcribe():
-    """语音转文字接口（预留，未来支持 faster-whisper）。"""
-    # 目前使用浏览器端 Web Speech API 进行语音识别
-    # 此接口为未来服务器端语音识别预留
-    return jsonify({
-        "error": "服务器端语音识别尚未配置",
-        "hint": "前端已使用浏览器 Web Speech API 进行语音识别",
-        "status": "browser_only"
-    }), 501
+    """语音转文字接口：优先使用本地 Vosk small 模型。"""
+    audio = request.files.get("audio")
+    lang = request.form.get("lang", "auto")
+    if not audio:
+        return jsonify({"status": "error", "error": "audio file is required"}), 400
+
+    result = voice_asr.transcribe_bytes(
+        audio.read(),
+        filename=audio.filename or "voice.webm",
+        lang=lang,
+    ).to_dict()
+
+    if result["status"] != "success":
+        return jsonify(result), 503
+
+    normalized = language_normalizer.normalize(
+        str(result.get("text", "")),
+        language=str(result.get("language", "auto")),
+    )
+    result["normalized"] = normalized.normalized
+    result["normalization"] = normalized.to_dict()
+    return jsonify(result)
+
+
+@app.route("/api/voice/feedback", methods=["POST"])
+def voice_feedback():
+    """Record user feedback for ASR text and normalization results."""
+    data = request.get_json(silent=True) or {}
+    asr_text = str(data.get("asr_text", "")).strip()
+    normalized = str(data.get("normalized", "")).strip()
+    corrected_text = str(data.get("corrected_text", "")).strip()
+    corrected_normalized = str(data.get("corrected_normalized", "")).strip()
+    feedback = str(data.get("feedback", "accepted")).strip()
+
+    if not asr_text and not normalized:
+        return jsonify({"status": "error", "error": "asr_text or normalized is required"}), 400
+
+    if feedback == "corrected" and not corrected_normalized:
+        source = corrected_text or asr_text
+        corrected_normalized = language_normalizer.normalize(source).normalized
+
+    record = voice_feedback_store.add({
+        "asr_text": asr_text,
+        "normalized": normalized,
+        "corrected_text": corrected_text,
+        "corrected_normalized": corrected_normalized,
+        "language": data.get("language", "unknown"),
+        "confidence": data.get("confidence", 0.0),
+        "feedback": feedback,
+        "engine": data.get("engine", "vosk"),
+    })
+
+    if agent and agent.kb:
+        final_text = corrected_normalized or normalized
+        content = (
+            f"语音识别反馈：ASR文本「{asr_text}」，归一化「{normalized}」，"
+            f"用户反馈「{feedback}」"
+        )
+        if corrected_text or corrected_normalized:
+            content += f"，纠正文本「{corrected_text}」，纠正归一化「{final_text}」"
+        agent.kb.add(
+            content,
+            category="语音反馈",
+            accepted=(feedback in ("accepted", "corrected")),
+            asr_text=asr_text,
+            normalized=normalized,
+            corrected_normalized=final_text,
+            feedback=feedback,
+        )
+
+    return jsonify({"status": "success", "record": record})
 # ==================== WebSocket 事件 ====================
 
 @socketio.on("connect")

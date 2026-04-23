@@ -138,12 +138,12 @@ class HomeMindWebMockFlowTests(unittest.TestCase):
         self.assertGreaterEqual(len(kb_results), 1)
         self.assertIn("26度空调", kb_results[0]["content"])
 
-    def test_voice_endpoint_reports_browser_only_mode(self):
+    def test_voice_endpoint_requires_uploaded_audio(self):
         response = self.client.post("/api/voice/transcribe")
 
-        self.assertEqual(response.status_code, 501)
+        self.assertEqual(response.status_code, 400)
         payload = response.get_json()
-        self.assertEqual(payload["status"], "browser_only")
+        self.assertEqual(payload["status"], "error")
 
     def test_spatial_endpoints_can_read_seed_data_or_accept_uploads(self):
         plans_response = self.client.get("/api/floor-plans")
