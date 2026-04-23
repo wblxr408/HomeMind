@@ -1,11 +1,8 @@
 """
-场景模式切换工具
-预设场景：睡眠 / 待客 / 离家 / 起床 / 观影
-批量执行多设备操作
+场景模式切换工具。
 """
 
 import logging
-from typing import Dict, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -42,20 +39,33 @@ SCENE_CONFIGS = {
         "灯光": {"action": "on", "params": {"brightness": 70}},
         "空调": {"action": "on", "params": {"temperature": 26}},
     },
+    "工作模式": {
+        "灯光": {"action": "adjust", "params": {"brightness": 90}},
+        "空调": {"action": "adjust", "params": {"temperature": 24}},
+        "电视": {"action": "off", "params": {}},
+        "音响": {"action": "off", "params": {}},
+    },
+    "早安模式": {
+        "灯光": {"action": "adjust", "params": {"brightness": 75}},
+        "窗户": {"action": "open", "params": {}},
+        "音响": {"action": "on", "params": {"volume": 18, "mode": "晨间播报"}},
+        "空调": {"action": "adjust", "params": {"temperature": 24}},
+    },
+    "晚归模式": {
+        "灯光": {"action": "on", "params": {"brightness": 60}},
+        "空调": {"action": "on", "params": {"temperature": 26}},
+        "音响": {"action": "off", "params": {}},
+    },
 }
 
 
 class SceneSwitcher:
-    """场景切换器，批量执行预设的多设备操作"""
+    """场景切换器，批量执行预设的多设备动作。"""
 
     def __init__(self, device_controller):
         self.device_ctrl = device_controller
 
     def execute(self, scene: str) -> str:
-        """
-        执行场景切换
-        scene: 睡眠模式 / 待客模式 / 离家模式 / 起床模式 / 观影模式 / 回家模式
-        """
         config = SCENE_CONFIGS.get(scene)
         if config is None:
             return f"不支持的场景: {scene}"
@@ -65,9 +75,8 @@ class SceneSwitcher:
             result = self.device_ctrl.execute(device, cmd["action"], cmd["params"])
             results.append(result)
 
-        logger.info(f"场景切换: {scene}，执行了{len(results)}项操作")
+        logger.info("Scene switch: %s, operations=%s", scene, len(results))
         return f"已切换到{scene}。" + " ".join(results)
 
     def switch(self, scene: str) -> str:
-        """兼容旧调用名。"""
         return self.execute(scene)

@@ -83,7 +83,7 @@ def main():
         app,
         host=args.host,
         port=args.port,
-        debug=args.debug or True,
+        debug=args.debug,
         allow_unsafe_werkzeug=True
     )
 

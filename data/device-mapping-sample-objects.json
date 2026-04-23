@@ -1,0 +1,7 @@
+{
+  "devices": [
+    { "entity_id": "light.balcony", "area": "balcony", "device_type": "light" },
+    { "entity_id": "light.living_room_main", "area": "living_room", "device_type": "light" },
+    { "entity_id": "climate.bedroom_ac", "area": "bedroom", "device_type": "air_conditioner" }
+  ]
+}

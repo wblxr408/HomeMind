@@ -1,0 +1,51 @@
+[
+  ["light.balcony", "balcony", "light"],
+  ["light.living_room_main", "living_room", "light"],
+  ["light.living_room_accent", "living_room", "light"],
+  ["switch.living_room_tv", "living_room", "plug"],
+  ["sensor.living_room_motion", "living_room", "motion_sensor"],
+  ["camera.living_room", "living_room", "camera"],
+
+  ["light.bedroom_main", "bedroom", "light"],
+  ["light.bedroom_ceiling", "bedroom", "light"],
+  ["switch.bedroom_fan", "bedroom", "fan"],
+  ["climate.bedroom_ac", "bedroom", "air_conditioner"],
+  ["sensor.bedroom_temp", "bedroom", "temperature_humidity_sensor"],
+  ["sensor.bedroom_humidity", "bedroom", "temperature_humidity_sensor"],
+
+  ["light.bedroom2_main", "bedroom2", "light"],
+  ["switch.bedroom2_ac", "bedroom2", "plug"],
+  ["fan.bedroom2_ceiling", "bedroom2", "fan"],
+  ["sensor.bedroom2_motion", "bedroom2", "motion_sensor"],
+
+  ["light.entrance", "entrance", "light"],
+  ["switch.entrance_doorbell", "entrance", "doorbell"],
+  ["sensor.front_door", "entrance", "door_window_sensor"],
+
+  ["light.dining_room", "dining_room", "light"],
+  ["switch.dining_room_chandelier", "dining_room", "plug"],
+
+  ["light.kitchen_main", "kitchen", "light"],
+  ["switch.kitchen_hood", "kitchen", "plug"],
+  ["switch.kitchen_stove", "kitchen", "plug"],
+  ["switch.kitchen_dishwasher", "kitchen", "plug"],
+  ["switch.kitchen_fridge", "kitchen", "plug"],
+  ["sensor.kitchen_smoke", "kitchen", "motion_sensor"],
+
+  ["light.bathroom1", "bathroom1", "light"],
+  ["switch.bathroom1_exhaust", "bathroom1", "fan"],
+  ["sensor.bathroom1_motion", "bathroom1", "motion_sensor"],
+
+  ["light.bathroom2", "bathroom2", "light"],
+  ["switch.bathroom2_fan", "bathroom2", "fan"],
+  ["sensor.bathroom2_humidity", "bathroom2", "temperature_humidity_sensor"],
+
+  ["switch.study_desk_lamp", "study", "light"],
+  ["switch.study_pc", "study", "plug"],
+  ["switch.study_printer", "study", "plug"],
+  ["switch.study_air_purifier", "study", "plug"],
+  ["sensor.study_temp", "study", "temperature_humidity_sensor"],
+
+  ["robot_vacuum.main_vacuum", "living_room", "robot_vacuum"],
+  ["doorbell.main", "entrance", "doorbell"]
+]

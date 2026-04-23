@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+*.pyo
+
+.pytest_cache/
+.mypy_cache/
+
+uploads/
+data/.key
+data/.key.salt
+data/chroma_db/
+
+.DS_Store
+Thumbs.db

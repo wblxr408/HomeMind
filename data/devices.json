@@ -1,0 +1,571 @@
+[
+  {
+    "floorPlanId": "floorPlan-1774753754359-7409133.svg",
+    "devices": [
+      {
+        "id": "light.balcony",
+        "name": "balcony",
+        "type": "light",
+        "area": "balcony",
+        "x": 33.91,
+        "y": 8.86,
+        "icon": "💡"
+      },
+      {
+        "id": "light.living_room_main",
+        "name": "living room main",
+        "type": "light",
+        "area": "living_room",
+        "x": 12.33,
+        "y": 27.4,
+        "icon": "💡"
+      },
+      {
+        "id": "light.living_room_accent",
+        "name": "living room accent",
+        "type": "light",
+        "area": "living_room",
+        "x": 17.03,
+        "y": 27.4,
+        "icon": "💡"
+      },
+      {
+        "id": "switch.living_room_tv",
+        "name": "living room tv",
+        "type": "plug",
+        "area": "living_room",
+        "x": 21.73,
+        "y": 27.4,
+        "icon": "🔌"
+      },
+      {
+        "id": "sensor.living_room_motion",
+        "name": "living room motion",
+        "type": "motion_sensor",
+        "area": "living_room",
+        "x": 12.33,
+        "y": 34.12,
+        "icon": "📡"
+      },
+      {
+        "id": "camera.living_room",
+        "name": "living room",
+        "type": "camera",
+        "area": "living_room",
+        "x": 17.03,
+        "y": 34.12,
+        "icon": "📷"
+      },
+      {
+        "id": "robot_vacuum.main_vacuum",
+        "name": "main vacuum",
+        "type": "robot_vacuum",
+        "area": "living_room",
+        "x": 21.73,
+        "y": 34.12,
+        "icon": "🤖"
+      },
+      {
+        "id": "light.bedroom_main",
+        "name": "bedroom main",
+        "type": "light",
+        "area": "bedroom",
+        "x": 50.57,
+        "y": 29.53,
+        "icon": "💡"
+      },
+      {
+        "id": "light.bedroom_ceiling",
+        "name": "bedroom ceiling",
+        "type": "light",
+        "area": "bedroom",
+        "x": 53.91,
+        "y": 29.53,
+        "icon": "💡"
+      },
+      {
+        "id": "switch.bedroom_fan",
+        "name": "bedroom fan",
+        "type": "fan",
+        "area": "bedroom",
+        "x": 57.24,
+        "y": 29.53,
+        "icon": "🌀"
+      },
+      {
+        "id": "climate.bedroom_ac",
+        "name": "bedroom ac",
+        "type": "air_conditioner",
+        "area": "bedroom",
+        "x": 50.57,
+        "y": 35.32,
+        "icon": "❄️"
+      },
+      {
+        "id": "sensor.bedroom_temp",
+        "name": "bedroom temp",
+        "type": "temperature_humidity_sensor",
+        "area": "bedroom",
+        "x": 53.91,
+        "y": 35.32,
+        "icon": "🌡️"
+      },
+      {
+        "id": "sensor.bedroom_humidity",
+        "name": "bedroom humidity",
+        "type": "temperature_humidity_sensor",
+        "area": "bedroom",
+        "x": 57.24,
+        "y": 35.32,
+        "icon": "🌡️"
+      },
+      {
+        "id": "light.bedroom2_main",
+        "name": "bedroom2 main",
+        "type": "light",
+        "area": "bedroom2",
+        "x": 77.56,
+        "y": 27.37,
+        "icon": "💡"
+      },
+      {
+        "id": "switch.bedroom2_ac",
+        "name": "bedroom2 ac",
+        "type": "plug",
+        "area": "bedroom2",
+        "x": 84.63,
+        "y": 27.37,
+        "icon": "🔌"
+      },
+      {
+        "id": "fan.bedroom2_ceiling",
+        "name": "bedroom2 ceiling",
+        "type": "fan",
+        "area": "bedroom2",
+        "x": 77.56,
+        "y": 34.44,
+        "icon": "🌀"
+      },
+      {
+        "id": "sensor.bedroom2_motion",
+        "name": "bedroom2 motion",
+        "type": "motion_sensor",
+        "area": "bedroom2",
+        "x": 84.63,
+        "y": 34.44,
+        "icon": "📡"
+      },
+      {
+        "id": "light.entrance",
+        "name": "entrance",
+        "type": "light",
+        "area": "entrance",
+        "x": 12.82,
+        "y": 51.08,
+        "icon": "💡"
+      },
+      {
+        "id": "switch.entrance_doorbell",
+        "name": "entrance doorbell",
+        "type": "doorbell",
+        "area": "entrance",
+        "x": 18.43,
+        "y": 51.08,
+        "icon": "🔔"
+      },
+      {
+        "id": "sensor.front_door",
+        "name": "front door",
+        "type": "door_window_sensor",
+        "area": "entrance",
+        "x": 12.82,
+        "y": 52.56,
+        "icon": "🚪"
+      },
+      {
+        "id": "doorbell.main",
+        "name": "main",
+        "type": "doorbell",
+        "area": "entrance",
+        "x": 18.43,
+        "y": 52.56,
+        "icon": "🔔"
+      },
+      {
+        "id": "light.dining_room",
+        "name": "dining room",
+        "type": "light",
+        "area": "dining_room",
+        "x": 25.27,
+        "y": 66.74,
+        "icon": "💡"
+      },
+      {
+        "id": "switch.dining_room_chandelier",
+        "name": "dining room chandelier",
+        "type": "plug",
+        "area": "dining_room",
+        "x": 29.42,
+        "y": 66.74,
+        "icon": "🔌"
+      },
+      {
+        "id": "light.kitchen_main",
+        "name": "kitchen main",
+        "type": "light",
+        "area": "kitchen",
+        "x": 42.54,
+        "y": 68.76,
+        "icon": "💡"
+      },
+      {
+        "id": "switch.kitchen_hood",
+        "name": "kitchen hood",
+        "type": "plug",
+        "area": "kitchen",
+        "x": 44.92,
+        "y": 68.76,
+        "icon": "🔌"
+      },
+      {
+        "id": "switch.kitchen_stove",
+        "name": "kitchen stove",
+        "type": "plug",
+        "area": "kitchen",
+        "x": 47.3,
+        "y": 68.76,
+        "icon": "🔌"
+      },
+      {
+        "id": "switch.kitchen_dishwasher",
+        "name": "kitchen dishwasher",
+        "type": "plug",
+        "area": "kitchen",
+        "x": 42.54,
+        "y": 73.82,
+        "icon": "🔌"
+      },
+      {
+        "id": "switch.kitchen_fridge",
+        "name": "kitchen fridge",
+        "type": "plug",
+        "area": "kitchen",
+        "x": 44.92,
+        "y": 73.82,
+        "icon": "🔌"
+      },
+      {
+        "id": "sensor.kitchen_smoke",
+        "name": "kitchen smoke",
+        "type": "motion_sensor",
+        "area": "kitchen",
+        "x": 47.3,
+        "y": 73.82,
+        "icon": "📡"
+      },
+      {
+        "id": "light.bathroom1",
+        "name": "bathroom1",
+        "type": "light",
+        "area": "bathroom1",
+        "x": 57.46,
+        "y": 71.87,
+        "icon": "💡"
+      },
+      {
+        "id": "switch.bathroom1_exhaust",
+        "name": "bathroom1 exhaust",
+        "type": "fan",
+        "area": "bathroom1",
+        "x": 59.72,
+        "y": 71.87,
+        "icon": "🌀"
+      },
+      {
+        "id": "sensor.bathroom1_motion",
+        "name": "bathroom1 motion",
+        "type": "motion_sensor",
+        "area": "bathroom1",
+        "x": 57.46,
+        "y": 75.86,
+        "icon": "📡"
+      },
+      {
+        "id": "light.bathroom2",
+        "name": "bathroom2",
+        "type": "light",
+        "area": "bathroom2",
+        "x": 83.09,
+        "y": 55.93,
+        "icon": "💡"
+      },
+      {
+        "id": "switch.bathroom2_fan",
+        "name": "bathroom2 fan",
+        "type": "fan",
+        "area": "bathroom2",
+        "x": 86.59,
+        "y": 55.93,
+        "icon": "🌀"
+      },
+      {
+        "id": "sensor.bathroom2_humidity",
+        "name": "bathroom2 humidity",
+        "type": "temperature_humidity_sensor",
+        "area": "bathroom2",
+        "x": 83.09,
+        "y": 59.07,
+        "icon": "🌡️"
+      },
+      {
+        "id": "switch.study_desk_lamp",
+        "name": "study desk lamp",
+        "type": "light",
+        "area": "study",
+        "x": 73.95,
+        "y": 81.89,
+        "icon": "💡"
+      },
+      {
+        "id": "switch.study_pc",
+        "name": "study pc",
+        "type": "plug",
+        "area": "study",
+        "x": 78.44,
+        "y": 81.89,
+        "icon": "🔌"
+      },
+      {
+        "id": "switch.study_printer",
+        "name": "study printer",
+        "type": "plug",
+        "area": "study",
+        "x": 82.92,
+        "y": 81.89,
+        "icon": "🔌"
+      },
+      {
+        "id": "switch.study_air_purifier",
+        "name": "study air purifier",
+        "type": "plug",
+        "area": "study",
+        "x": 73.95,
+        "y": 87.65,
+        "icon": "🔌"
+      },
+      {
+        "id": "sensor.study_temp",
+        "name": "study temp",
+        "type": "temperature_humidity_sensor",
+        "area": "study",
+        "x": 78.44,
+        "y": 87.65,
+        "icon": "🌡️"
+      }
+    ],
+    "rawDevices": [
+      [
+        "light.balcony",
+        "balcony",
+        "light"
+      ],
+      [
+        "light.living_room_main",
+        "living_room",
+        "light"
+      ],
+      [
+        "light.living_room_accent",
+        "living_room",
+        "light"
+      ],
+      [
+        "switch.living_room_tv",
+        "living_room",
+        "plug"
+      ],
+      [
+        "sensor.living_room_motion",
+        "living_room",
+        "motion_sensor"
+      ],
+      [
+        "camera.living_room",
+        "living_room",
+        "camera"
+      ],
+      [
+        "light.bedroom_main",
+        "bedroom",
+        "light"
+      ],
+      [
+        "light.bedroom_ceiling",
+        "bedroom",
+        "light"
+      ],
+      [
+        "switch.bedroom_fan",
+        "bedroom",
+        "fan"
+      ],
+      [
+        "climate.bedroom_ac",
+        "bedroom",
+        "air_conditioner"
+      ],
+      [
+        "sensor.bedroom_temp",
+        "bedroom",
+        "temperature_humidity_sensor"
+      ],
+      [
+        "sensor.bedroom_humidity",
+        "bedroom",
+        "temperature_humidity_sensor"
+      ],
+      [
+        "light.bedroom2_main",
+        "bedroom2",
+        "light"
+      ],
+      [
+        "switch.bedroom2_ac",
+        "bedroom2",
+        "plug"
+      ],
+      [
+        "fan.bedroom2_ceiling",
+        "bedroom2",
+        "fan"
+      ],
+      [
+        "sensor.bedroom2_motion",
+        "bedroom2",
+        "motion_sensor"
+      ],
+      [
+        "light.entrance",
+        "entrance",
+        "light"
+      ],
+      [
+        "switch.entrance_doorbell",
+        "entrance",
+        "doorbell"
+      ],
+      [
+        "sensor.front_door",
+        "entrance",
+        "door_window_sensor"
+      ],
+      [
+        "light.dining_room",
+        "dining_room",
+        "light"
+      ],
+      [
+        "switch.dining_room_chandelier",
+        "dining_room",
+        "plug"
+      ],
+      [
+        "light.kitchen_main",
+        "kitchen",
+        "light"
+      ],
+      [
+        "switch.kitchen_hood",
+        "kitchen",
+        "plug"
+      ],
+      [
+        "switch.kitchen_stove",
+        "kitchen",
+        "plug"
+      ],
+      [
+        "switch.kitchen_dishwasher",
+        "kitchen",
+        "plug"
+      ],
+      [
+        "switch.kitchen_fridge",
+        "kitchen",
+        "plug"
+      ],
+      [
+        "sensor.kitchen_smoke",
+        "kitchen",
+        "motion_sensor"
+      ],
+      [
+        "light.bathroom1",
+        "bathroom1",
+        "light"
+      ],
+      [
+        "switch.bathroom1_exhaust",
+        "bathroom1",
+        "fan"
+      ],
+      [
+        "sensor.bathroom1_motion",
+        "bathroom1",
+        "motion_sensor"
+      ],
+      [
+        "light.bathroom2",
+        "bathroom2",
+        "light"
+      ],
+      [
+        "switch.bathroom2_fan",
+        "bathroom2",
+        "fan"
+      ],
+      [
+        "sensor.bathroom2_humidity",
+        "bathroom2",
+        "temperature_humidity_sensor"
+      ],
+      [
+        "switch.study_desk_lamp",
+        "study",
+        "light"
+      ],
+      [
+        "switch.study_pc",
+        "study",
+        "plug"
+      ],
+      [
+        "switch.study_printer",
+        "study",
+        "plug"
+      ],
+      [
+        "switch.study_air_purifier",
+        "study",
+        "plug"
+      ],
+      [
+        "sensor.study_temp",
+        "study",
+        "temperature_humidity_sensor"
+      ],
+      [
+        "robot_vacuum.main_vacuum",
+        "living_room",
+        "robot_vacuum"
+      ],
+      [
+        "doorbell.main",
+        "entrance",
+        "doorbell"
+      ]
+    ],
+    "updatedAt": "2026-03-29T03:10:45.010Z",
+    "createdAt": "2026-03-29T03:10:45.010Z"
+  }
+]

@@ -24,36 +24,38 @@
             --bubble-user-text: #F1EFE8;
             --radius-md: 8px;
             --radius-lg: 12px;
-            --panel-width: 220px;
+            --panel-width: 380px;
             --progress-height: 2px;
             --progress-label-size: 9px;
             --shadow: 0 4px 32px rgba(0, 0, 0, 0.08);
         }
 
+        html, body {
+            width: 100%;
+            height: 100%;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif;
             background: var(--bg-tertiary);
-            background-image:
-                radial-gradient(circle at top, rgba(29, 158, 117, 0.10), transparent 26%),
-                linear-gradient(180deg, #f3f1eb 0%, #ebe7e0 100%);
             min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 24px;
             color: var(--text-primary);
         }
 
         .app {
             display: flex;
             flex-direction: column;
-            width: 900px;
-            height: 680px;
+            width: 100vw;
+            min-height: 100vh;
+            height: 100vh;
             background: var(--bg-tertiary);
-            border-radius: 20px;
+            background-image:
+                radial-gradient(circle at top, rgba(29, 158, 117, 0.10), transparent 26%),
+                linear-gradient(180deg, #f3f1eb 0%, #ebe7e0 100%);
+            border-radius: 0;
             overflow: hidden;
-            border: 0.5px solid var(--border-light);
-            box-shadow: var(--shadow);
+            border: none;
+            box-shadow: none;
             position: relative;
         }
 
@@ -195,26 +197,29 @@
         .chat-messages {
             flex: 1;
             overflow-y: auto;
-            padding: 14px 18px;
+            padding: 8px 12px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 4px;
         }
 
         .msg {
             display: flex;
             flex-direction: column;
-            max-width: 78%;
+            max-width: 76%;
         }
 
         .msg.user { align-self: flex-end; align-items: flex-end; }
         .msg.ai, .msg.system { align-self: flex-start; align-items: flex-start; }
 
         .bubble {
-            padding: 9px 13px;
-            border-radius: 14px;
+            display: inline-block;
+            width: fit-content;
+            max-width: 100%;
+            padding: 6px 9px;
+            border-radius: 12px;
             font-size: 13px;
-            line-height: 1.55;
+            line-height: 1.38;
             white-space: pre-wrap;
             word-break: break-word;
         }
@@ -236,7 +241,7 @@
         .msg-time {
             font-size: 10px;
             color: var(--text-tertiary);
-            margin-top: 3px;
+            margin-top: 1px;
             padding: 0 2px;
         }
 
@@ -324,7 +329,7 @@
         }
 
         .panel-section {
-            padding: 12px;
+            padding: 9px 10px;
         }
 
         .panel-section + .panel-section {
@@ -336,19 +341,19 @@
             color: var(--text-tertiary);
             letter-spacing: 0.06em;
             text-transform: uppercase;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
 
         .sensor-row {
             display: flex;
-            gap: 6px;
+            gap: 5px;
         }
 
         .sensor-card {
             flex: 1;
             background: var(--bg-secondary);
             border-radius: var(--radius-md);
-            padding: 8px 6px;
+            padding: 7px 5px;
             text-align: center;
             border: 0.5px solid rgba(29, 158, 117, 0.08);
         }
@@ -408,16 +413,175 @@
             color: var(--text-tertiary);
         }
 
+        .scene-quick-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+
+        .scene-quick-btn {
+            appearance: none;
+            border: 0.5px solid var(--border-light);
+            border-radius: var(--radius-md);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            padding: 8px 9px;
+            text-align: left;
+            cursor: pointer;
+            transition: border-color 0.15s, background 0.15s;
+        }
+
+        .scene-quick-btn.active {
+            border-color: var(--accent);
+            background: var(--accent-bg);
+        }
+
+        .scene-quick-name {
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .scene-quick-desc {
+            font-size: 10px;
+            color: var(--text-tertiary);
+            margin-top: 2px;
+            line-height: 1.4;
+        }
+
+        .quick-device-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .quick-device-card {
+            border: 0.5px solid var(--border-light);
+            border-radius: var(--radius-md);
+            padding: 8px 9px;
+            background: rgba(255,255,255,0.78);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .quick-device-name {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .quick-device-status {
+            font-size: 10px;
+            color: var(--text-tertiary);
+            margin-top: 2px;
+        }
+
+        .spatial-quick {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .spatial-quick-meta {
+            font-size: 11px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .spatial-quick-toolbar {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .spatial-quick-plan-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            max-height: 84px;
+            overflow-y: auto;
+        }
+
+        .spatial-quick-plan {
+            border: 0.5px solid var(--border-light);
+            border-radius: 10px;
+            background: var(--bg-secondary);
+            padding: 8px 10px;
+            cursor: pointer;
+        }
+
+        .spatial-quick-plan.active {
+            border-color: var(--accent);
+            background: var(--accent-bg);
+        }
+
+        .spatial-quick-plan-name {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .spatial-quick-plan-meta {
+            font-size: 10px;
+            color: var(--text-tertiary);
+            margin-top: 2px;
+        }
+
+        .spatial-quick-preview {
+            position: relative;
+            min-height: 126px;
+            border: 0.5px solid var(--border-light);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            background: linear-gradient(180deg, rgba(255,255,255,0.92) 0%, rgba(241,247,244,0.92) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .spatial-quick-svg {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .spatial-quick-svg img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .quick-device-marker {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--accent);
+            border: 2px solid #ffffff;
+            box-shadow: 0 2px 6px rgba(29, 158, 117, 0.25);
+            transform: translate(-50%, -50%);
+        }
+
+        .panel-actions {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
         .log-area {
             background: var(--bg-secondary);
             border: 0.5px solid var(--border-light);
             border-radius: var(--radius-md);
-            padding: 8px;
+            padding: 7px 8px;
             font-size: 11px;
             color: var(--text-tertiary);
             font-family: "SF Mono", Menlo, Consolas, monospace;
-            line-height: 1.7;
-            max-height: 160px;
+            line-height: 1.5;
+            max-height: 92px;
             overflow-y: auto;
         }
 
@@ -551,6 +715,307 @@
 
         .toggle.on::after { left: 16px; }
 
+        .spatial-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .spatial-toolbar {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .tool-btn {
+            appearance: none;
+            border: 0.5px solid var(--border-mid);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border-radius: 999px;
+            padding: 8px 12px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .tool-btn.primary {
+            background: var(--accent);
+            color: #ffffff;
+            border-color: var(--accent);
+        }
+
+        .tool-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.45;
+        }
+
+        .spatial-meta {
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .plan-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 160px;
+            overflow-y: auto;
+        }
+
+        .plan-item {
+            border: 0.5px solid var(--border-light);
+            background: rgba(255, 255, 255, 0.85);
+            border-radius: var(--radius-md);
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        .plan-item.active {
+            border-color: var(--accent);
+            background: var(--accent-bg);
+        }
+
+        .plan-item-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .plan-item-meta {
+            font-size: 11px;
+            color: var(--text-tertiary);
+            margin-top: 3px;
+        }
+
+        .spatial-preview {
+            border: 0.5px solid var(--border-light);
+            background: rgba(255,255,255,0.75);
+            border-radius: var(--radius-lg);
+            padding: 10px;
+        }
+
+        .plan-preview-frame {
+            position: relative;
+            width: 100%;
+            min-height: 220px;
+            border-radius: var(--radius-md);
+            background: linear-gradient(180deg, rgba(255,255,255,0.92) 0%, rgba(241,247,244,0.92) 100%);
+            border: 0.5px solid var(--border-light);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .plan-preview-svg {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .plan-preview-svg img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .device-marker {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--accent);
+            border: 2px solid #ffffff;
+            box-shadow: 0 2px 8px rgba(29, 158, 117, 0.30);
+            transform: translate(-50%, -50%);
+        }
+
+        .device-summary {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 10px;
+        }
+
+        .device-chip {
+            padding: 5px 8px;
+            border-radius: 999px;
+            background: var(--bg-secondary);
+            border: 0.5px solid var(--border-light);
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        .empty-note {
+            font-size: 12px;
+            color: var(--text-tertiary);
+            line-height: 1.6;
+            padding: 8px 0;
+        }
+
+        .mapping-editor {
+            margin-top: 12px;
+            border-top: 0.5px solid var(--border-light);
+            padding-top: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .mapping-editor-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .mapping-editor-title {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .mapping-editor-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .mapping-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 260px;
+            overflow-y: auto;
+        }
+
+        .mapping-row {
+            display: grid;
+            grid-template-columns: minmax(150px, 1.8fr) minmax(100px, 1fr) minmax(100px, 1fr) 42px;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .mapping-input {
+            width: 100%;
+            min-width: 0;
+            border: 0.5px solid var(--border-light);
+            background: rgba(255,255,255,0.88);
+            border-radius: 10px;
+            padding: 9px 10px;
+            font-size: 12px;
+            color: var(--text-primary);
+            outline: none;
+        }
+
+        .mapping-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px rgba(29, 158, 117, 0.12);
+        }
+
+        .mapping-remove {
+            appearance: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 10px;
+            border: 0.5px solid rgba(180, 75, 58, 0.28);
+            background: rgba(180, 75, 58, 0.08);
+            color: #b44b3a;
+            cursor: pointer;
+            font-size: 15px;
+            line-height: 1;
+        }
+
+        .mapping-empty {
+            border: 0.5px dashed var(--border-light);
+            border-radius: 10px;
+            padding: 12px;
+            font-size: 12px;
+            color: var(--text-tertiary);
+            text-align: center;
+            background: rgba(255,255,255,0.55);
+        }
+
+        .mapping-help {
+            font-size: 11px;
+            color: var(--text-tertiary);
+            line-height: 1.5;
+        }
+
+        .rules-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .rule-form {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+            padding: 12px;
+            border: 0.5px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            background: rgba(255,255,255,0.72);
+        }
+
+        .rule-form .mapping-input.full {
+            grid-column: 1 / -1;
+        }
+
+        .rule-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 260px;
+            overflow-y: auto;
+        }
+
+        .rule-card {
+            border: 0.5px solid var(--border-light);
+            border-radius: var(--radius-md);
+            background: rgba(255,255,255,0.82);
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .rule-card.off {
+            opacity: 0.62;
+        }
+
+        .rule-card-head,
+        .rule-card-actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .rule-card-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .rule-card-meta,
+        .rule-card-desc {
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .rule-chip-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
         .toast {
             position: absolute;
             left: 50%;
@@ -589,6 +1054,8 @@
                 max-height: 240px;
             }
             .card-grid { grid-template-columns: 1fr; }
+            .mapping-row { grid-template-columns: 1fr; }
+            .rule-form { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -596,7 +1063,7 @@
     <div class="app" id="app">
         <div class="topbar">
             <div class="brand">
-                <img class="brand-logo" src="homemind-logo.png" alt="HomeMind Logo">
+                <img class="brand-logo" src="/web/client/homemind-logo.png" alt="HomeMind Logo" onerror="this.onerror=null;this.src='/web/client/homemind-logo.svg';">
                 <div class="brand-copy">
                     <div class="brand-name">HomeMind</div>
                     <div class="brand-sub">智能家居中央指令器 · EST. 2024</div>
@@ -627,7 +1094,7 @@
             <div class="chat-col">
                 <div class="chat-messages" id="messages">
                     <div class="msg system">
-                        <div class="bubble">系统初始化完成，等待指令。您可以直接告诉我想执行什么，我会帮您协调家居设备。</div>
+                        <div class="bubble">Caillo！☆*: .｡. o(≧▽≦)o .｡.:*☆   主人，请尽情吩咐妲己哦   </div>
                         <div class="msg-time" id="boot-time">--:--:--</div>
                     </div>
                 </div>
@@ -668,21 +1135,26 @@
                 </div>
 
                 <div class="panel-section">
-                    <div class="section-label">快捷入口</div>
-                    <button class="entry-card" onclick="openModal('scene')">
-                        <div>
-                            <div class="entry-card-title">场景模式</div>
-                            <div class="entry-card-sub">睡眠 · 观影 · 工作…</div>
-                        </div>
-                        <span class="entry-card-arrow">›</span>
-                    </button>
-                    <button class="entry-card" onclick="openModal('device')">
-                        <div>
-                            <div class="entry-card-title">设备控制</div>
-                            <div class="entry-card-sub">空调 · 灯光 · 电视…</div>
-                        </div>
-                        <span class="entry-card-arrow">›</span>
-                    </button>
+                    <div class="section-label">场景模式</div>
+                    <div class="scene-quick-list" id="sceneQuickList"></div>
+                </div>
+
+                <div class="panel-section">
+                    <div class="section-label">设备控制</div>
+                    <div class="quick-device-list" id="deviceQuickList"></div>
+                </div>
+
+                <div class="panel-section">
+                    <div class="section-label">空间配置</div>
+                    <div class="spatial-quick" id="spatialQuickPanel"></div>
+                </div>
+
+                <div class="panel-section">
+                    <div class="section-label">其他</div>
+                    <div class="panel-actions">
+                        <button class="tool-btn" type="button" onclick="openModal('spatial')">详细空间编辑</button>
+                        <button class="tool-btn" type="button" onclick="openModal('rules')">自动化规则</button>
+                    </div>
                 </div>
 
                 <div class="panel-section">
@@ -705,6 +1177,8 @@
         </div>
 
         <div class="toast" id="toast"></div>
+        <input type="file" id="floorPlanInput" accept=".svg,image/svg+xml" style="display:none">
+        <input type="file" id="deviceMappingInput" accept=".json,application/json" style="display:none">
     </div>
 
     <script>
@@ -727,6 +1201,7 @@
             { id: "window", name: "窗户" }
         ];
 
+        const API_BASE = window.location.origin;
         const progressOrder = ["bsr", "lsr", "llm", "exec"];
         let socket = null;
         let devices = {};
@@ -736,8 +1211,58 @@
         let isListening = false;
         let toastTimer = null;
         let currentModal = null;
+        let floorPlans = [];
+        let deviceMappings = [];
+        let tapRules = [];
+        let selectedFloorPlanId = "";
+        const floorPlanAssetUrls = new Map();
+        const suggestedDeviceTypes = [
+            "light",
+            "air_conditioner",
+            "tv",
+            "water_heater",
+            "fan",
+            "speaker",
+            "window",
+            "plug",
+            "switch",
+            "sensor",
+            "camera",
+            "motion_sensor",
+            "doorbell",
+            "door_window_sensor",
+            "robot_vacuum",
+            "temperature_humidity_sensor"
+        ];
 
         function pad(n) { return String(n).padStart(2, "0"); }
+
+        function getFloorPlanAspectRatio(plan) {
+            const width = Number(plan?.width) || 640;
+            const height = Number(plan?.height) || 660;
+            return `${width} / ${height}`;
+        }
+
+        async function getFloorPlanAssetUrl(planId) {
+            if (floorPlanAssetUrls.has(planId)) {
+                return floorPlanAssetUrls.get(planId);
+            }
+            const response = await fetch(`${API_BASE}/api/floor-plans/${planId}/svg`);
+            if (!response.ok) {
+                throw new Error("floor plan svg load failed");
+            }
+            const blob = await response.blob();
+            const objectUrl = URL.createObjectURL(
+                blob.type === "image/svg+xml" ? blob : new Blob([blob], { type: "image/svg+xml" })
+            );
+            floorPlanAssetUrls.set(planId, objectUrl);
+            return objectUrl;
+        }
+
+        window.addEventListener("beforeunload", () => {
+            floorPlanAssetUrls.forEach((url) => URL.revokeObjectURL(url));
+            floorPlanAssetUrls.clear();
+        });
 
         function getTime() {
             const d = new Date();
@@ -762,16 +1287,20 @@
                 .replace(/\n/g, "<br>");
         }
 
+        function escapeAttr(text) {
+            return String(text)
+                .replace(/&/g, "&amp;")
+                .replace(/"/g, "&quot;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;");
+        }
+
         function addMsg(role, html, tag) {
             const el = document.createElement("div");
             el.className = "msg " + role;
-            el.innerHTML = `
-                <div class="bubble">
-                    ${escapeHtml(html)}
-                    ${tag ? `<span class="action-tag">${tag}</span>` : ""}
-                </div>
-                <div class="msg-time">${getTime()}</div>
-            `;
+            const bubbleHtml = `<div class="bubble">${escapeHtml(html)}${tag ? `<span class="action-tag">${tag}</span>` : ""}</div>`;
+            const timeHtml = `<div class="msg-time">${getTime()}</div>`;
+            el.innerHTML = bubbleHtml + timeHtml;
             const msgs = document.getElementById("messages");
             msgs.appendChild(el);
             msgs.scrollTop = msgs.scrollHeight;
@@ -833,6 +1362,44 @@
             return match ? match.name : id;
         }
 
+        function renderSceneQuickList() {
+            const host = document.getElementById("sceneQuickList");
+            if (!host) return;
+            host.innerHTML = scenes.map((scene) => `
+                <button class="scene-quick-btn ${currentScene === scene.id ? "active" : ""}" type="button" data-scene-quick="${scene.id}">
+                    <div class="scene-quick-name">${scene.name}</div>
+                    <div class="scene-quick-desc">${scene.desc}</div>
+                </button>
+            `).join("");
+            host.querySelectorAll("[data-scene-quick]").forEach((button) => {
+                button.addEventListener("click", () => switchScene(button.dataset.sceneQuick));
+            });
+        }
+
+        function renderDeviceQuickList() {
+            const host = document.getElementById("deviceQuickList");
+            if (!host) return;
+            host.innerHTML = deviceList.map((device) => {
+                const state = devices[device.id] || {};
+                return `
+                    <div class="quick-device-card">
+                        <div>
+                            <div class="quick-device-name">${device.name}</div>
+                            <div class="quick-device-status">${buildDeviceStatus(device.id, state)}</div>
+                        </div>
+                        <button class="toggle ${state.is_on ? "on" : ""}" type="button" data-device-quick="${device.id}"></button>
+                    </div>
+                `;
+            }).join("");
+            host.querySelectorAll("[data-device-quick]").forEach((button) => {
+                button.addEventListener("click", () => {
+                    const id = button.dataset.deviceQuick;
+                    const state = devices[id] || {};
+                    controlDevice(id, state.is_on ? "off" : "on");
+                });
+            });
+        }
+
         function updateContext(ctx) {
             document.getElementById("current-temp").textContent = ctx.temperature ?? "--";
             document.getElementById("current-humidity").textContent = ctx.humidity ?? "--";
@@ -840,6 +1407,7 @@
             if (ctx.scene) {
                 currentScene = ctx.scene;
             }
+            renderSceneQuickList();
             if (currentModal) {
                 renderModal(currentModal);
             }
@@ -847,13 +1415,735 @@
 
         function updateDeviceState(id, state) {
             devices[id] = state || {};
+            renderDeviceQuickList();
             if (currentModal === "device") {
                 renderModal("device");
             }
         }
 
         function updateDevices(states) {
-            Object.entries(states || {}).forEach(([id, state]) => updateDeviceState(id, state));
+            Object.entries(states || {}).forEach(([id, state]) => {
+                devices[id] = state || {};
+            });
+            renderDeviceQuickList();
+            if (currentModal === "device") {
+                renderModal("device");
+            }
+        }
+
+        function normalizeDeviceMappingJson(parsed) {
+            if (parsed == null) return { ok: false, error: "空 JSON", tuples: [] };
+            let arr = parsed;
+            if (!Array.isArray(arr)) {
+                if (typeof parsed === "object") {
+                    if (Array.isArray(parsed.devices)) arr = parsed.devices;
+                    else if (Array.isArray(parsed.deviceMapping)) arr = parsed.deviceMapping;
+                    else if (Array.isArray(parsed.mappings)) arr = parsed.mappings;
+                    else if (Array.isArray(parsed.items)) arr = parsed.items;
+                    else {
+                        return { ok: false, error: '请使用 JSON 数组，或 { "devices": [ ... ] } 结构', tuples: [] };
+                    }
+                } else {
+                    return { ok: false, error: "根节点必须是数组或对象", tuples: [] };
+                }
+            }
+            if (arr.length === 0) return { ok: true, tuples: [] };
+            const first = arr[0];
+            if (Array.isArray(first)) {
+                const tuples = arr
+                    .filter((row) => Array.isArray(row) && row.length >= 2)
+                    .map((row) => [
+                        String(row[0]).trim(),
+                        String(row[1]).trim(),
+                        String(row[2] != null ? row[2] : "light").trim()
+                    ])
+                    .filter((row) => row[0] && row[1]);
+                if (!tuples.length) {
+                    return { ok: false, error: 'Tuple 结构至少应为 ["entity_id","area","device_type"]', tuples: [] };
+                }
+                return { ok: true, tuples };
+            }
+            if (first && typeof first === "object") {
+                const tuples = arr
+                    .map((obj) => {
+                        const entity = obj.entity_id || obj.entityId || obj.id || obj.entity || "";
+                        const area = obj.area || obj.room || obj.zone || "";
+                        const type = obj.device_type || obj.deviceType || obj.type || "light";
+                        const e = String(entity).trim();
+                        const a = String(area).trim();
+                        if (!e || !a) return null;
+                        return [e, a, String(type).trim() || "light"];
+                    })
+                    .filter(Boolean);
+                if (!tuples.length) {
+                    return { ok: false, error: "对象结构必须包含 entity_id 和 area", tuples: [] };
+                }
+                return { ok: true, tuples };
+            }
+            return { ok: false, error: "无法识别的设备映射格式", tuples: [] };
+        }
+
+        function getSelectedPlan() {
+            if (!floorPlans.length) return null;
+            if (!selectedFloorPlanId) {
+                selectedFloorPlanId = floorPlans[0].id;
+            }
+            return floorPlans.find((item) => item.id === selectedFloorPlanId) || floorPlans[0];
+        }
+
+        async function loadSpatialData() {
+            const [planRes, mappingRes] = await Promise.all([
+                fetch(`${API_BASE}/api/floor-plans`),
+                fetch(`${API_BASE}/api/devices`)
+            ]);
+            const planJson = await planRes.json();
+            const mappingJson = await mappingRes.json();
+            floorPlans = planJson.floorPlans || [];
+            deviceMappings = mappingJson.deviceMappings || [];
+            if (!selectedFloorPlanId && floorPlans.length) {
+                selectedFloorPlanId = floorPlans[0].id;
+            }
+        }
+
+        function getMappingForPlan(planId) {
+            return deviceMappings.find((item) => item.floorPlanId === planId) || null;
+        }
+
+        function buildSuggestedRoomList() {
+            const roomSet = new Set();
+            deviceMappings.forEach((mapping) => {
+                (mapping.rawDevices || []).forEach((row) => {
+                    if (row && row[1]) roomSet.add(String(row[1]));
+                });
+                (mapping.devices || []).forEach((item) => {
+                    if (item && item.area) roomSet.add(String(item.area));
+                });
+            });
+            return Array.from(roomSet).sort((a, b) => a.localeCompare(b, "zh-CN"));
+        }
+
+        function extractEditableRows(mapping) {
+            if (!mapping) return [];
+            if (Array.isArray(mapping.rawDevices) && mapping.rawDevices.length) {
+                return mapping.rawDevices.map((row) => ({
+                    entity_id: String(row[0] || ""),
+                    area: String(row[1] || ""),
+                    device_type: String(row[2] || "light")
+                }));
+            }
+            if (Array.isArray(mapping.devices) && mapping.devices.length) {
+                return mapping.devices.map((item) => ({
+                    entity_id: String(item.entity_id || item.id || ""),
+                    area: String(item.area || ""),
+                    device_type: String(item.type || item.device_type || "light")
+                }));
+            }
+            return [];
+        }
+
+        function renderMappingRows(rows, roomOptionsHtml) {
+            const content = rows.length
+                ? `
+                    <div class="mapping-grid" id="mappingGrid">
+                        ${rows.map((row, index) => `
+                            <div class="mapping-row" data-row-index="${index}">
+                                <input class="mapping-input" data-field="entity_id" value="${escapeAttr(row.entity_id || "")}" placeholder="entity_id，例如 light.bedroom_main">
+                                <input class="mapping-input" data-field="area" value="${escapeAttr(row.area || "")}" placeholder="area，例如 bedroom" list="roomOptionsList">
+                                <input class="mapping-input" data-field="device_type" value="${escapeAttr(row.device_type || "light")}" placeholder="device_type，例如 light" list="deviceTypeOptionsList">
+                                <button class="mapping-remove" type="button" data-remove-row="${index}" title="删除这一行">×</button>
+                            </div>
+                        `).join("")}
+                    </div>
+                `
+                : `<div class="mapping-empty">当前还没有设备映射。点击“新增一行”开始配置。</div>`;
+
+            return `
+                <div id="mappingRowsHost">
+                    ${content}
+                    <datalist id="roomOptionsList">${roomOptionsHtml}</datalist>
+                    <datalist id="deviceTypeOptionsList">
+                        ${suggestedDeviceTypes.map((type) => `<option value="${type}"></option>`).join("")}
+                    </datalist>
+                </div>
+            `;
+        }
+
+        function readMappingRowsFromModal() {
+            const grid = document.getElementById("mappingGrid");
+            if (!grid) return [];
+            return Array.from(grid.querySelectorAll(".mapping-row"))
+                .map((row) => {
+                    const entity_id = row.querySelector('[data-field="entity_id"]')?.value.trim() || "";
+                    const area = row.querySelector('[data-field="area"]')?.value.trim() || "";
+                    const device_type = row.querySelector('[data-field="device_type"]')?.value.trim() || "light";
+                    if (!entity_id || !area) return null;
+                    return { entity_id, area, device_type };
+                })
+                .filter(Boolean);
+        }
+
+        async function saveEditedDeviceMapping() {
+            if (!selectedFloorPlanId) {
+                throw new Error("请先选择户型图");
+            }
+            const rows = readMappingRowsFromModal();
+            const response = await fetch(`${API_BASE}/api/devices`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    floorPlanId: selectedFloorPlanId,
+                    devices: rows.map((row) => [row.entity_id, row.area, row.device_type])
+                })
+            });
+            const payload = await response.json();
+            if (!response.ok) {
+                throw new Error(payload.error || "设备映射保存失败");
+            }
+            await loadSpatialData();
+            addLog("设备映射", `已保存 ${payload.deviceCount} 个设备`);
+            showToast("设备映射已保存");
+            await renderSpatialQuickPanel();
+            await renderModal("spatial");
+        }
+
+        async function deleteCurrentDeviceMapping() {
+            if (!selectedFloorPlanId) {
+                throw new Error("请先选择户型图");
+            }
+            const response = await fetch(`${API_BASE}/api/devices/${selectedFloorPlanId}`, {
+                method: "DELETE"
+            });
+            const payload = await response.json();
+            if (!response.ok) {
+                throw new Error(payload.error || "设备映射删除失败");
+            }
+            await loadSpatialData();
+            addLog("设备映射", "已删除");
+            showToast("设备映射已删除");
+            await renderSpatialQuickPanel();
+            await renderModal("spatial");
+        }
+
+        function replaceMappingRows(rows, roomOptionsHtml) {
+            const host = document.getElementById("mappingRowsHost");
+            if (!host) return;
+            host.outerHTML = renderMappingRows(rows, roomOptionsHtml);
+            bindMappingRowRemoveHandlers(roomOptionsHtml);
+        }
+
+        function bindMappingRowRemoveHandlers(roomOptionsHtml) {
+            document.querySelectorAll("[data-remove-row]").forEach((button) => {
+                button.onclick = () => {
+                    const rows = readMappingRowsFromModal();
+                    rows.splice(Number(button.dataset.removeRow), 1);
+                    const dynamicRoomOptions = Array.from(new Set([...buildSuggestedRoomList(), ...rows.map((row) => row.area).filter(Boolean)]))
+                        .sort((a, b) => a.localeCompare(b, "zh-CN"))
+                        .map((room) => `<option value="${escapeAttr(room)}"></option>`)
+                        .join("");
+                    replaceMappingRows(rows, dynamicRoomOptions || roomOptionsHtml);
+                };
+            });
+        }
+
+        function bindMappingEditorHandlers(roomOptionsHtml) {
+            document.getElementById("addMappingRowBtn")?.addEventListener("click", () => {
+                const rows = readMappingRowsFromModal();
+                rows.push({ entity_id: "", area: "", device_type: "light" });
+                const dynamicRoomOptions = Array.from(new Set([...buildSuggestedRoomList(), ...rows.map((row) => row.area).filter(Boolean)]))
+                    .sort((a, b) => a.localeCompare(b, "zh-CN"))
+                    .map((room) => `<option value="${escapeAttr(room)}"></option>`)
+                    .join("");
+                replaceMappingRows(rows, dynamicRoomOptions);
+            });
+
+            document.getElementById("saveMappingBtn")?.addEventListener("click", async () => {
+                try {
+                    await saveEditedDeviceMapping();
+                } catch (err) {
+                    showToast(err.message || "设备映射保存失败");
+                }
+            });
+
+            document.getElementById("deleteMappingBtn")?.addEventListener("click", async () => {
+                try {
+                    await deleteCurrentDeviceMapping();
+                } catch (err) {
+                    showToast(err.message || "设备映射删除失败");
+                }
+            });
+
+            bindMappingRowRemoveHandlers(roomOptionsHtml);
+        }
+
+        async function renderSpatialModal() {
+            const title = document.getElementById("modalTitle");
+            const body = document.getElementById("modalBody");
+            title.textContent = "空间配置";
+
+            const plan = getSelectedPlan();
+            const mapping = plan ? getMappingForPlan(plan.id) : null;
+            const roomSet = new Set((mapping?.devices || []).map((item) => item.area));
+            const rows = extractEditableRows(mapping);
+            const roomOptionsHtml = buildSuggestedRoomList()
+                .map((room) => `<option value="${escapeAttr(room)}"></option>`)
+                .join("");
+
+            body.innerHTML = `
+                <div class="spatial-stack">
+                    <div class="spatial-toolbar">
+                        <button class="tool-btn primary" id="uploadFloorPlanBtn">上传 SVG 户型图</button>
+                        <button class="tool-btn" id="uploadDeviceMappingBtn" ${plan ? "" : "disabled"}>导入设备映射 JSON</button>
+                    </div>
+                    <div class="spatial-meta">
+                        当前已加载 ${floorPlans.length} 份户型图，${deviceMappings.length} 份设备映射。
+                    </div>
+                    <div class="plan-list">
+                        ${
+                            floorPlans.length
+                                ? floorPlans.map((item) => `
+                                    <div class="plan-item ${plan && plan.id === item.id ? "active" : ""}" data-plan-id="${item.id}">
+                                        <div class="plan-item-name">${escapeHtml(item.name || item.id)}</div>
+                                        <div class="plan-item-meta">${item.width || "--"} × ${item.height || "--"} · ${escapeHtml(item.description || "无描述")}</div>
+                                    </div>
+                                `).join("")
+                                : `<div class="empty-note">暂无户型图。可直接复用 HausRAGen-main 中的样例数据，也可以现在上传新的 SVG。</div>`
+                        }
+                    </div>
+                    <div class="spatial-preview">
+                        ${
+                            plan
+                                ? `
+                                    <div class="spatial-meta">当前户型图：${escapeHtml(plan.name || plan.id)}</div>
+                                    <div class="plan-preview-frame">
+                                        <div class="plan-preview-svg" id="planPreviewSvg"><div class="empty-note">正在加载户型图预览…</div></div>
+                                    </div>
+                                    <div class="device-summary">
+                                        <span class="device-chip">设备 ${mapping?.devices?.length || 0}</span>
+                                        <span class="device-chip">房间 ${roomSet.size}</span>
+                                    </div>
+                                    <div class="mapping-editor">
+                                        <div class="mapping-editor-head">
+                                            <div class="mapping-editor-title">设备映射编辑</div>
+                                            <div class="mapping-editor-actions">
+                                                <button class="tool-btn" id="addMappingRowBtn">新增一行</button>
+                                                <button class="tool-btn" id="deleteMappingBtn" ${mapping ? "" : "disabled"}>删除当前映射</button>
+                                                <button class="tool-btn primary" id="saveMappingBtn">保存映射</button>
+                                            </div>
+                                        </div>
+                                        ${renderMappingRows(rows, roomOptionsHtml)}
+                                        <div class="mapping-help">
+                                            每一行对应一个设备，按 <code>entity_id / area / device_type</code> 组织。保存后会重新计算点位并刷新预览。
+                                        </div>
+                                    </div>
+                                  `
+                                : `<div class="empty-note">选择或上传户型图后，这里会显示 SVG 预览和设备点位。</div>`
+                        }
+                    </div>
+                </div>
+            `;
+
+            const floorPlanInput = document.getElementById("floorPlanInput");
+            const deviceMappingInput = document.getElementById("deviceMappingInput");
+            body.querySelector("#uploadFloorPlanBtn")?.addEventListener("click", () => floorPlanInput.click());
+            body.querySelector("#uploadDeviceMappingBtn")?.addEventListener("click", () => deviceMappingInput.click());
+
+            body.querySelectorAll(".plan-item").forEach((item) => {
+                item.addEventListener("click", async () => {
+                    selectedFloorPlanId = item.dataset.planId;
+                    await renderModal("spatial");
+                });
+            });
+
+            if (plan) {
+                bindMappingEditorHandlers(roomOptionsHtml);
+                await renderFloorPlanPreview(plan, mapping);
+            }
+        }
+
+        function renderFloorPlanMarkers(frame, markerClassName, mapping) {
+            frame.querySelectorAll(`.${markerClassName}`).forEach((node) => node.remove());
+            (mapping?.devices || []).forEach((device) => {
+                const marker = document.createElement("div");
+                marker.className = markerClassName;
+                marker.style.left = `${device.x}%`;
+                marker.style.top = `${device.y}%`;
+                marker.title = `${device.name || device.id} - ${device.area}`;
+                frame.appendChild(marker);
+            });
+        }
+
+        async function mountFloorPlanImage(holder, frame, plan, imageClassName) {
+            frame.style.aspectRatio = getFloorPlanAspectRatio(plan);
+            const assetUrl = await getFloorPlanAssetUrl(plan.id);
+            const image = document.createElement("img");
+            image.className = imageClassName;
+            image.src = assetUrl;
+            image.alt = plan.name || plan.id;
+            holder.replaceChildren(image);
+        }
+
+        async function renderFloorPlanPreview(plan, mapping) {
+            const holder = document.getElementById("planPreviewSvg");
+            if (!holder) return;
+            const frame = holder.parentElement;
+            try {
+                await mountFloorPlanImage(holder, frame, plan, "plan-preview-image");
+                renderFloorPlanMarkers(frame, "device-marker", mapping);
+            } catch (err) {
+                holder.innerHTML = `<div class="empty-note">Floor plan preview failed</div>`;
+            }
+        }
+
+        async function renderSpatialQuickPanel() {
+            const host = document.getElementById("spatialQuickPanel");
+            if (!host) return;
+
+            if (!floorPlans.length && !deviceMappings.length) {
+                try {
+                    await loadSpatialData();
+                } catch (err) {
+                    host.innerHTML = `<div class="empty-note">${escapeHtml(err.message || "空间数据加载失败")}</div>`;
+                    return;
+                }
+            }
+
+            const plan = getSelectedPlan();
+            const mapping = plan ? getMappingForPlan(plan.id) : null;
+            const roomCount = new Set((mapping?.devices || []).map((item) => item.area)).size;
+
+            if (!plan) {
+                host.innerHTML = `
+                    <div class="spatial-quick-meta">暂无户型图。可以直接上传 SVG，或进入详细空间编辑。</div>
+                    <div class="spatial-quick-toolbar">
+                        <button class="tool-btn primary" type="button" id="quickUploadFloorPlanBtn">上传 SVG</button>
+                        <button class="tool-btn" type="button" id="quickOpenSpatialBtn">详细编辑</button>
+                    </div>
+                `;
+                host.querySelector("#quickUploadFloorPlanBtn")?.addEventListener("click", () => document.getElementById("floorPlanInput").click());
+                host.querySelector("#quickOpenSpatialBtn")?.addEventListener("click", () => openModal("spatial"));
+                return;
+            }
+
+            host.innerHTML = `
+                <div class="spatial-quick-meta">
+                    当前户型：${escapeHtml(plan.name || plan.id)}<br>
+                    设备 ${mapping?.devices?.length || 0} 个，房间 ${roomCount} 个
+                </div>
+                <div class="spatial-quick-plan-list">
+                    ${floorPlans.map((item) => `
+                        <button class="spatial-quick-plan ${item.id === plan.id ? "active" : ""}" type="button" data-quick-plan="${item.id}">
+                            <div class="spatial-quick-plan-name">${escapeHtml(item.name || item.id)}</div>
+                            <div class="spatial-quick-plan-meta">${item.width || "--"} × ${item.height || "--"}</div>
+                        </button>
+                    `).join("")}
+                </div>
+                <div class="spatial-quick-preview">
+                    <div class="spatial-quick-svg" id="spatialQuickSvg"><div class="empty-note">正在加载预览…</div></div>
+                </div>
+                <div class="spatial-quick-toolbar">
+                    <button class="tool-btn" type="button" id="quickUploadMappingBtn">导入映射</button>
+                    <button class="tool-btn primary" type="button" id="quickOpenSpatialBtn">详细编辑</button>
+                </div>
+            `;
+
+            host.querySelectorAll("[data-quick-plan]").forEach((button) => {
+                button.addEventListener("click", async () => {
+                    selectedFloorPlanId = button.dataset.quickPlan;
+                    await renderSpatialQuickPanel();
+                    if (currentModal === "spatial") {
+                        await renderModal("spatial");
+                    }
+                });
+            });
+            host.querySelector("#quickUploadMappingBtn")?.addEventListener("click", () => document.getElementById("deviceMappingInput").click());
+            host.querySelector("#quickOpenSpatialBtn")?.addEventListener("click", () => openModal("spatial"));
+
+            const svgHolder = document.getElementById("spatialQuickSvg");
+            const previewFrame = svgHolder?.parentElement;
+            if (!svgHolder || !previewFrame) return;
+            try {
+                await mountFloorPlanImage(svgHolder, previewFrame, plan, "spatial-quick-image");
+                renderFloorPlanMarkers(previewFrame, "quick-device-marker", mapping);
+            } catch (err) {
+                svgHolder.innerHTML = `<div class="empty-note">Floor plan preview failed</div>`;
+            }
+        }
+
+        async function handleFloorPlanUpload(file) {
+            const formData = new FormData();
+            formData.append("floorPlan", file);
+            formData.append("name", file.name.replace(/\.svg$/i, ""));
+            const response = await fetch(`${API_BASE}/api/floor-plans`, { method: "POST", body: formData });
+            const payload = await response.json();
+            if (!response.ok) {
+                throw new Error(payload.error || "户型图上传失败");
+            }
+            await loadSpatialData();
+            selectedFloorPlanId = payload.floorPlan.id;
+            addLog("户型图", payload.floorPlan.name || payload.floorPlan.id);
+            showToast("户型图已上传");
+            await renderSpatialQuickPanel();
+            if (currentModal === "spatial") {
+                await renderModal("spatial");
+            }
+        }
+
+        async function handleDeviceMappingUpload(file) {
+            if (!selectedFloorPlanId) {
+                throw new Error("请先选择户型图");
+            }
+            const text = await file.text();
+            const parsed = JSON.parse(text);
+            const normalized = normalizeDeviceMappingJson(parsed);
+            if (!normalized.ok) {
+                throw new Error(normalized.error || "设备映射格式错误");
+            }
+            const response = await fetch(`${API_BASE}/api/devices`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    floorPlanId: selectedFloorPlanId,
+                    devices: normalized.tuples
+                })
+            });
+            const payload = await response.json();
+            if (!response.ok) {
+                throw new Error(payload.error || "设备映射保存失败");
+            }
+            await loadSpatialData();
+            addLog("设备映射", `${payload.deviceCount} 个设备`);
+            showToast("设备映射已导入");
+            await renderSpatialQuickPanel();
+            if (currentModal === "spatial") {
+                await renderModal("spatial");
+            }
+        }
+
+        function injectRulesShortcut() {
+            const panelSection = document.querySelector(".panel-section:nth-of-type(2)");
+            if (!panelSection || panelSection.querySelector('[data-entry="rules"]')) return;
+            const button = document.createElement("button");
+            button.className = "entry-card";
+            button.dataset.entry = "rules";
+            button.innerHTML = `
+                <div>
+                    <div class="entry-card-title">自动化规则</div>
+                    <div class="entry-card-sub">TAP 触发 · 启停 · 删除</div>
+                </div>
+                <span class="entry-card-arrow">›</span>
+            `;
+            button.addEventListener("click", () => openModal("rules"));
+            panelSection.appendChild(button);
+        }
+
+        async function loadTapRules() {
+            const response = await fetch(`${API_BASE}/api/tap-rules`);
+            const payload = await response.json();
+            if (!response.ok) {
+                throw new Error(payload.error || "规则加载失败");
+            }
+            tapRules = payload.rules || [];
+        }
+
+        function buildRuleCard(rule) {
+            const trigger = (rule.trigger && rule.trigger[0]) || {};
+            const action = (rule.action && rule.action[0]) || {};
+            const target = action.target && action.target.entity_id ? action.target.entity_id : "--";
+            return `
+                <div class="rule-card ${rule.enabled ? "" : "off"}">
+                    <div class="rule-card-head">
+                        <div class="rule-card-title">${escapeHtml(rule.alias || rule.id)}</div>
+                        <button class="toggle ${rule.enabled ? "on" : ""}" data-rule-toggle="${rule.id}"></button>
+                    </div>
+                    <div class="rule-card-desc">${escapeHtml(rule.description || "未填写描述")}</div>
+                    <div class="rule-chip-row">
+                        <span class="device-chip">触发 ${escapeHtml(trigger.platform || "--")}</span>
+                        <span class="device-chip">动作 ${escapeHtml(action.service || "--")}</span>
+                        <span class="device-chip">目标 ${escapeHtml(target)}</span>
+                    </div>
+                    <div class="rule-card-meta">更新于 ${escapeHtml((rule.updatedAt || rule.createdAt || "--").replace("T", " ").replace("Z", ""))}</div>
+                    <div class="rule-card-actions">
+                        <button class="tool-btn" data-rule-eval="${rule.id}">立即测试</button>
+                        <button class="tool-btn" data-rule-delete="${rule.id}">删除</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function collectRuleForm() {
+            const alias = document.getElementById("ruleAlias")?.value.trim() || "";
+            const description = document.getElementById("ruleDescription")?.value.trim() || "";
+            const triggerPlatform = document.getElementById("ruleTriggerPlatform")?.value || "state";
+            const triggerTarget = document.getElementById("ruleTriggerTarget")?.value.trim() || "";
+            const triggerValue = document.getElementById("ruleTriggerValue")?.value.trim() || "";
+            const actionService = document.getElementById("ruleActionService")?.value || "homeassistant.turn_on";
+            const actionTarget = document.getElementById("ruleActionTarget")?.value.trim() || "";
+
+            let trigger;
+            if (triggerPlatform === "time") {
+                trigger = [{ platform: "time", at: triggerValue || "22:30:00" }];
+            } else if (triggerPlatform === "scene") {
+                trigger = [{ platform: "scene", scene: triggerTarget || currentScene }];
+            } else if (triggerPlatform === "numeric_state") {
+                trigger = [{ platform: "numeric_state", entity_id: triggerTarget || "sensor.indoor_temperature", above: Number(triggerValue || 30) }];
+            } else {
+                trigger = [{ platform: "state", entity_id: triggerTarget || "light", to: triggerValue || "on" }];
+            }
+
+            return {
+                alias: alias || "新自动化规则",
+                description,
+                enabled: true,
+                trigger,
+                condition: [],
+                action: [{
+                    service: actionService,
+                    target: { entity_id: actionTarget || "light" }
+                }]
+            };
+        }
+
+        async function saveRuleDraft() {
+            const payload = collectRuleForm();
+            const response = await fetch(`${API_BASE}/api/tap-rules`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+            const result = await response.json();
+            if (!response.ok) {
+                throw new Error(result.report || result.error || "规则保存失败");
+            }
+            addLog("自动化", payload.alias);
+            showToast("自动化规则已保存");
+            await loadTapRules();
+            await renderRulesModal();
+        }
+
+        async function toggleTapRule(ruleId, enabled) {
+            const response = await fetch(`${API_BASE}/api/tap-rules/${ruleId}/toggle`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ enabled })
+            });
+            const payload = await response.json();
+            if (!response.ok) {
+                throw new Error(payload.error || "规则切换失败");
+            }
+            addLog("自动化", `${payload.rule.alias} ${enabled ? "已启用" : "已停用"}`);
+            await loadTapRules();
+            await renderRulesModal();
+        }
+
+        async function deleteTapRule(ruleId) {
+            const response = await fetch(`${API_BASE}/api/tap-rules/${ruleId}`, { method: "DELETE" });
+            const payload = await response.json();
+            if (!response.ok) {
+                throw new Error(payload.error || "规则删除失败");
+            }
+            addLog("自动化", payload.rule.alias || ruleId);
+            showToast("自动化规则已删除");
+            await loadTapRules();
+            await renderRulesModal();
+        }
+
+        async function evaluateTapRule(ruleId) {
+            const rule = tapRules.find((item) => item.id === ruleId);
+            if (!rule) return;
+            const trigger = (rule.trigger && rule.trigger[0]) || { platform: "scene", scene: currentScene };
+            const event =
+                trigger.platform === "time"
+                    ? { platform: "time", at: trigger.at || "22:30:00" }
+                    : trigger.platform === "numeric_state"
+                        ? { platform: "numeric_state", entity_id: trigger.entity_id, value: Number(trigger.above || 30) + 1 }
+                        : trigger.platform === "scene"
+                            ? { platform: "scene", scene: trigger.scene || currentScene }
+                            : { platform: "state", entity_id: trigger.entity_id || "light", to: trigger.to || "on" };
+            const response = await fetch(`${API_BASE}/api/tap-rules/evaluate`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ event })
+            });
+            const payload = await response.json();
+            if (!response.ok) {
+                throw new Error(payload.error || "规则测试失败");
+            }
+            const count = payload.evaluation?.executedRules?.length || 0;
+            addLog("自动化", `${rule.alias} 执行 ${count} 次`);
+            showToast(count ? "规则测试完成" : "规则未触发");
+        }
+
+        async function renderRulesModal() {
+            const title = document.getElementById("modalTitle");
+            const body = document.getElementById("modalBody");
+            title.textContent = "自动化规则";
+            await loadTapRules();
+            body.innerHTML = `
+                <div class="rules-stack">
+                    <div class="rule-form">
+                        <input class="mapping-input full" id="ruleAlias" placeholder="规则名称，例如 回家开灯">
+                        <input class="mapping-input full" id="ruleDescription" placeholder="简短描述，说明什么时候执行什么动作">
+                        <select class="mapping-input" id="ruleTriggerPlatform">
+                            <option value="state">state</option>
+                            <option value="scene">scene</option>
+                            <option value="time">time</option>
+                            <option value="numeric_state">numeric_state</option>
+                        </select>
+                        <input class="mapping-input" id="ruleTriggerTarget" placeholder="触发目标，例如 light 或 sensor.indoor_temperature">
+                        <input class="mapping-input" id="ruleTriggerValue" placeholder="触发值，例如 on / sleep / 22:30:00 / 30">
+                        <select class="mapping-input" id="ruleActionService">
+                            <option value="homeassistant.turn_on">homeassistant.turn_on</option>
+                            <option value="homeassistant.turn_off">homeassistant.turn_off</option>
+                            <option value="scene.turn_on">scene.turn_on</option>
+                            <option value="climate.set_temperature">climate.set_temperature</option>
+                            <option value="notify.notify">notify.notify</option>
+                        </select>
+                        <input class="mapping-input full" id="ruleActionTarget" placeholder="动作目标，例如 light / scene.sleep_mode / climate.bedroom_ac">
+                        <button class="tool-btn primary" id="saveRuleBtn">保存规则</button>
+                    </div>
+                    <div class="rule-list">
+                        ${tapRules.length ? tapRules.map(buildRuleCard).join("") : `<div class="mapping-empty">当前还没有自动化规则。可先新建一条最小 TAP 规则。</div>`}
+                    </div>
+                </div>
+            `;
+
+            document.getElementById("saveRuleBtn")?.addEventListener("click", async () => {
+                try {
+                    await saveRuleDraft();
+                } catch (err) {
+                    showToast(err.message || "规则保存失败");
+                }
+            });
+
+            body.querySelectorAll("[data-rule-toggle]").forEach((button) => {
+                button.addEventListener("click", async () => {
+                    try {
+                        await toggleTapRule(button.dataset.ruleToggle, !button.classList.contains("on"));
+                    } catch (err) {
+                        showToast(err.message || "规则切换失败");
+                    }
+                });
+            });
+
+            body.querySelectorAll("[data-rule-delete]").forEach((button) => {
+                button.addEventListener("click", async () => {
+                    try {
+                        await deleteTapRule(button.dataset.ruleDelete);
+                    } catch (err) {
+                        showToast(err.message || "规则删除失败");
+                    }
+                });
+            });
+
+            body.querySelectorAll("[data-rule-eval]").forEach((button) => {
+                button.addEventListener("click", async () => {
+                    try {
+                        await evaluateTapRule(button.dataset.ruleEval);
+                    } catch (err) {
+                        showToast(err.message || "规则测试失败");
+                    }
+                });
+            });
         }
 
         function sendQuery(query) {
@@ -886,7 +2176,7 @@
             document.getElementById("overlay").classList.add("open");
         }
 
-        function renderModal(type) {
+        async function renderModal(type) {
             const title = document.getElementById("modalTitle");
             const body = document.getElementById("modalBody");
             if (type === "scene") {
@@ -906,7 +2196,7 @@
                         closeOverlay();
                     });
                 });
-            } else {
+            } else if (type === "device") {
                 title.textContent = "设备控制";
                 body.innerHTML = `<div class="card-grid">${
                     deviceList.map((device) => {
@@ -929,8 +2219,34 @@
                         controlDevice(id, state.is_on ? "off" : "on");
                     });
                 });
+            } else if (type === "spatial") {
+                title.textContent = "空间配置";
+                body.innerHTML = `<div class="empty-note">正在加载空间数据…</div>`;
+                try {
+                    await loadSpatialData();
+                    await renderSpatialModal();
+                } catch (err) {
+                    body.innerHTML = `<div class="empty-note">${escapeHtml(err.message || "空间数据加载失败")}</div>`;
+                }
             }
         }
+
+        const baseRenderModal = renderModal;
+        renderModal = async function(type) {
+            if (type === "rules") {
+                const title = document.getElementById("modalTitle");
+                const body = document.getElementById("modalBody");
+                title.textContent = "自动化规则";
+                body.innerHTML = `<div class="empty-note">正在加载规则...</div>`;
+                try {
+                    await renderRulesModal();
+                } catch (err) {
+                    body.innerHTML = `<div class="empty-note">${escapeHtml(err.message || "规则面板加载失败")}</div>`;
+                }
+                return;
+            }
+            return baseRenderModal(type);
+        };
 
         function switchScene(scene) {
             socket.emit("message", { type: "scene_switch", data: { scene } });
@@ -1063,7 +2379,7 @@
         }
 
         function initWebSocket() {
-            socket = io("http://localhost:5000");
+            socket = io(API_BASE);
             socket.on("connect", () => addLog("系统", "连接已建立"));
             socket.on("disconnect", () => addLog("系统", "连接已断开"));
             socket.on("message", handleMessage);
@@ -1071,7 +2387,7 @@
         }
 
         function loadStatus() {
-            fetch("http://localhost:5000/api/status")
+            fetch(`${API_BASE}/api/status`)
                 .then((r) => r.json())
                 .then((data) => {
                     updateContext(data.context || {});
@@ -1086,9 +2402,32 @@
             document.getElementById("boot-time").textContent = getTime();
             resetProgress();
             autoResize();
+            renderSceneQuickList();
+            renderDeviceQuickList();
             initVoiceRecognition();
             initWebSocket();
+            document.getElementById("floorPlanInput").addEventListener("change", async (event) => {
+                const file = event.target.files?.[0];
+                event.target.value = "";
+                if (!file) return;
+                try {
+                    await handleFloorPlanUpload(file);
+                } catch (err) {
+                    showToast(err.message || "户型图上传失败");
+                }
+            });
+            document.getElementById("deviceMappingInput").addEventListener("change", async (event) => {
+                const file = event.target.files?.[0];
+                event.target.value = "";
+                if (!file) return;
+                try {
+                    await handleDeviceMappingUpload(file);
+                } catch (err) {
+                    showToast(err.message || "设备映射导入失败");
+                }
+            });
             loadStatus();
+            renderSpatialQuickPanel();
         });
     </script>
 </body>
