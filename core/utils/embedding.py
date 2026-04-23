@@ -5,10 +5,12 @@ import logging
 
 logger = logging.getLogger(__name__)
 _model = None
+_init_attempted = False
 
 def get_model():
-    global _model
-    if _model is None:
+    global _model, _init_attempted
+    if _model is None and not _init_attempted:
+        _init_attempted = True
         try:
             from sentence_transformers import SentenceTransformer
             _model = SentenceTransformer("all-MiniLM-L6-v2")

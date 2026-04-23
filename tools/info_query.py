@@ -123,6 +123,10 @@ class InfoQuery:
         else:
             return f"不支持的查询类型: {query_type}"
 
+    def query(self, query_type: str, params: Optional[Dict[str, Any]] = None) -> str:
+        """兼容旧调用名。"""
+        return self.execute(query_type, params)
+
     def _fetch_weather(self, location: str = "本地") -> Optional[Dict]:
         """获取天气数据，支持缓存和降级处理"""
         cache_key = f"{self._latitude}_{self._longitude}"

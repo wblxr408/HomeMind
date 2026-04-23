@@ -25,7 +25,7 @@ except ImportError:
 
 
 def _derive_key(password: str, salt: bytes) -> bytes:
-    ""从密码派生加密密钥（PBKDF2）""
+    """从密码派生加密密钥（PBKDF2）"""
     kdf = PBKDF2HMAC(
         algorithm=hashes.SHA256(),
         length=32,
@@ -52,7 +52,7 @@ class EncryptedStorage:
             logger.warning("加密存储初始化失败：cryptography 库未安装。将使用明文存储（不安全）。")
 
     def _init_cipher(self):
-        ""初始化加密器""
+        """初始化加密器"""
         if not self._password:
             # 尝试从密钥文件加载
             if os.path.exists(self.key_file):
@@ -92,19 +92,19 @@ class EncryptedStorage:
         logger.info("加密存储已初始化（首次运行）")
 
     def encrypt_data(self, data: bytes) -> bytes:
-        ""加密数据""
+        """加密数据"""
         if self._fernet:
             return self._fernet.encrypt(data)
         return data  # 无加密时返回原数据
 
     def decrypt_data(self, encrypted_data: bytes) -> bytes:
-        ""解密数据""
+        """解密数据"""
         if self._fernet:
             return self._fernet.decrypt(encrypted_data)
         return encrypted_data
 
     def save_pickle(self, data: Any, path: str) -> bool:
-        ""加密保存 pickle 数据""
+        """加密保存 pickle 数据"""
         try:
             raw = pickle.dumps(data)
             encrypted = self.encrypt_data(raw)
@@ -126,7 +126,7 @@ class EncryptedStorage:
                 return False
 
     def load_pickle(self, path: str, default: Any = None) -> Any:
-        ""加载并解密 pickle 数据""
+        """加载并解密 pickle 数据"""
         if not os.path.exists(path):
             return default
 
@@ -149,7 +149,7 @@ class EncryptedStorage:
             return default
 
     def encrypt_file(self, src: str, dst: str) -> bool:
-        ""加密并复制文件""
+        """加密并复制文件"""
         try:
             with open(src, "rb") as f:
                 data = f.read()
@@ -162,7 +162,7 @@ class EncryptedStorage:
             return False
 
     def decrypt_file(self, src: str, dst: str) -> bool:
-        ""解密并复制文件""
+        """解密并复制文件"""
         try:
             with open(src, "rb") as f:
                 data = f.read()
@@ -180,7 +180,7 @@ _encrypted_storage: Optional[EncryptedStorage] = None
 
 
 def get_encrypted_storage() -> EncryptedStorage:
-    ""获取全局加密存储实例""
+    """获取全局加密存储实例"""
     global _encrypted_storage
     if _encrypted_storage is None:
         _encrypted_storage = EncryptedStorage()

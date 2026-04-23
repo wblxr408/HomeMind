@@ -31,7 +31,7 @@ REWARD_MAP = {
 
 
 class QNetwork:
-    ""极轻量 Q 网络：5 → 32 → 6""
+    """极轻量 Q 网络：5 → 32 → 6"""
 
     def __init__(self, seed: int = 42):
         rng = np.random.default_rng(seed)
@@ -69,7 +69,7 @@ class QNetwork:
 
 
 class ReplayBuffer:
-    ""经验回放池，容量1000条，滚动覆盖""
+    """经验回放池，容量1000条，滚动覆盖"""
 
     def __init__(self, capacity: int = 1000):
         self.capacity = capacity
@@ -119,11 +119,9 @@ class DQNPolicy:
         logger.info(f"DQNPolicy 初始化，参数量: {self.q_net.num_params()}")
 
     def _pretrain_if_needed(self):
-        ""若回放池为空，用合成数据做离线预训练，覆盖基础场景规律""
+        """若回放池为空，用合成数据做离线预训练，覆盖基础场景规律"""
         if len(self.replay) > 0:
             return
-
-        rng = np.random.default_rng(42)
         synthetic_data = [
             {"hour": 22, "members": 2, "temp": 25, "last_scene": 3, "day": 4, "action": 0},
             {"hour": 23, "members": 2, "temp": 24, "last_scene": 0, "day": 4, "action": 0},
@@ -154,7 +152,7 @@ class DQNPolicy:
         ], dtype=np.float32)
 
     def _state_to_vector(self, context) -> np.ndarray:
-        ""将环境上下文转为5维状态向量""
+        """将环境上下文转为5维状态向量"""
         return np.array([
             context.hour / 23.0,
             (context.temperature - 15.0) / 20.0,
@@ -164,7 +162,7 @@ class DQNPolicy:
         ], dtype=np.float32)
 
     def _sync_target(self):
-        ""同步 TargetNet（定期从 QNet 复制）""
+        """同步 TargetNet（定期从 QNet 复制）"""
         self.target_net.copy_from(self.q_net)
 
     def recommend(self, context) -> Tuple[int, float]:
@@ -186,7 +184,7 @@ class DQNPolicy:
         return action, confidence
 
     def record_feedback(self, context, action: int, user_response: str) -> bool:
-        ""记录用户对推荐场景的反馈，写入经验回放池""
+        """记录用户对推荐场景的反馈，写入经验回放池"""
         reward = REWARD_MAP.get(user_response, 0.0)
         state = self._state_to_vector(context)
         next_state = state.copy()
@@ -200,7 +198,7 @@ class DQNPolicy:
         return True
 
     def _light_update(self):
-        ""增量更新策略网络（梯度下降法）
+        """增量更新策略网络（梯度下降法）
 
         网络: input(5) -> W1(5x32) -> tanh -> h(32) -> W2(32x6) -> q(6)
         loss = (q_target - q_current)² / 2
@@ -213,7 +211,7 @@ class DQNPolicy:
           grad_h       = delta * W2[a,:] * (1 - tanh²)   [tanh 梯度]
           grad_b1      = grad_h
           grad_W1      = s.T @ grad_h.reshape(1, -1)     [s: (5,), grad_h: (32,)]
-        ""
+        """
         batch = self.replay.sample(16)
         for exp in batch:
             s = exp["state"].astype(np.float32)        # (5,)

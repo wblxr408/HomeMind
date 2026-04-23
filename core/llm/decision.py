@@ -139,6 +139,7 @@ class LLMDecider:
         }
 
         if top in scene_map:
+            confidence = max(confidence, 0.9)
             action, _, device_action, params = scene_map[top]
             if action == "场景切换":
                 return {

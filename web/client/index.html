@@ -1,183 +1,1095 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HomeMind 中央指令器</title>
+    <title>HomeMind — 智能家居中央指令器</title>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,500&family=DM+Serif+Display&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
         :root {
-            --paper: #f5f2ec; --paper-dark: #ebe7df; --paper-line: #d4cfc5;
-            --font-title: 'DM Serif Display', serif; --font-mono: 'IBM Plex Mono', monospace; --font-narrative: 'Cormorant Garamond', serif;
-            --amber: #c4873a; --amber-light: #d4a55a; --cyan: #2a8a7e; --cyan-light: #3aa89d; --cyan-dark: #1a6b5f;
-            --text-dark: #2c2418; --text-mid: #5a5040; --text-light: #8a8070;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f5f4f0;
+            --bg-tertiary: #eeece7;
+            --text-primary: #1a1a18;
+            --text-secondary: #5a5a56;
+            --text-tertiary: #9a9994;
+            --border-light: rgba(0, 0, 0, 0.10);
+            --border-mid: rgba(0, 0, 0, 0.15);
+            --accent: #1D9E75;
+            --accent-light: #5DCAA5;
+            --accent-bg: #E1F5EE;
+            --bubble-user: #2C2C2A;
+            --bubble-user-text: #F1EFE8;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --panel-width: 220px;
+            --progress-height: 2px;
+            --progress-label-size: 9px;
+            --shadow: 0 4px 32px rgba(0, 0, 0, 0.08);
         }
-        body { font-family: var(--font-title); background: var(--paper); color: var(--text-dark); min-height: 100vh; line-height: 1.6; background-image: repeating-linear-gradient(0deg, transparent, transparent 28px, var(--paper-line) 28px, var(--paper-line) 29px); }
-        .header { padding: 40px 56px 32px; border-bottom: 0.5px solid var(--text-light); display: flex; justify-content: space-between; align-items: flex-end; }
-        .brand { position: relative; }
-        .brand::before { content: 'EST. 2024'; font-family: var(--font-mono); font-size: 10px; letter-spacing: 3px; color: var(--text-light); position: absolute; top: -20px; }
-        .brand h1 { font-size: 52px; font-weight: 400; letter-spacing: -1px; margin-bottom: 6px; }
-        .brand-sub { font-family: var(--font-narrative); font-style: italic; font-size: 17px; color: var(--text-mid); }
-        .system-status { font-family: var(--font-mono); font-size: 11px; text-align: right; }
-        .status-line { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; justify-content: flex-end; }
-        .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--cyan); animation: pulse 2s infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-        .main { display: grid; grid-template-columns: 1fr 1fr; }
-        .panel-left { padding: 40px 48px; border-right: 0.5px solid var(--paper-line); display: flex; flex-direction: column; gap: 40px; }
-        .panel-right { padding: 40px 48px; display: flex; flex-direction: column; gap: 40px; }
-        .block-title { font-family: var(--font-mono); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-light); margin-bottom: 20px; padding-bottom: 10px; border-bottom: 0.5px solid var(--paper-line); display: flex; align-items: center; gap: 12px; }
-        .block-title::after { content: ''; flex: 1; height: 0.5px; background: var(--paper-line); }
-        .sensor-grid { display: grid; grid-template-columns: repeat(3, 1fr); border: 0.5px solid var(--paper-line); }
-        .sensor-cell { background: var(--paper); padding: 28px 16px; text-align: center; }
-        .sensor-cell + .sensor-cell { border-left: 0.5px solid var(--paper-line); }
-        .sensor-label { font-family: var(--font-mono); font-size: 9px; letter-spacing: 1px; color: var(--text-light); margin-bottom: 12px; }
-        .sensor-value { font-family: var(--font-mono); font-size: 32px; font-weight: 600; color: var(--cyan); }
-        .sensor-unit { font-size: 13px; color: var(--text-mid); margin-left: 2px; }
-        .device-table { width: 100%; border-collapse: collapse; }
-        .device-table th, .device-table td { text-align: left; padding: 14px 0; border-bottom: 0.5px solid var(--paper-line); }
-        .device-table th { font-family: var(--font-mono); font-size: 9px; letter-spacing: 1px; text-transform: uppercase; color: var(--text-light); font-weight: 400; }
-        .device-name { font-family: var(--font-title); font-size: 17px; }
-        .device-state { font-family: var(--font-mono); font-size: 11px; }
-        .device-state.on { color: var(--cyan); }
-        .device-state.off { color: var(--text-light); }
-        .device-toggle { width: 44px; height: 22px; border: 0.5px solid var(--text-light); background: transparent; cursor: pointer; position: relative; transition: all 0.2s; }
-        .device-toggle::after { content: ''; position: absolute; width: 18px; height: 18px; border: 0.5px solid var(--text-dark); top: 1px; left: 1px; background: var(--paper); transition: all 0.2s; }
-        .device-toggle.on { border-color: var(--cyan); background: var(--cyan); }
-        .device-toggle.on::after { left: 23px; }
-        .log-box { background: var(--paper-dark); border: 0.5px solid var(--paper-line); padding: 16px; max-height: 220px; overflow-y: auto; font-family: var(--font-mono); font-size: 11px; }
-        .log-item { padding: 8px 0; border-bottom: 0.5px dashed var(--paper-line); display: flex; gap: 12px; line-height: 1.5; }
-        .log-item:last-child { border-bottom: none; }
-        .log-time { color: var(--text-light); flex-shrink: 0; }
-        .log-user { color: var(--amber); }
-        .log-agent { color: var(--cyan); }
-        .log-system { color: var(--text-mid); font-style: italic; }
-        .scene-list { list-style: none; border: 0.5px solid var(--paper-line); }
-        .scene-item { padding: 16px 20px; border-bottom: 0.5px solid var(--paper-line); cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: all 0.15s; }
-        .scene-item:last-child { border-bottom: none; }
-        .scene-item:hover { background: var(--paper-dark); padding-left: 24px; }
-        .scene-item.active { border-left: 3px solid var(--amber); background: var(--paper-dark); }
-        .scene-name { font-family: var(--font-title); font-size: 17px; }
-        .scene-item.active .scene-name { color: var(--amber); }
-        .scene-desc { font-family: var(--font-narrative); font-style: italic; font-size: 13px; color: var(--text-light); margin-top: 2px; }
-        .scene-check { font-family: var(--font-mono); font-size: 11px; color: var(--amber); opacity: 0; }
-        .scene-item.active .scene-check { opacity: 1; }
-        .voice-section { margin-top: auto; }
-        .voice-prompt { font-family: var(--font-narrative); font-style: italic; font-size: 15px; color: var(--text-mid); margin-bottom: 14px; }
-        .voice-input-container { display: flex; gap: 12px; align-items: stretch; }
-        .voice-input-row { flex: 1; display: flex; border: 0.5px solid var(--text-dark); }
-        .voice-input-wrapper { position: relative; flex: 1; display: flex; flex-direction: column; }
-        .voice-input { flex: 1; padding: 14px 18px; border: none; background: transparent; font-family: var(--font-title); font-size: 15px; color: var(--text-dark); outline: none; }
-        .voice-input::placeholder { font-style: italic; color: var(--text-light); }
-        .voice-btn { padding: 14px 28px; border: none; background: var(--text-dark); color: var(--paper); font-family: var(--font-mono); font-size: 11px; letter-spacing: 1px; cursor: pointer; transition: all 0.2s; }
-        .voice-btn:hover { background: var(--amber); }
-        .mic-btn { width: 48px; min-width: 48px; height: 48px; border: 0.5px solid var(--text-dark); background: var(--paper); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; position: relative; align-self: flex-end; }
-        .mic-btn:hover { background: var(--paper-dark); }
-        .mic-btn.listening { background: #c0392b; border-color: #c0392b; }
-        .mic-btn.listening svg { fill: white; }
-        .mic-btn svg { width: 22px; height: 22px; fill: var(--text-dark); transition: fill 0.2s; }
-        .mic-btn.listening::before { content: ''; position: absolute; width: 100%; height: 100%; border: 2px solid #c0392b; animation: mic-pulse 1.5s infinite; }
-        @keyframes mic-pulse { 0% { transform: scale(1); opacity: 0.8; } 100% { transform: scale(1.3); opacity: 0; } }
-        .listening-indicator { position: absolute; top: 100%; left: 50%; transform: translateX(-50%); background: var(--text-dark); color: var(--paper); font-family: var(--font-mono); font-size: 10px; padding: 6px 12px; white-space: nowrap; margin-top: 8px; opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 10; }
-        .listening-indicator.visible { opacity: 1; }
-        .listening-indicator::after { content: ''; position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-bottom-color: var(--text-dark); }
-        .interim-results { position: absolute; bottom: 100%; left: 0; right: 0; background: var(--paper); border: 0.5px solid var(--cyan); padding: 8px 12px; font-family: var(--font-narrative); font-style: italic; font-size: 14px; color: var(--text-mid); display: none; margin-bottom: 4px; }
-        .interim-results.visible { display: block; }
-        .voice-warning { margin-top: 8px; padding: 8px 12px; background: var(--paper-dark); border: 0.5px dashed var(--amber); font-family: var(--font-mono); font-size: 10px; color: var(--amber); display: none; }
-        .voice-warning.visible { display: block; }
-        .agent-notification { position: fixed; bottom: 28px; right: 28px; max-width: 380px; padding: 22px 26px; background: var(--paper); border: 0.5px solid var(--amber); box-shadow: 4px 4px 0 var(--paper-dark); display: none; }
-        .agent-label { font-family: var(--font-mono); font-size: 9px; letter-spacing: 2px; color: var(--amber); margin-bottom: 10px; }
-        .agent-message { font-family: var(--font-narrative); font-style: italic; font-size: 17px; line-height: 1.5; color: var(--text-dark); }
-        .toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(80px); padding: 14px 24px; background: var(--text-dark); color: var(--paper); font-family: var(--font-mono); font-size: 11px; opacity: 0; transition: all 0.3s; border: 0.5px solid var(--text-mid); }
-        .toast.visible { transform: translateX(-50%) translateY(0); opacity: 1; }
-        .pipeline-bar { display: flex; align-items: center; gap: 0; padding: 0 48px; border-top: 0.5px solid var(--paper-line); border-bottom: 0.5px solid var(--paper-line); background: var(--paper-dark); }
-        .pipeline-step { flex: 1; padding: 20px 16px; text-align: center; position: relative; opacity: 0.4; transition: opacity 0.3s; }
-        .pipeline-step + .pipeline-step::before { content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 0; height: 0; border-top: 6px solid transparent; border-bottom: 6px solid transparent; border-left: 8px solid var(--paper-line); }
-        .pipeline-step.active { opacity: 1; }
-        .pipeline-step.done { opacity: 0.85; }
-        .step-icon { font-size: 20px; margin-bottom: 6px; display: block; }
-        .step-name { font-family: var(--font-mono); font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--text-mid); margin-bottom: 4px; }
-        .step-title { font-family: var(--font-title); font-size: 15px; color: var(--text-dark); margin-bottom: 6px; }
-        .step-desc { font-family: var(--font-narrative); font-style: italic; font-size: 12px; color: var(--text-light); }
-        .step-status { font-family: var(--font-mono); font-size: 10px; margin-top: 8px; color: var(--text-light); }
-        .step-results { margin-top: 8px; text-align: left; font-family: var(--font-mono); font-size: 10px; color: var(--text-mid); line-height: 1.6; display: none; }
-        .pipeline-step.done .step-results, .pipeline-step.active .step-results { display: block; }
-        .result-item { display: flex; justify-content: space-between; gap: 8px; padding: 2px 0; }
-        .result-score { color: var(--cyan); font-weight: 500; }
-        .result-score.selected { color: var(--amber); }
-        .pipeline-step.running .step-status { color: var(--amber); }
-        .pipeline-step.running .step-status::after { content: '...'; animation: blink 0.6s infinite; }
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
-        .pipeline-step.done .step-status { color: var(--cyan); }
-        .pipeline-step.error .step-status { color: #c0392b; }
-        .decision-card { margin-top: 6px; padding: 8px; background: var(--paper); border: 0.5px solid var(--amber); font-size: 10px; text-align: left; display: none; }
-        .pipeline-step.done .decision-card { display: block; }
-        .decision-device { font-weight: 600; color: var(--amber); font-family: var(--font-mono); }
-        .decision-conf { font-family: var(--font-mono); font-size: 9px; color: var(--cyan); }
-        @media (max-width: 1024px) { .main { grid-template-columns: 1fr; } .panel-left, .panel-right { padding: 32px 24px; border-right: none; } .panel-left { border-bottom: 0.5px solid var(--paper-line); } .header { padding: 28px 24px 24px; } .brand h1 { font-size: 36px; } .sensor-value { font-size: 26px; } }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif;
+            background: var(--bg-tertiary);
+            background-image:
+                radial-gradient(circle at top, rgba(29, 158, 117, 0.10), transparent 26%),
+                linear-gradient(180deg, #f3f1eb 0%, #ebe7e0 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            color: var(--text-primary);
+        }
+
+        .app {
+            display: flex;
+            flex-direction: column;
+            width: 900px;
+            height: 680px;
+            background: var(--bg-tertiary);
+            border-radius: 20px;
+            overflow: hidden;
+            border: 0.5px solid var(--border-light);
+            box-shadow: var(--shadow);
+            position: relative;
+        }
+
+        .topbar {
+            background: var(--bg-primary);
+            border-bottom: 0.5px solid var(--border-light);
+            padding: 10px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+            gap: 12px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 0;
+        }
+
+        .brand-logo {
+            width: 52px;
+            height: 52px;
+            object-fit: contain;
+            flex-shrink: 0;
+            display: block;
+        }
+
+        .brand-copy {
+            min-width: 0;
+        }
+
+        .brand-name {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-primary);
+            letter-spacing: -0.3px;
+        }
+
+        .brand-sub {
+            font-size: 10px;
+            color: var(--text-tertiary);
+            margin-top: 1px;
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-shrink: 0;
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent);
+            flex-shrink: 0;
+            box-shadow: 0 0 0 6px rgba(29, 158, 117, 0.10);
+            animation: pulse 2s infinite;
+        }
+
+        .clock {
+            font-size: 12px;
+            color: var(--text-tertiary);
+            font-variant-numeric: tabular-nums;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.45; }
+        }
+
+        .progress-wrap {
+            flex-shrink: 0;
+            background: var(--bg-primary);
+            border-bottom: 0.5px solid var(--border-light);
+            padding: 5px 18px 6px;
+        }
+
+        .progress-labels {
+            display: flex;
+            margin-bottom: 4px;
+        }
+
+        .progress-label {
+            flex: 1;
+            font-size: var(--progress-label-size);
+            color: var(--text-tertiary);
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        .progress-label.done { color: var(--text-secondary); }
+        .progress-label.active { color: #0F6E56; }
+        .progress-label.error { color: #b44b3a; }
+
+        .progress-track {
+            height: var(--progress-height);
+            display: flex;
+            gap: 2px;
+            border-radius: 1px;
+            overflow: hidden;
+        }
+
+        .progress-step {
+            flex: 1;
+            background: var(--border-light);
+            border-radius: 1px;
+        }
+
+        .progress-step.done { background: var(--accent); }
+        .progress-step.active { background: var(--accent-light); }
+        .progress-step.error { background: #d97f6c; }
+
+        .main {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .chat-col {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            background: linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(245,244,240,0.7) 100%);
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 14px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .msg {
+            display: flex;
+            flex-direction: column;
+            max-width: 78%;
+        }
+
+        .msg.user { align-self: flex-end; align-items: flex-end; }
+        .msg.ai, .msg.system { align-self: flex-start; align-items: flex-start; }
+
+        .bubble {
+            padding: 9px 13px;
+            border-radius: 14px;
+            font-size: 13px;
+            line-height: 1.55;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .msg.user .bubble {
+            background: var(--bubble-user);
+            color: var(--bubble-user-text);
+            border-bottom-right-radius: 4px;
+        }
+
+        .msg.ai .bubble,
+        .msg.system .bubble {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border-bottom-left-radius: 4px;
+            border: 0.5px solid var(--border-light);
+        }
+
+        .msg-time {
+            font-size: 10px;
+            color: var(--text-tertiary);
+            margin-top: 3px;
+            padding: 0 2px;
+        }
+
+        .action-tag {
+            display: inline-block;
+            margin-top: 6px;
+            font-size: 11px;
+            color: #0F6E56;
+            background: var(--accent-bg);
+            padding: 2px 7px;
+            border-radius: 4px;
+        }
+
+        .chat-input-wrap {
+            border-top: 0.5px solid var(--border-light);
+            padding: 10px 12px;
+            background: var(--bg-primary);
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .chat-input {
+            flex: 1;
+            min-height: 40px;
+            max-height: 120px;
+            border: 0.5px solid var(--border-light);
+            border-radius: 20px;
+            padding: 8px 14px;
+            font-size: 13px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            outline: none;
+            resize: none;
+            line-height: 1.45;
+            font-family: inherit;
+            overflow-y: auto;
+        }
+
+        .chat-input:focus {
+            border-color: var(--border-mid);
+        }
+
+        .send-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: var(--bubble-user);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .send-btn svg { fill: var(--bubble-user-text); }
+
+        .mic-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            border: 0.5px solid var(--border-light);
+            background: var(--bg-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .mic-btn svg { width: 14px; height: 14px; fill: var(--text-secondary); }
+        .mic-btn.listening { background: #b44b3a; border-color: #b44b3a; }
+        .mic-btn.listening svg { fill: #ffffff; }
+
+        .panel {
+            width: var(--panel-width);
+            flex-shrink: 0;
+            border-left: 0.5px solid var(--border-light);
+            background: var(--bg-primary);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .panel-section {
+            padding: 12px;
+        }
+
+        .panel-section + .panel-section {
+            border-top: 0.5px solid var(--border-light);
+        }
+
+        .section-label {
+            font-size: 10px;
+            color: var(--text-tertiary);
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .sensor-row {
+            display: flex;
+            gap: 6px;
+        }
+
+        .sensor-card {
+            flex: 1;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-md);
+            padding: 8px 6px;
+            text-align: center;
+            border: 0.5px solid rgba(29, 158, 117, 0.08);
+        }
+
+        .sensor-label {
+            font-size: 9px;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .sensor-val {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-top: 2px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .sensor-unit {
+            font-size: 10px;
+            color: var(--text-secondary);
+        }
+
+        .entry-card {
+            width: 100%;
+            border: 0.5px solid var(--border-light);
+            border-radius: var(--radius-md);
+            padding: 10px 12px;
+            background: var(--bg-secondary);
+            cursor: pointer;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: background 0.15s;
+            margin-top: 8px;
+        }
+
+        .entry-card:first-of-type { margin-top: 0; }
+        .entry-card:hover { background: var(--bg-tertiary); }
+
+        .entry-card-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .entry-card-sub {
+            font-size: 10px;
+            color: var(--text-tertiary);
+            margin-top: 2px;
+        }
+
+        .entry-card-arrow {
+            font-size: 14px;
+            color: var(--text-tertiary);
+        }
+
+        .log-area {
+            background: var(--bg-secondary);
+            border: 0.5px solid var(--border-light);
+            border-radius: var(--radius-md);
+            padding: 8px;
+            font-size: 11px;
+            color: var(--text-tertiary);
+            font-family: "SF Mono", Menlo, Consolas, monospace;
+            line-height: 1.7;
+            max-height: 160px;
+            overflow-y: auto;
+        }
+
+        .log-line {
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.38);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        .overlay.open { display: flex; }
+
+        .modal {
+            background: var(--bg-primary);
+            border-radius: var(--radius-lg);
+            border: 0.5px solid var(--border-light);
+            width: 400px;
+            max-height: 480px;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        .modal-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
+        }
+
+        .modal-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .modal-close {
+            cursor: pointer;
+            font-size: 16px;
+            color: var(--text-secondary);
+            background: none;
+            border: none;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .scene-card {
+            border: 0.5px solid var(--border-light);
+            border-radius: var(--radius-md);
+            padding: 10px 12px;
+            cursor: pointer;
+            transition: border-color 0.15s, background 0.15s;
+            background: var(--bg-primary);
+        }
+
+        .scene-card:hover { background: var(--bg-secondary); }
+        .scene-card.active { border-color: var(--accent); background: var(--accent-bg); }
+
+        .scene-card-name {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .scene-card-desc {
+            font-size: 10px;
+            color: var(--text-tertiary);
+            margin-top: 2px;
+        }
+
+        .device-card {
+            border: 0.5px solid var(--border-light);
+            border-radius: var(--radius-md);
+            padding: 10px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            background: var(--bg-primary);
+        }
+
+        .device-name {
+            font-size: 12px;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .device-status {
+            font-size: 10px;
+            color: var(--text-tertiary);
+            margin-top: 2px;
+        }
+
+        .toggle {
+            width: 32px;
+            height: 18px;
+            border-radius: 9px;
+            background: var(--border-light);
+            position: relative;
+            cursor: pointer;
+            border: none;
+            flex-shrink: 0;
+            transition: background 0.2s;
+        }
+
+        .toggle.on { background: var(--accent); }
+
+        .toggle::after {
+            content: "";
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #fff;
+            top: 2px;
+            left: 2px;
+            transition: left 0.2s;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.16);
+        }
+
+        .toggle.on::after { left: 16px; }
+
+        .toast {
+            position: absolute;
+            left: 50%;
+            bottom: 18px;
+            transform: translateX(-50%) translateY(80px);
+            padding: 10px 16px;
+            background: rgba(44, 44, 42, 0.96);
+            color: var(--bubble-user-text);
+            font-size: 11px;
+            border-radius: 999px;
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 20;
+        }
+
+        .toast.visible {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        @media (max-width: 980px) {
+            body { padding: 0; }
+            .app {
+                width: 100%;
+                height: 100vh;
+                border-radius: 0;
+            }
+        }
+
+        @media (max-width: 760px) {
+            .main { flex-direction: column; }
+            .panel {
+                width: 100%;
+                border-left: none;
+                border-top: 0.5px solid var(--border-light);
+                max-height: 240px;
+            }
+            .card-grid { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
-    <header class="header">
-        <div class="brand"><h1>HomeMind</h1><p class="brand-sub">智能家居中央指令器</p></div>
-        <div class="system-status">
-            <div class="status-line"><span>系统在线</span><span class="status-dot"></span></div>
-            <div class="status-line" style="color: var(--text-light)"><span id="current-time">--:--:--</span></div>
+    <div class="app" id="app">
+        <div class="topbar">
+            <div class="brand">
+                <img class="brand-logo" src="homemind-logo.png" alt="HomeMind Logo">
+                <div class="brand-copy">
+                    <div class="brand-name">HomeMind</div>
+                    <div class="brand-sub">智能家居中央指令器 · EST. 2024</div>
+                </div>
+            </div>
+            <div class="topbar-right">
+                <div class="status"><div class="dot"></div><span>系统在线</span></div>
+                <div class="clock" id="clock">--:--:--</div>
+            </div>
         </div>
-    </header>
-    <div class="pipeline-bar" id="pipeline-bar">
-        <div class="pipeline-step" id="step-bsr" data-step="bsr"><span class="step-icon">&#128269;</span><div class="step-name">STEP 01</div><div class="step-title">BSR 召回</div><div class="step-desc">向量检索候选动作</div><div class="step-status">等待</div><div class="step-results" id="results-bsr"></div></div>
-        <div class="pipeline-step" id="step-lsr" data-step="lsr"><span class="step-icon">&#128202;</span><div class="step-name">STEP 02</div><div class="step-title">LSR 精排</div><div class="step-desc">相关性排序打分</div><div class="step-status">等待</div><div class="step-results" id="results-lsr"></div></div>
-        <div class="pipeline-step" id="step-llm" data-step="llm"><span class="step-icon">&#129504;</span><div class="step-name">STEP 03</div><div class="step-title">LLM 决策</div><div class="step-desc">意图识别与参数提取</div><div class="step-status">等待</div><div class="decision-card" id="decision-card"></div></div>
-        <div class="pipeline-step" id="step-exec" data-step="exec"><span class="step-icon">&#9889;</span><div class="step-name">STEP 04</div><div class="step-title">执行反馈</div><div class="step-desc">设备操作 + DQN 强化学习</div><div class="step-status">等待</div><div class="step-results" id="results-exec"></div></div>
+
+        <div class="progress-wrap">
+            <div class="progress-labels">
+                <div class="progress-label" data-step="bsr">BSR 召回</div>
+                <div class="progress-label" data-step="lsr">LSR 精排</div>
+                <div class="progress-label" data-step="llm">LLM 决策</div>
+                <div class="progress-label" data-step="exec">执行反馈</div>
+            </div>
+            <div class="progress-track">
+                <div class="progress-step" data-step="bsr"></div>
+                <div class="progress-step" data-step="lsr"></div>
+                <div class="progress-step" data-step="llm"></div>
+                <div class="progress-step" data-step="exec"></div>
+            </div>
+        </div>
+
+        <div class="main">
+            <div class="chat-col">
+                <div class="chat-messages" id="messages">
+                    <div class="msg system">
+                        <div class="bubble">系统初始化完成，等待指令。您可以直接告诉我想执行什么，我会帮您协调家居设备。</div>
+                        <div class="msg-time" id="boot-time">--:--:--</div>
+                    </div>
+                </div>
+
+                <div class="chat-input-wrap">
+                    <textarea class="chat-input" id="inputBox" rows="1" placeholder="告诉我你想要什么…" onkeydown="handleKey(event)"></textarea>
+                    <button class="mic-btn" id="mic-btn" onclick="toggleVoiceInput()" title="语音输入">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+                            <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+                        </svg>
+                    </button>
+                    <button class="send-btn" onclick="submitQuery()" title="发送">
+                        <svg width="14" height="14" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M2 14L14 8 2 2v4.5l8 1.5-8 1.5z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-section">
+                    <div class="section-label">传感器数据</div>
+                    <div class="sensor-row">
+                        <div class="sensor-card">
+                            <div class="sensor-label">Temp</div>
+                            <div class="sensor-val"><span id="current-temp">--</span><span class="sensor-unit">°C</span></div>
+                        </div>
+                        <div class="sensor-card">
+                            <div class="sensor-label">Hum</div>
+                            <div class="sensor-val"><span id="current-humidity">--</span><span class="sensor-unit">%</span></div>
+                        </div>
+                        <div class="sensor-card">
+                            <div class="sensor-label">人数</div>
+                            <div class="sensor-val"><span id="current-occupancy">--</span><span class="sensor-unit">人</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel-section">
+                    <div class="section-label">快捷入口</div>
+                    <button class="entry-card" onclick="openModal('scene')">
+                        <div>
+                            <div class="entry-card-title">场景模式</div>
+                            <div class="entry-card-sub">睡眠 · 观影 · 工作…</div>
+                        </div>
+                        <span class="entry-card-arrow">›</span>
+                    </button>
+                    <button class="entry-card" onclick="openModal('device')">
+                        <div>
+                            <div class="entry-card-title">设备控制</div>
+                            <div class="entry-card-sub">空调 · 灯光 · 电视…</div>
+                        </div>
+                        <span class="entry-card-arrow">›</span>
+                    </button>
+                </div>
+
+                <div class="panel-section">
+                    <div class="section-label">操作日志</div>
+                    <div class="log-area" id="log">
+                        <div class="log-line">--:--:--  系统 → 初始化完成</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="overlay" id="overlay" onclick="closeModal(event)">
+            <div class="modal">
+                <div class="modal-head">
+                    <span class="modal-title" id="modalTitle"></span>
+                    <button class="modal-close" onclick="closeOverlay()">✕</button>
+                </div>
+                <div id="modalBody"></div>
+            </div>
+        </div>
+
+        <div class="toast" id="toast"></div>
     </div>
-    <main class="main">
-        <section class="panel-left">
-            <div class="block-group"><h2 class="block-title">传感器数据</h2><div class="sensor-grid"><div class="sensor-cell"><div class="sensor-label">TEMPERATURE</div><div class="sensor-value"><span id="current-temp">--</span><span class="sensor-unit">°C</span></div></div><div class="sensor-cell"><div class="sensor-label">HUMIDITY</div><div class="sensor-value"><span id="current-humidity">--</span><span class="sensor-unit">%</span></div></div><div class="sensor-cell"><div class="sensor-label">OCCUPANCY</div><div class="sensor-value"><span id="current-occupancy">--</span><span class="sensor-unit">人</span></div></div></div></div>
-            <div class="block-group"><h2 class="block-title">设备控制</h2><table class="device-table"><thead><tr><th>设备</th><th>状态</th><th>开关</th></tr></thead><tbody id="devices-tbody"></tbody></table></div>
-            <div class="block-group"><h2 class="block-title">操作日志</h2><div class="log-box" id="log-messages"><div class="log-item log-system"><span class="log-time">--:--:--</span><span>系统初始化完成，等待指令...</span></div></div></div>
-        </section>
-        <section class="panel-right">
-            <div class="block-group"><h2 class="block-title">场景模式</h2><ul class="scene-list" id="scene-list"><li class="scene-item" data-scene="sleep" onclick="switchScene('sleep')"><div><div class="scene-name">睡眠模式</div><div class="scene-desc">关闭灯光、调节温度、安防布控</div></div><span class="scene-check">&#10003;</span></li><li class="scene-item" data-scene="entertainment" onclick="switchScene('entertainment')"><div><div class="scene-name">观影模式</div><div class="scene-desc">调暗灯光、启动电视、音响就绪</div></div><span class="scene-check">&#10003;</span></li><li class="scene-item" data-scene="work" onclick="switchScene('work')"><div><div class="scene-name">工作模式</div><div class="scene-desc">明亮环境、关闭娱乐设备</div></div><span class="scene-check">&#10003;</span></li><li class="scene-item" data-scene="away" onclick="switchScene('away')"><div><div class="scene-name">离家模式</div><div class="scene-desc">全关设备、安防启动</div></div><span class="scene-check">&#10003;</span></li><li class="scene-item" data-scene="morning" onclick="switchScene('morning')"><div><div class="scene-name">早安模式</div><div class="scene-desc">窗帘打开、轻柔音乐、温度适宜</div></div><span class="scene-check">&#10003;</span></li><li class="scene-item" data-scene="evening" onclick="switchScene('evening')"><div><div class="scene-name">晚归模式</div><div class="scene-desc">门廊亮起、室温预调、氛围灯光</div></div><span class="scene-check">&#10003;</span></li></ul></div>
-            <div class="voice-section"><h2 class="block-title">语音指令</h2><p class="voice-prompt">"告诉我你想要什么..."</p><div class="voice-input-container"><div class="voice-input-wrapper"><div class="interim-results" id="interim-results"></div><div class="voice-input-row"><input type="text" class="voice-input" id="user-input" placeholder="打开客厅灯光，温度调到26度"><button class="voice-btn" onclick="submitQuery()">发送</button></div><div class="voice-warning" id="voice-warning">您的浏览器不支持语音识别，请使用 Chrome 或 Edge 浏览器</div></div><button class="mic-btn" id="mic-btn" onclick="toggleVoiceInput()" title="语音输入"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg><div class="listening-indicator" id="listening-indicator">聆听中...</div></button></div></div>
-        </section>
-    </main>
-    <div class="agent-notification" id="agent-notification"><div class="agent-label">AGENT</div><div class="agent-message" id="agent-message"></div></div>
-    <div class="toast" id="toast"></div>
+
     <script>
-        let socket = null, currentScene = 'sleep', devices = {}, activePipeline = null, recognition = null, isListening = false;
-        const deviceList = [{id:'air_conditioner',name:'空调'},{id:'light',name:'灯光'},{id:'tv',name:'电视'},{id:'water_heater',name:'热水器'},{id:'fan',name:'风扇'},{id:'speaker',name:'音响'},{id:'window',name:'窗户'}];
-        document.addEventListener('DOMContentLoaded', () => { initWebSocket(); initDevices(); loadStatus(); updateTime(); setInterval(updateTime, 1000); initVoiceRecognition(); document.getElementById('user-input').addEventListener('keypress', e => { if (e.key === 'Enter') submitQuery(); }); });
-        function updateTime() { document.getElementById('current-time').textContent = new Date().toLocaleTimeString('zh-CN', {hour12: false}); }
-        function initVoiceRecognition() { const SR = window.SpeechRecognition || window.webkitSpeechRecognition; if (!SR) { document.getElementById('voice-warning').classList.add('visible'); document.getElementById('mic-btn').style.display = 'none'; return; } recognition = new SR(); recognition.lang = 'zh-CN'; recognition.continuous = false; recognition.interimResults = true; recognition.onstart = () => { isListening = true; updateMicButtonState(); showListeningIndicator(); }; recognition.onresult = e => { const t = e.results[0][0].transcript; if (t) { document.getElementById('interim-results').textContent = t; document.getElementById('interim-results').classList.add('visible'); } if (e.results[0][0].finalTranscript) { document.getElementById('user-input').value = e.results[0][0].transcript; hideInterimResults(); } }; recognition.onerror = e => { console.error('Speech error:', e.error); hideListeningIndicator(); hideInterimResults(); isListening = false; updateMicButtonState(); if (e.error === 'not-allowed') showToast('请允许麦克风访问权限'); else if (e.error !== 'aborted') showToast('语音识别出错，请重试'); }; recognition.onend = () => { isListening = false; hideListeningIndicator(); hideInterimResults(); updateMicButtonState(); if (document.getElementById('user-input').value.trim()) setTimeout(() => submitQuery(), 300); }; }
-        function toggleVoiceInput() { if (!recognition) return; if (isListening) recognition.stop(); else { try { recognition.start(); } catch (e) { console.error(e); } } }
-        function updateMicButtonState() { document.getElementById('mic-btn').classList.toggle('listening', isListening); }
-        function showListeningIndicator() { document.getElementById('listening-indicator').classList.add('visible'); }
-        function hideListeningIndicator() { document.getElementById('listening-indicator').classList.remove('visible'); }
-        function hideInterimResults() { document.getElementById('interim-results').classList.remove('visible'); }
-        function initWebSocket() { socket = io('http://localhost:5000'); socket.on('connect', () => addLog('系统已连接', 'system')); socket.on('disconnect', () => addLog('连接已断开', 'system')); socket.on('message', m => handleMessage(m)); socket.on('pipeline_update', m => handlePipelineUpdate(m)); }
-        function handlePipelineUpdate(msg) { const {type, data} = msg, {step, data: stepData} = data; if (type === 'pipeline_start') { resetPipeline(); activePipeline = data.steps; document.getElementById('step-bsr').classList.add('active'); return; } if (!activePipeline) return; if (type === 'pipeline_error') { document.querySelectorAll('.pipeline-step').forEach(el => { el.classList.remove('active','running'); el.classList.add('error'); el.querySelector('.step-status').textContent = '错误'; }); activePipeline = null; return; } if (type === 'pipeline_step' && step && stepData) { activePipeline[step] = stepData; renderPipelineStep(step, stepData); const el = document.getElementById('step-' + step); el.classList.remove('active','running'); el.classList.add('done'); const order = ['bsr','lsr','llm','exec'], idx = order.indexOf(step) + 1; if (idx < order.length) document.getElementById('step-' + order[idx]).classList.add('active'); else activePipeline = null; } }
-        function resetPipeline() { document.querySelectorAll('.pipeline-step').forEach(el => el.classList.remove('active','done','running','error')); document.querySelectorAll('.step-status').forEach(el => el.textContent = '等待'); document.querySelectorAll('.step-results').forEach(el => el.innerHTML = ''); document.getElementById('decision-card').innerHTML = ''; }
-        function renderPipelineStep(step, data) { const statusEl = document.getElementById('step-' + step), resultsEl = document.getElementById('results-' + step); if (step === 'bsr') { statusEl.querySelector('.step-status').textContent = data.candidates.length + ' 个候选'; if (data.candidates.length) resultsEl.innerHTML = data.candidates.map(c => '<div class="result-item"><span>' + c.action + '</span><span class="result-score">' + (c.score*100).toFixed(1) + '%</span></div>').join(''); } else if (step === 'lsr') { statusEl.querySelector('.step-status').textContent = data.ranked.length + ' 个排序'; if (data.ranked.length) resultsEl.innerHTML = data.ranked.map(r => '<div class="result-item"><span>' + r.action + '</span><span class="result-score">' + (r.score*100).toFixed(1) + '%</span></div>').join(''); } else if (step === 'llm') { const d = data.decision || {}; statusEl.querySelector('.step-status').textContent = d.device ? d.device + ' ' + d.device_action : '未识别意图'; document.getElementById('decision-card').innerHTML = d.device ? '<div class="decision-device">' + d.device + ' / ' + d.device_action + '</div><div class="decision-conf">置信度: ' + (d.confidence*100).toFixed(0) + '%</div>' + (d.reasoning ? '<div style="margin-top:4px;font-style:italic;color:var(--text-mid)">' + d.reasoning + '</div>' : '') : '<div style="font-style:italic;color:var(--text-light)">无匹配决策</div>'; } else if (step === 'exec') { const r = data.result || {}; statusEl.querySelector('.step-status').textContent = r.status === 'success' ? '执行成功' : '无操作'; if (r.status === 'success') resultsEl.innerHTML = '<div class="result-item"><span>' + r.device + ' ' + r.device_action + '</span><span class="result-score selected">DONE</span></div>'; } }
-        function handleMessage(msg) { const {type, data} = msg; switch(type) { case 'connected': updateContext(data.context); updateDevices(data.devices); break; case 'agent_response': showAgentNotification(data.result); addLog(data.result, 'agent'); loadStatus(); break; case 'device_update': updateDeviceState(data.device, data.state); break; case 'scene_update': setActiveScene(data.scene); updateDevices(data.devices); break; case 'agent_clarification': showAgentNotification(data.question); addLog(data.question, 'agent'); break; } }
-        function initDevices() { const tbody = document.getElementById('devices-tbody'); tbody.innerHTML = ''; deviceList.forEach(d => { const r = document.createElement('tr'); r.id = 'device-row-' + d.id; r.innerHTML = '<td class="device-name">' + d.name + '</td><td class="device-state off" id="state-' + d.id + '">关闭</td><td><button class="device-toggle" id="toggle-' + d.id + '" onclick="toggleDevice(\'' + d.id + '\')"></button></td>'; tbody.appendChild(r); }); }
-        function toggleDevice(id) { const t = document.getElementById('toggle-' + id); controlDevice(id, t.classList.contains('on') ? 'off' : 'on'); }
-        function controlDevice(id, action, params) { if (!params) params = {}; socket.emit('message', {type:'device_control', data:{device:id, action:action, params:params}}); addLog(getDeviceName(id) + ': ' + (action === 'on' ? '开启' : '关闭'), 'user'); }
-        function updateDeviceState(id, state) { devices[id] = state; const t = document.getElementById('toggle-' + id), s = document.getElementById('state-' + id); if (state.is_on) { t.classList.add('on'); s.textContent = '开启'; s.className = 'device-state on'; } else { t.classList.remove('on'); s.textContent = '关闭'; s.className = 'device-state off'; } }
-        function updateDevices(states) { Object.entries(states).forEach(function(e) { updateDeviceState(e[0], e[1]); }); }
-        function submitQuery() { const i = document.getElementById('user-input'), q = i.value.trim(); if (!q) return; socket.emit('user_input', {text:q}); addLog(q, 'user'); i.value = ''; }
-        function switchScene(scene) { socket.emit('message', {type:'scene_switch', data:{scene:scene}}); addLog('切换至' + getSceneName(scene), 'user'); setActiveScene(scene); }
-        function setActiveScene(scene) { currentScene = scene; document.querySelectorAll('.scene-item').forEach(item => item.classList.toggle('active', item.dataset.scene === scene)); }
-        function loadStatus() { fetch('http://localhost:5000/api/status').then(r => r.json()).then(d => { updateContext(d.context); updateDevices(d.devices); setActiveScene(d.context.scene); }).catch(e => console.error('加载状态失败:', e)); }
-        function updateContext(ctx) { document.getElementById('current-temp').textContent = ctx.temperature || '--'; document.getElementById('current-humidity').textContent = ctx.humidity || '--'; document.getElementById('current-occupancy').textContent = ctx.occupancy || '--'; }
-        function showAgentNotification(msg) { const n = document.getElementById('agent-notification'); document.getElementById('agent-message').textContent = msg; n.style.display = 'block'; setTimeout(() => { n.style.display = 'none'; }, 5000); }
-        function addLog(msg, type) { const c = document.getElementById('log-messages'), t = new Date().toLocaleTimeString('zh-CN', {hour12:false}), i = document.createElement('div'); i.className = 'log-item log-' + type; i.innerHTML = '<span class="log-time">' + t + '</span><span class="log-' + type + '">' + msg + '</span>'; c.insertBefore(i, c.firstChild); while (c.children.length > 50) c.removeChild(c.lastChild); }
-        function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('visible'); setTimeout(() => t.classList.remove('visible'), 3000); }
-        function getDeviceName(id) { const d = deviceList.find(x => x.id === id); return d ? d.name : id; }
-        function getSceneName(scene) { const n = {sleep:'睡眠模式',entertainment:'观影模式',work:'工作模式',away:'离家模式',morning:'早安模式',evening:'晚归模式'}; return n[scene] || scene; }
+        const scenes = [
+            { id: "sleep", name: "睡眠模式", desc: "关闭灯光、调节温度、安防布控" },
+            { id: "entertainment", name: "观影模式", desc: "调暗灯光、启动电视、音响就绪" },
+            { id: "work", name: "工作模式", desc: "明亮环境、关闭娱乐设备" },
+            { id: "away", name: "离家模式", desc: "全关设备、安防启动" },
+            { id: "morning", name: "早安模式", desc: "窗帘打开、轻柔音乐、温度适宜" },
+            { id: "evening", name: "晚归模式", desc: "门廊亮起、室温预调、氛围灯光" }
+        ];
+
+        const deviceList = [
+            { id: "air_conditioner", name: "空调" },
+            { id: "light", name: "灯光" },
+            { id: "tv", name: "电视" },
+            { id: "water_heater", name: "热水器" },
+            { id: "fan", name: "风扇" },
+            { id: "speaker", name: "音响" },
+            { id: "window", name: "窗户" }
+        ];
+
+        const progressOrder = ["bsr", "lsr", "llm", "exec"];
+        let socket = null;
+        let devices = {};
+        let currentScene = "sleep";
+        let activePipeline = null;
+        let recognition = null;
+        let isListening = false;
+        let toastTimer = null;
+        let currentModal = null;
+
+        function pad(n) { return String(n).padStart(2, "0"); }
+
+        function getTime() {
+            const d = new Date();
+            return pad(d.getHours()) + ":" + pad(d.getMinutes()) + ":" + pad(d.getSeconds());
+        }
+
+        function tick() {
+            document.getElementById("clock").textContent = getTime();
+        }
+
+        function autoResize() {
+            const box = document.getElementById("inputBox");
+            box.style.height = "40px";
+            box.style.height = Math.min(box.scrollHeight, 120) + "px";
+        }
+
+        function escapeHtml(text) {
+            return String(text)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/\n/g, "<br>");
+        }
+
+        function addMsg(role, html, tag) {
+            const el = document.createElement("div");
+            el.className = "msg " + role;
+            el.innerHTML = `
+                <div class="bubble">
+                    ${escapeHtml(html)}
+                    ${tag ? `<span class="action-tag">${tag}</span>` : ""}
+                </div>
+                <div class="msg-time">${getTime()}</div>
+            `;
+            const msgs = document.getElementById("messages");
+            msgs.appendChild(el);
+            msgs.scrollTop = msgs.scrollHeight;
+        }
+
+        function addLog(subject, status) {
+            const log = document.getElementById("log");
+            const line = document.createElement("div");
+            line.className = "log-line";
+            line.textContent = `${getTime()}  ${subject} → ${status}`;
+            log.appendChild(line);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById("toast");
+            toast.textContent = message;
+            toast.classList.add("visible");
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => toast.classList.remove("visible"), 2800);
+        }
+
+        function resetProgress() {
+            progressOrder.forEach((step) => setProgressState(step, "wait"));
+        }
+
+        function setProgressState(step, state) {
+            const label = document.querySelector(`.progress-label[data-step="${step}"]`);
+            const bar = document.querySelector(`.progress-step[data-step="${step}"]`);
+            [label, bar].forEach((el) => {
+                if (!el) return;
+                el.classList.remove("done", "active", "error");
+                if (state !== "wait") {
+                    el.classList.add(state);
+                }
+            });
+        }
+
+        function buildDeviceStatus(deviceId, state) {
+            if (!state || !state.is_on) {
+                return "关闭";
+            }
+            if (deviceId === "air_conditioner" && state.temperature !== undefined) {
+                return `${state.temperature}°C`;
+            }
+            if (deviceId === "light" && state.brightness !== undefined) {
+                return `亮度 ${state.brightness}%`;
+            }
+            return "开启";
+        }
+
+        function getDeviceName(id) {
+            const match = deviceList.find((item) => item.id === id);
+            return match ? match.name : id;
+        }
+
+        function getSceneName(id) {
+            const match = scenes.find((item) => item.id === id);
+            return match ? match.name : id;
+        }
+
+        function updateContext(ctx) {
+            document.getElementById("current-temp").textContent = ctx.temperature ?? "--";
+            document.getElementById("current-humidity").textContent = ctx.humidity ?? "--";
+            document.getElementById("current-occupancy").textContent = ctx.occupancy ?? "--";
+            if (ctx.scene) {
+                currentScene = ctx.scene;
+            }
+            if (currentModal) {
+                renderModal(currentModal);
+            }
+        }
+
+        function updateDeviceState(id, state) {
+            devices[id] = state || {};
+            if (currentModal === "device") {
+                renderModal("device");
+            }
+        }
+
+        function updateDevices(states) {
+            Object.entries(states || {}).forEach(([id, state]) => updateDeviceState(id, state));
+        }
+
+        function sendQuery(query) {
+            socket.emit("user_input", { text: query });
+        }
+
+        function submitQuery() {
+            const box = document.getElementById("inputBox");
+            const val = box.value.trim();
+            if (!val) return;
+            addMsg("user", val);
+            addLog("用户", val);
+            sendQuery(val);
+            box.value = "";
+            autoResize();
+        }
+
+        function handleKey(e) {
+            if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                submitQuery();
+            } else {
+                setTimeout(autoResize, 0);
+            }
+        }
+
+        function openModal(type) {
+            currentModal = type;
+            renderModal(type);
+            document.getElementById("overlay").classList.add("open");
+        }
+
+        function renderModal(type) {
+            const title = document.getElementById("modalTitle");
+            const body = document.getElementById("modalBody");
+            if (type === "scene") {
+                title.textContent = "场景模式";
+                body.innerHTML = `<div class="card-grid">${
+                    scenes.map((scene) => `
+                        <div class="scene-card ${currentScene === scene.id ? "active" : ""}" data-scene-id="${scene.id}">
+                            <div class="scene-card-name">${scene.name}</div>
+                            <div class="scene-card-desc">${scene.desc}</div>
+                        </div>
+                    `).join("")
+                }</div>`;
+                body.querySelectorAll(".scene-card").forEach((card) => {
+                    card.addEventListener("click", () => {
+                        const sceneId = card.dataset.sceneId;
+                        switchScene(sceneId);
+                        closeOverlay();
+                    });
+                });
+            } else {
+                title.textContent = "设备控制";
+                body.innerHTML = `<div class="card-grid">${
+                    deviceList.map((device) => {
+                        const state = devices[device.id] || {};
+                        return `
+                            <div class="device-card">
+                                <div>
+                                    <div class="device-name">${device.name}</div>
+                                    <div class="device-status">${buildDeviceStatus(device.id, state)}</div>
+                                </div>
+                                <button class="toggle ${state.is_on ? "on" : ""}" data-device-id="${device.id}"></button>
+                            </div>
+                        `;
+                    }).join("")
+                }</div>`;
+                body.querySelectorAll(".toggle").forEach((toggle) => {
+                    toggle.addEventListener("click", () => {
+                        const id = toggle.dataset.deviceId;
+                        const state = devices[id] || {};
+                        controlDevice(id, state.is_on ? "off" : "on");
+                    });
+                });
+            }
+        }
+
+        function switchScene(scene) {
+            socket.emit("message", { type: "scene_switch", data: { scene } });
+            currentScene = scene;
+            addLog("场景", getSceneName(scene));
+        }
+
+        function controlDevice(deviceId, action) {
+            socket.emit("message", { type: "device_control", data: { device: deviceId, action, params: {} } });
+        }
+
+        function closeModal(e) {
+            if (e.target === document.getElementById("overlay")) {
+                closeOverlay();
+            }
+        }
+
+        function closeOverlay() {
+            document.getElementById("overlay").classList.remove("open");
+            currentModal = null;
+        }
+
+        function initVoiceRecognition() {
+            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SR) {
+                return;
+            }
+            recognition = new SR();
+            recognition.lang = "zh-CN";
+            recognition.continuous = false;
+            recognition.interimResults = true;
+            recognition.onstart = () => {
+                isListening = true;
+                document.getElementById("mic-btn").classList.add("listening");
+            };
+            recognition.onresult = (e) => {
+                const transcript = Array.from(e.results).map((result) => result[0].transcript).join("");
+                if (transcript) {
+                    document.getElementById("inputBox").value = transcript.trim();
+                    autoResize();
+                }
+            };
+            recognition.onerror = () => showToast("语音识别出错，请重试");
+            recognition.onend = () => {
+                isListening = false;
+                document.getElementById("mic-btn").classList.remove("listening");
+            };
+        }
+
+        function toggleVoiceInput() {
+            if (!recognition) {
+                showToast("当前浏览器不支持语音识别");
+                return;
+            }
+            if (isListening) {
+                recognition.stop();
+            } else {
+                try {
+                    recognition.start();
+                } catch (e) {
+                    showToast("语音识别暂不可用");
+                }
+            }
+        }
+
+        function handlePipelineUpdate(msg) {
+            const { type, data } = msg;
+            if (type === "pipeline_start") {
+                activePipeline = data.steps || {};
+                resetProgress();
+                setProgressState("bsr", "active");
+                return;
+            }
+            if (type === "pipeline_error") {
+                progressOrder.forEach((step) => setProgressState(step, "error"));
+                activePipeline = null;
+                return;
+            }
+            if (type !== "pipeline_step" || !data.step) {
+                return;
+            }
+            activePipeline = activePipeline || {};
+            activePipeline[data.step] = data.data || {};
+            const currentIndex = progressOrder.indexOf(data.step);
+            progressOrder.forEach((step, index) => {
+                if (index < currentIndex || index === currentIndex) {
+                    setProgressState(step, "done");
+                } else if (index === currentIndex + 1) {
+                    setProgressState(step, "active");
+                } else {
+                    setProgressState(step, "wait");
+                }
+            });
+            if (data.step === "exec") {
+                activePipeline = null;
+            }
+        }
+
+        function handleMessage(msg) {
+            const { type, data } = msg;
+            switch (type) {
+                case "connected":
+                    updateContext(data.context || {});
+                    updateDevices(data.devices || {});
+                    break;
+                case "agent_response":
+                    addMsg("ai", data.result, "执行完成");
+                    addLog("系统", data.result);
+                    loadStatus();
+                    break;
+                case "agent_clarification":
+                    addMsg("ai", data.question, "需要澄清");
+                    addLog("系统", data.question);
+                    break;
+                case "device_update":
+                    updateDeviceState(data.device, data.state);
+                    addLog(getDeviceName(data.device), buildDeviceStatus(data.device, data.state));
+                    break;
+                case "scene_update":
+                    currentScene = data.scene;
+                    updateDevices(data.devices || {});
+                    addLog("场景", getSceneName(data.scene));
+                    if (currentModal === "scene") {
+                        renderModal("scene");
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        function initWebSocket() {
+            socket = io("http://localhost:5000");
+            socket.on("connect", () => addLog("系统", "连接已建立"));
+            socket.on("disconnect", () => addLog("系统", "连接已断开"));
+            socket.on("message", handleMessage);
+            socket.on("pipeline_update", handlePipelineUpdate);
+        }
+
+        function loadStatus() {
+            fetch("http://localhost:5000/api/status")
+                .then((r) => r.json())
+                .then((data) => {
+                    updateContext(data.context || {});
+                    updateDevices(data.devices || {});
+                })
+                .catch(() => showToast("加载状态失败"));
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            tick();
+            setInterval(tick, 1000);
+            document.getElementById("boot-time").textContent = getTime();
+            resetProgress();
+            autoResize();
+            initVoiceRecognition();
+            initWebSocket();
+            loadStatus();
+        });
     </script>
 </body>
 </html>

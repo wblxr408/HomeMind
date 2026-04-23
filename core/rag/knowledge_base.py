@@ -65,7 +65,7 @@ class KnowledgeBase:
             self._collection = None
 
     def _init_preset_kb(self) -> List[Dict]:
-        ""预置知识库：家用电器使用常识、健康建议、家庭常见场景规则""
+        """预置知识库：家用电器使用常识、健康建议、家庭常见场景规则"""
         return [
             {"id": "preset_01", "content": "室内温度超过28°C时，打开空调降温效果最好", "category": "健康建议", "accepted": True},
             {"id": "preset_02", "content": "湿度超过70%时人会感到闷热不适，应开启除湿或制冷", "category": "健康建议", "accepted": True},
@@ -80,10 +80,10 @@ class KnowledgeBase:
         ]
 
     def query(self, text: str, top_k: int = 3, category: Optional[str] = None) -> List[Dict]:
-        ""检索相关知识，优先用户积累 > 预置知识""
+        """检索相关知识，优先用户积累 > 预置知识"""
         results = []
 
-        user_results = self._search_memory(text, top_k)
+        user_results = self._search_memory(text, top_k, category)
         results.extend(user_results)
 
         if len(results) < top_k:
@@ -92,46 +92,53 @@ class KnowledgeBase:
 
         return results[:top_k]
 
-    def _search_memory(self, text: str, top_k: int) -> List[Dict]:
-        ""在用户积累知识中检索""
+    def _search_memory(self, text: str, top_k: int, category: Optional[str] = None) -> List[Dict]:
+        """在用户积累知识中检索"""
         if self._collection is not None:
             try:
                 emb = self._get_embedding(text)
                 results = self._collection.query(query_embeddings=[emb], n_results=top_k)
                 docs = results.get("documents", [[]])[0]
                 metas = results.get("metadatas", [[]])[0]
-                return [{"content": d, **m} for d, m in zip(docs, metas)]
+                records = [{"content": d, **m} for d, m in zip(docs, metas)]
+                if category is not None:
+                    records = [record for record in records if record.get("category") == category]
+                return records[:top_k]
             except Exception as e:
                 logger.warning(f"ChromaDB 检索失败: {e}")
 
         model = get_model()
         if model is not None:
-            return self._vector_search_memory(text, top_k, model)
-        return self._keyword_search(self.memory_store, text, top_k)
+            return self._vector_search_memory(text, top_k, model, category)
+        return self._keyword_search(self.memory_store, text, top_k, category)
 
-    def _vector_search_memory(self, text: str, top_k: int, model) -> List[Dict]:
-        ""基于 MiniLM 向量相似度搜索用户积累""
+    def _vector_search_memory(self, text: str, top_k: int, model, category: Optional[str] = None) -> List[Dict]:
+        """基于 MiniLM 向量相似度搜索用户积累"""
         import numpy as np
-        if not self.memory_store:
+        pool = [
+            item for item in self.memory_store
+            if category is None or item.get("category") == category
+        ]
+        if not pool:
             return []
-        texts = [item["content"] for item in self.memory_store]
+        texts = [item["content"] for item in pool]
         query_emb = encode(text)
         if isinstance(query_emb, list):
             query_emb = np.array(query_emb)
         doc_embs = encode(texts)
         sims = np.dot(doc_embs, query_emb)
         top_indices = np.argsort(sims)[-top_k:][::-1]
-        return [self.memory_store[i] for i in top_indices if sims[i] > 0.1]
+        return [pool[i] for i in top_indices if sims[i] > 0.1]
 
     def _search_preset(self, text: str, top_k: int, category: Optional[str] = None) -> List[Dict]:
-        ""在预置知识库中检索""
+        """在预置知识库中检索"""
         model = get_model()
         if model is not None:
             return self._vector_search_preset(text, top_k, category, model)
         return self._keyword_search(self.preset_knowledge, text, top_k, category)
 
     def _vector_search_preset(self, text: str, top_k: int, category: Optional[str], model) -> List[Dict]:
-        ""基于 MiniLM 向量相似度搜索预置知识""
+        """基于 MiniLM 向量相似度搜索预置知识"""
         import numpy as np
         pool = [item for item in self.preset_knowledge
                 if category is None or item.get("category") == category]
@@ -148,7 +155,7 @@ class KnowledgeBase:
 
     def _keyword_search(self, pool: List[Dict], text: str, top_k: int,
                         category: Optional[str] = None) -> List[Dict]:
-        ""关键词精确匹配兜底搜索""
+        """关键词精确匹配兜底搜索"""
         scored = []
         text_lower = text.lower()
         for item in pool:
@@ -161,14 +168,17 @@ class KnowledgeBase:
         return [item for _, item in scored[:top_k]]
 
     def _get_embedding(self, text: str) -> List[float]:
-        ""获取文本向量（使用统一 Embedding 服务）""
-        emb = encode(text)
+        """获取文本向量（使用统一 Embedding 服务）"""
+        if self.embedding_fn is not None:
+            emb = self.embedding_fn(text)
+        else:
+            emb = encode(text)
         if isinstance(emb, list):
             return emb
         return emb.tolist()
 
     def add(self, content: str, category: str = "用户习惯", accepted: bool = True, **metadata) -> bool:
-        ""添加新知识到积累库""
+        """添加新知识到积累库"""
         record = {
             "content": content,
             "category": category,
@@ -193,7 +203,7 @@ class KnowledgeBase:
         return True
 
     def update_feedback(self, original_query: str, action: str, feedback: str) -> bool:
-        ""更新反馈：用户纠正记录写入知识库，形成 RAG 闭环""
+        """更新反馈：用户纠正记录写入知识库，形成 RAG 闭环"""
         feedback_map = {
             "接受": "positive",
             "忽略": "neutral",
@@ -207,10 +217,10 @@ class KnowledgeBase:
         return True
 
     def get_context_prompt(self, user_query: str, context) -> str:
-        ""
+        """
         构建 RAG 增强的上下文提示，供 LLM 决策使用
         将检索到的相关知识拼入 Prompt，提升回答可信度
-        ""
+        """
         knowledge = self.query(user_query, top_k=3)
 
         if not knowledge:
@@ -225,10 +235,10 @@ class KnowledgeBase:
         return "\n".join(context_lines)
 
     def get_user_preference_score(self, candidate_action: str, context) -> float:
-        ""
+        """
         获取用户历史偏好得分（供 LSR 使用）
         返回 0.0~1.0 的偏好置信度
-        ""
+        """
         score = 0.5
         history = self.query(candidate_action, top_k=3, category="用户习惯")
         if history:
@@ -240,7 +250,7 @@ class KnowledgeBase:
         return len(self.memory_store) + len(self.preset_knowledge)
 
     def backup(self, path: str = None) -> bool:
-        ""加密备份知识库""
+        """加密备份知识库"""
         if path is None:
             path = os.path.join(DATA_DIR, "kb_backup.enc")
         data = {
@@ -253,7 +263,7 @@ class KnowledgeBase:
         return success
 
     def restore(self, path: str = None) -> bool:
-        ""从加密备份恢复知识库""
+        """从加密备份恢复知识库"""
         if path is None:
             path = os.path.join(DATA_DIR, "kb_backup.enc")
         data = self._storage.load_pickle(path)
