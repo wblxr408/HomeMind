@@ -23,6 +23,28 @@ def load_protocol_config():
     return {}
 
 
+def init_protocol_gateway(mode: str):
+    """Initialize protocol gateway based on mode"""
+    if mode == "simulated":
+        from demo.device_simulator import DeviceSimulator
+        return DeviceSimulator()
+    elif mode == "real":
+        # Try to initialize real protocol gateway
+        from core.protocols.smart_home_gateway import SmartHomeGateway
+        try:
+            gateway = SmartHomeGateway()
+            gateway.discover_devices()
+            return gateway
+        except Exception as e:
+            print(f"[警告] 真实设备网关初始化失败: {e}")
+            print("[回退] 使用模拟设备模式")
+            from demo.device_simulator import DeviceSimulator
+            return DeviceSimulator()
+    else:
+        from demo.device_simulator import DeviceSimulator
+        return DeviceSimulator()
+
+
 def main():
     parser = argparse.ArgumentParser(description="HomeMind 中央指令器")
     parser.add_argument("--host", default="0.0.0.0", help="服务地址")
@@ -32,6 +54,9 @@ def main():
                        help="运行模式: simulated=模拟设备, real=真实设备")
     args = parser.parse_args()
 
+    # 设置模式环境变量，供 server.py 使用
+    os.environ["HOMEMIND_MODE"] = args.mode
+
     print("=" * 50)
     print("  HomeMind 中央指令器")
     print("=" * 50)
@@ -40,8 +65,11 @@ def main():
     print(f"  地址: http://{args.host}:{args.port}")
     print()
 
-    # 初始化 Agent
-    init_agent()
+    # 初始化协议网关
+    protocol_gateway = init_protocol_gateway(args.mode)
+
+    # 初始化 Agent（传入协议网关）
+    init_agent(mode=args.mode, protocol_gateway=protocol_gateway)
 
     print()
     print("  控制面板: http://localhost:5000")

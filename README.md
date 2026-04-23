@@ -1,4 +1,4 @@
-# HomeMind: 家庭端侧模糊意图理解智能体
+﻿# HomeMind: 家庭端侧模糊意图理解智能体
 
 **赛题方向：** 兴享智家（2026中兴捧月）  
 **提交语言：** Python  
@@ -163,7 +163,30 @@ python main.py
 像昨天晚上那样
 ```
 
-### 运行场景演示脚本
+
+## 语音输入
+
+HomeMind 支持语音输入功能，集成在 Web 控制面板中：
+
+### 浏览器端语音识别（已实现）
+- 使用浏览器 Web Speech API 进行语音识别
+- 支持中文语音输入（zh-CN）
+- 点击麦克风按钮开始聆听
+- 实时显示识别结果
+- 识别完成后自动提交
+
+**支持的浏览器**：Chrome、Edge（需要麦克风权限）
+
+### 服务器端语音识别（预留）
+- 未来计划支持 faster-whisper 进行本地语音转文字
+- 当前 `web/server.py` 已预留 `/api/voice/transcribe` 接口
+- 如需启用，请安装 faster-whisper：`pip install faster-whisper`
+
+```
+# requirements-web.txt 中预留
+# faster-whisper  # Server-side transcription (future)
+```
+(### 运行场景演示脚本)
 
 ```python
 from demo.simulator import InteractionDemo
@@ -342,3 +365,4 @@ DQN推理  状态向量 → Q值输出 → ε-greedy 选择
 - **梯度修复**：DQN 策略网络现在能正确学习，历史反馈将有效更新 Q 值
 - **场景覆盖**：回家模式的场景模拟和 LLM 决策链路完全打通
 - **健壮性**：单次 process 调用中任一工具失败不会导致整个流程崩溃
+

@@ -1,4 +1,4 @@
-"""
+﻿"""
 HomeMind Web 服务 - 中央指令器
 提供 REST API 和 WebSocket 接口，连接智能家居 Agent 与前端控制面板
 """
@@ -42,12 +42,14 @@ frontend_queue = Queue()
 # 全局 Agent 实例
 agent = None
 device_simulator = None
+protocol_gateway = None
 
 
 class HomeMindWebAgent:
     """支持 Web 接口的 HomeMind Agent"""
     
-    def __init__(self):
+    def __init__(self, protocol_gateway=None):
+        self._gateway = protocol_gateway
         self._init_components()
         self._start_agent_loop()
     
@@ -66,8 +68,8 @@ class HomeMindWebAgent:
         self.device_simulator = DeviceSimulator()
         self.simulator = self.device_simulator
         
-        # 初始化工具
-        self.device_control = device_ctrl.DeviceController()
+        # 初始化工具（传入协议网关）
+        self.device_control = device_ctrl.DeviceController(protocol_gateway=self._gateway)
         self.info_query = info_query.InfoQuery()
         self.scene_switcher = scene_switch.SceneSwitcher(self.device_control)
         
@@ -113,7 +115,6 @@ class HomeMindWebAgent:
         
         try:
             self.dqn = DQNPolicy()
-            # DQNPolicy 初始化时自动加载模型
             self.dqn_fb = DQNFeedbackTool(self.dqn)
             print("[初始化] DQN 策略模块已加载")
         except Exception as e:
@@ -211,7 +212,7 @@ class HomeMindWebAgent:
                     return
 
                 # Step 3: LLM 决策
-                decision = self.llm.decide(user_text, ranked, self.context)
+                decision = self.llm.decide(user_text, ranked, self.context, rag_context="")
                 device = decision.get("device", "")
                 device_action = decision.get("device_action", "")
                 params = decision.get("params", {})
@@ -379,12 +380,10 @@ class HomeMindWebAgent:
         scene_id = data.get("scene")
         scene = self.SCENE_ID_MAP.get(scene_id, scene_id)
         
-        # 通过 BSR 获取场景相关知识（用中文名检索）
         if self.bsr:
-            candidates = self.bsr.recall(f"切换到{scene}场景", self.context, top_k=3)
+            self.bsr.recall(f"切换到{scene}场景", self.context, top_k=3)
         
         self.scene_switcher.switch(scene)
-        # context 存英文ID，保持前后端一致
         self.context.current_scene = scene_id
         
         socketio.emit("message", {
@@ -398,11 +397,10 @@ class HomeMindWebAgent:
     def _handle_dqn_response(self, data: dict):
         """处理用户对 DQN 推荐的响应"""
         recommendation_id = data.get("id", "")
-        response = data.get("response", "")  # accept / reject / ignore
+        response = data.get("response", "")
         user_input = data.get("user_input", "")
         
-        # 从推荐ID提取场景动作（格式: dqn_<timestamp>_<action>）
-        action = 5  # 默认"无推荐"
+        action = 5
         parts = recommendation_id.rsplit("_", 1)
         if len(parts) == 2:
             try:
@@ -415,7 +413,6 @@ class HomeMindWebAgent:
     
     def _execute_action(self, action: str):
         """执行动作"""
-        # 解析动作字符串，如 "ac_on_26" -> 空调开到26度
         if "ac" in action:
             if "on" in action:
                 temp = int(action.split("_")[-1]) if "_" in action else 26
@@ -451,7 +448,6 @@ class HomeMindWebAgent:
     def get_all_states(self) -> dict:
         """获取所有状态，返回前端统一的设备格式"""
         raw_states = self.device_control.get_all_state()
-        # 转换为 { deviceId: { is_on, ... } } 格式
         devices = {}
         for dev_id, dev_name in self.DEVICE_ID_MAP.items():
             raw = raw_states.get(dev_name, {})
@@ -487,7 +483,7 @@ class HomeMindWebAgent:
             ranked = self.lsr.rank(candidates, query, self.context)
             
             if ranked:
-                decision = self.llm.decide(query, ranked, self.context)
+                decision = self.llm.decide(query, ranked, self.context, rag_context="")
                 
                 device = decision.get("device", "")
                 device_action = decision.get("device_action", "")
@@ -666,6 +662,31 @@ def kb_add():
     return jsonify({"error": "Agent 未初始化"}), 500
 
 
+@app.route("/api/gateway/status", methods=["GET"])
+def gateway_status():
+    """获取协议网关状态"""
+    if protocol_gateway:
+        return jsonify({
+            "status": "success",
+            "gateway": protocol_gateway.get_status_info()
+        })
+    return jsonify({
+        "status": "success",
+        "gateway": {"connected": False, "mode": "simulated"}
+    })
+
+
+
+@app.route("/api/voice/transcribe", methods=["POST"])
+def voice_transcribe():
+    """"语音转文字接口（预留，未来支持 faster-whisper）"""""
+    # 目前使用浏览器端 Web Speech API 进行语音识别
+    # 此接口为未来服务器端语音识别预留
+    return jsonify({
+        "error": "服务器端语音识别尚未配置",
+        "hint": "前端已使用浏览器 Web Speech API 进行语音识别",
+        "status": "browser_only"
+    }), 501
 # ==================== WebSocket 事件 ====================
 
 @socketio.on("connect")
@@ -692,7 +713,6 @@ def on_message(data):
     
     if agent:
         agent_queue.put(data)
-        # 直接响应（用于同步操作）
         if data.get("type") == "device_control":
             device_id = data.get("data", {}).get("device")
             emit("message", {
@@ -713,10 +733,18 @@ def on_user_input(data):
 
 # ==================== 主程序 ====================
 
-def init_agent():
+def init_agent(mode: str = None, protocol_gateway=None):
     """初始化全局 Agent"""
     global agent, device_simulator
-    agent = HomeMindWebAgent()
+
+    # 从环境变量读取模式（如果未指定）
+    if mode is None:
+        mode = os.environ.get("HOMEMIND_MODE", "simulated")
+
+
+    print(f"[初始化] Agent 模式: {mode}")
+
+    agent = HomeMindWebAgent(protocol_gateway=protocol_gateway)
     device_simulator = agent.device_simulator
 
 
@@ -884,8 +912,11 @@ if __name__ == "__main__":
     print("  Web 控制面板 + 智能家居协议支持")
     print("=" * 50)
     
+    # 从环境变量读取模式
+    mode = os.environ.get("HOMEMIND_MODE", "simulated")
+    
     # 初始化 Agent
-    init_agent()
+    init_agent(mode=mode)
     
     # 启动服务
     print("\n[启动] Web 服务运行在 http://localhost:5000")

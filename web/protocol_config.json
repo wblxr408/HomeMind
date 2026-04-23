@@ -1,252 +1,32 @@
 {
-  "gateway": {
-    "name": "HomeMind Smart Home Gateway",
-    "version": "1.0.0"
-  },
-  "protocols": {
     "simulated": {
-      "enabled": true,
-      "name": "模拟协议",
-      "description": "用于测试和演示的模拟设备",
-      "config": {}
-    },
-    "mqtt": {
-      "enabled": false,
-      "name": "MQTT 协议",
-      "description": "通用物联网协议，支持多种设备",
-      "config": {
-        "broker_host": "localhost",
-        "broker_port": 1883,
-        "username": "",
-        "password": "",
-        "topics": {
-          "command": "home/device/{device_id}/command",
-          "state": "home/device/{device_id}/state",
-          "discovery": "home/device/discovery"
-        }
-      }
-    },
-    "home_assistant": {
-      "enabled": false,
-      "name": "Home Assistant",
-      "description": "开源智能家居平台",
-      "config": {
-        "host": "http://localhost:8123",
-        "token": "your-long-lived-access-token",
-        "ssl_verify": true
-      }
-    },
-    "xiaomi": {
-      "enabled": false,
-      "name": "小米米家",
-      "description": "小米智能家居生态",
-      "config": {
-        "server_ip": "192.168.1.1",
-        "server_port": 54321,
-        "token": "",
-        "devices": []
-      }
-    },
-    "tuya": {
-      "enabled": false,
-      "name": "涂鸦智能",
-      "description": "涂鸦智能家居平台",
-      "config": {
-        "api_key": "",
-        "api_secret": "",
-        "device_id": "",
-        "region": "cn"
-      }
+        "enabled": true,
+        "description": "Simulation mode - no real devices"
     },
     "matter": {
-      "enabled": false,
-      "name": "Matter",
-      "description": "新一代智能家居标准协议",
-      "config": {
+        "enabled": false,
         "controller_ip": "192.168.1.100",
-        "controller_port": 5580,
-        "commissioning_timeout": 120
-      }
+        "port": 5580,
+        "description": "Matter protocol controller"
+    },
+    "mqtt": {
+        "enabled": false,
+        "broker": "192.168.1.100",
+        "port": 1883,
+        "username": "",
+        "password": "",
+        "description": "MQTT broker for smart home devices"
+    },
+    "xiaomi": {
+        "enabled": false,
+        "gateway_ip": "192.168.1.50",
+        "did": "",
+        "description": "Xiaomi Mi Home gateway"
+    },
+    "home_assistant": {
+        "enabled": false,
+        "url": "http://192.168.1.200:8123",
+        "token": "",
+        "description": "Home Assistant API"
     }
-  },
-  "devices": [
-    {
-      "id": "air_conditioner",
-      "name": "客厅空调",
-      "type": "air_conditioner",
-      "room": "living_room",
-      "protocol": "simulated",
-      "capabilities": {
-        "on_off": true,
-        "temperature": true,
-        "mode": ["cool", "heat", "fan", "dry"],
-        "temperature_range": [16, 30]
-      }
-    },
-    {
-      "id": "light_living",
-      "name": "客厅灯光",
-      "type": "light",
-      "room": "living_room",
-      "protocol": "simulated",
-      "capabilities": {
-        "on_off": true,
-        "brightness": true,
-        "brightness_range": [0, 100],
-        "color": false
-      }
-    },
-    {
-      "id": "light_bedroom",
-      "name": "卧室灯光",
-      "type": "light",
-      "room": "bedroom",
-      "protocol": "simulated",
-      "capabilities": {
-        "on_off": true,
-        "brightness": true,
-        "brightness_range": [0, 100]
-      }
-    },
-    {
-      "id": "tv",
-      "name": "客厅电视",
-      "type": "tv",
-      "room": "living_room",
-      "protocol": "simulated",
-      "capabilities": {
-        "on_off": true,
-        "volume": true,
-        "source": true
-      }
-    },
-    {
-      "id": "water_heater",
-      "name": "热水器",
-      "type": "water_heater",
-      "room": "bathroom",
-      "protocol": "simulated",
-      "capabilities": {
-        "on_off": true,
-        "temperature": true,
-        "temperature_range": [35, 75]
-      }
-    },
-    {
-      "id": "fan",
-      "name": "卧室风扇",
-      "type": "fan",
-      "room": "bedroom",
-      "protocol": "simulated",
-      "capabilities": {
-        "on_off": true,
-        "speed": true,
-        "speed_range": [1, 3],
-        "oscillation": true
-      }
-    },
-    {
-      "id": "speaker",
-      "name": "智能音响",
-      "type": "speaker",
-      "room": "living_room",
-      "protocol": "simulated",
-      "capabilities": {
-        "on_off": true,
-        "volume": true,
-        "play": true
-      }
-    },
-    {
-      "id": "window",
-      "name": "客厅窗户",
-      "type": "window",
-      "room": "living_room",
-      "protocol": "simulated",
-      "capabilities": {
-        "open_close": true,
-        "position": false
-      }
-    }
-  ],
-  "scenes": [
-    {
-      "id": "sleep",
-      "name": "睡眠模式",
-      "icon": "😴",
-      "description": "关闭灯光、调低温度、启用安防",
-      "devices": [
-        { "id": "light_living", "action": "off" },
-        { "id": "light_bedroom", "action": "off" },
-        { "id": "tv", "action": "off" },
-        { "id": "speaker", "action": "off" },
-        { "id": "air_conditioner", "action": "adjust", "params": { "temperature": 24 } }
-      ]
-    },
-    {
-      "id": "entertainment",
-      "name": "观影模式",
-      "icon": "🎬",
-      "description": "调暗灯光、打开电视、调整音响",
-      "devices": [
-        { "id": "light_living", "action": "adjust", "params": { "brightness": 20 } },
-        { "id": "tv", "action": "on" },
-        { "id": "speaker", "action": "on" },
-        { "id": "window", "action": "off" }
-      ]
-    },
-    {
-      "id": "work",
-      "name": "工作模式",
-      "icon": "💼",
-      "description": "明亮灯光、关闭电视、启动空调",
-      "devices": [
-        { "id": "light_living", "action": "on", "params": { "brightness": 100 } },
-        { "id": "light_bedroom", "action": "on", "params": { "brightness": 100 } },
-        { "id": "tv", "action": "off" },
-        { "id": "speaker", "action": "off" },
-        { "id": "air_conditioner", "action": "on", "params": { "temperature": 24 } }
-      ]
-    },
-    {
-      "id": "away",
-      "name": "离家模式",
-      "icon": "🚗",
-      "description": "关闭所有设备、启用安防",
-      "devices": [
-        { "id": "light_living", "action": "off" },
-        { "id": "light_bedroom", "action": "off" },
-        { "id": "tv", "action": "off" },
-        { "id": "speaker", "action": "off" },
-        { "id": "air_conditioner", "action": "off" },
-        { "id": "water_heater", "action": "off" },
-        { "id": "window", "action": "off" }
-      ]
-    },
-    {
-      "id": "morning",
-      "name": "早安模式",
-      "icon": "🌅",
-      "description": "打开窗帘、播放音乐、启动咖啡机",
-      "devices": [
-        { "id": "light_living", "action": "on", "params": { "brightness": 80 } },
-        { "id": "light_bedroom", "action": "on", "params": { "brightness": 60 } },
-        { "id": "window", "action": "on" },
-        { "id": "speaker", "action": "on" },
-        { "id": "air_conditioner", "action": "adjust", "params": { "temperature": 26 } }
-      ]
-    },
-    {
-      "id": "evening",
-      "name": "晚归模式",
-      "icon": "🌙",
-      "description": "打开门廊灯、调节室温、播放轻音乐",
-      "devices": [
-        { "id": "light_living", "action": "on", "params": { "brightness": 40 } },
-        { "id": "window", "action": "off" },
-        { "id": "speaker", "action": "on" },
-        { "id": "air_conditioner", "action": "on", "params": { "temperature": 25 } }
-      ]
-    }
-  ]
 }

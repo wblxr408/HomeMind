@@ -1,4 +1,4 @@
-"""
+﻿"""
 RAG 知识库模块
 ChromaDB 本地向量数据库 + all-MiniLM-L6-v2
 承担双重角色：
@@ -43,6 +43,10 @@ class KnowledgeBase:
         self._client = None
         self._collection = None
         self._init_chroma()
+        
+        # 延迟导入加密存储（避免循环导入）
+        from core.security import get_encrypted_storage
+        self._storage = get_encrypted_storage()
 
     def _init_chroma(self):
         if not CHROMA_AVAILABLE:
@@ -61,7 +65,7 @@ class KnowledgeBase:
             self._collection = None
 
     def _init_preset_kb(self) -> List[Dict]:
-        """预置知识库：家用电器使用常识、健康建议、家庭常见场景规则"""
+        ""预置知识库：家用电器使用常识、健康建议、家庭常见场景规则""
         return [
             {"id": "preset_01", "content": "室内温度超过28°C时，打开空调降温效果最好", "category": "健康建议", "accepted": True},
             {"id": "preset_02", "content": "湿度超过70%时人会感到闷热不适，应开启除湿或制冷", "category": "健康建议", "accepted": True},
@@ -76,7 +80,7 @@ class KnowledgeBase:
         ]
 
     def query(self, text: str, top_k: int = 3, category: Optional[str] = None) -> List[Dict]:
-        """检索相关知识，优先用户积累 > 预置知识"""
+        ""检索相关知识，优先用户积累 > 预置知识""
         results = []
 
         user_results = self._search_memory(text, top_k)
@@ -89,7 +93,7 @@ class KnowledgeBase:
         return results[:top_k]
 
     def _search_memory(self, text: str, top_k: int) -> List[Dict]:
-        """在用户积累知识中检索"""
+        ""在用户积累知识中检索""
         if self._collection is not None:
             try:
                 emb = self._get_embedding(text)
@@ -106,7 +110,7 @@ class KnowledgeBase:
         return self._keyword_search(self.memory_store, text, top_k)
 
     def _vector_search_memory(self, text: str, top_k: int, model) -> List[Dict]:
-        """基于 MiniLM 向量相似度搜索用户积累"""
+        ""基于 MiniLM 向量相似度搜索用户积累""
         import numpy as np
         if not self.memory_store:
             return []
@@ -120,14 +124,14 @@ class KnowledgeBase:
         return [self.memory_store[i] for i in top_indices if sims[i] > 0.1]
 
     def _search_preset(self, text: str, top_k: int, category: Optional[str] = None) -> List[Dict]:
-        """在预置知识库中检索"""
+        ""在预置知识库中检索""
         model = get_model()
         if model is not None:
             return self._vector_search_preset(text, top_k, category, model)
         return self._keyword_search(self.preset_knowledge, text, top_k, category)
 
     def _vector_search_preset(self, text: str, top_k: int, category: Optional[str], model) -> List[Dict]:
-        """基于 MiniLM 向量相似度搜索预置知识"""
+        ""基于 MiniLM 向量相似度搜索预置知识""
         import numpy as np
         pool = [item for item in self.preset_knowledge
                 if category is None or item.get("category") == category]
@@ -144,7 +148,7 @@ class KnowledgeBase:
 
     def _keyword_search(self, pool: List[Dict], text: str, top_k: int,
                         category: Optional[str] = None) -> List[Dict]:
-        """关键词精确匹配兜底搜索"""
+        ""关键词精确匹配兜底搜索""
         scored = []
         text_lower = text.lower()
         for item in pool:
@@ -157,14 +161,14 @@ class KnowledgeBase:
         return [item for _, item in scored[:top_k]]
 
     def _get_embedding(self, text: str) -> List[float]:
-        """获取文本向量（使用统一 Embedding 服务）"""
+        ""获取文本向量（使用统一 Embedding 服务）""
         emb = encode(text)
         if isinstance(emb, list):
             return emb
         return emb.tolist()
 
     def add(self, content: str, category: str = "用户习惯", accepted: bool = True, **metadata) -> bool:
-        """添加新知识到积累库"""
+        ""添加新知识到积累库""
         record = {
             "content": content,
             "category": category,
@@ -189,7 +193,7 @@ class KnowledgeBase:
         return True
 
     def update_feedback(self, original_query: str, action: str, feedback: str) -> bool:
-        """更新反馈：用户纠正记录写入知识库，形成 RAG 闭环"""
+        ""更新反馈：用户纠正记录写入知识库，形成 RAG 闭环""
         feedback_map = {
             "接受": "positive",
             "忽略": "neutral",
@@ -203,10 +207,10 @@ class KnowledgeBase:
         return True
 
     def get_context_prompt(self, user_query: str, context) -> str:
-        """
+        ""
         构建 RAG 增强的上下文提示，供 LLM 决策使用
         将检索到的相关知识拼入 Prompt，提升回答可信度
-        """
+        ""
         knowledge = self.query(user_query, top_k=3)
 
         if not knowledge:
@@ -221,10 +225,10 @@ class KnowledgeBase:
         return "\n".join(context_lines)
 
     def get_user_preference_score(self, candidate_action: str, context) -> float:
-        """
+        ""
         获取用户历史偏好得分（供 LSR 使用）
         返回 0.0~1.0 的偏好置信度
-        """
+        ""
         score = 0.5
         history = self.query(candidate_action, top_k=3, category="用户习惯")
         if history:
@@ -234,3 +238,28 @@ class KnowledgeBase:
 
     def count(self) -> int:
         return len(self.memory_store) + len(self.preset_knowledge)
+
+    def backup(self, path: str = None) -> bool:
+        ""加密备份知识库""
+        if path is None:
+            path = os.path.join(DATA_DIR, "kb_backup.enc")
+        data = {
+            "memory_store": self.memory_store,
+            "timestamp": datetime.now().isoformat(),
+        }
+        success = self._storage.save_pickle(data, path)
+        if success:
+            logger.info(f"知识库已加密备份: {path}")
+        return success
+
+    def restore(self, path: str = None) -> bool:
+        ""从加密备份恢复知识库""
+        if path is None:
+            path = os.path.join(DATA_DIR, "kb_backup.enc")
+        data = self._storage.load_pickle(path)
+        if data and "memory_store" in data:
+            self.memory_store = data["memory_store"]
+            logger.info(f"知识库已从备份恢复，共 {len(self.memory_store)} 条记录")
+            return True
+        logger.warning(f"知识库恢复失败或备份文件不存在: {path}")
+        return False
