@@ -6,23 +6,53 @@ import asyncio
 import json
 import threading
 import time
+from copy import deepcopy
 from datetime import datetime
 import os
 
 from flask import Flask, request, jsonify
-from flask_cors import CORS
-from flask_socketio import SocketIO, emit
+try:
+    from flask_cors import CORS
+except ImportError:
+    def CORS(app, resources=None):
+        return app
+try:
+    from flask_socketio import SocketIO, emit
+except ImportError:
+    class SocketIO:
+        def __init__(self, app, cors_allowed_origins="*", async_mode="threading"):
+            self.app = app
+
+        def emit(self, event, data=None):
+            return None
+
+        def on(self, event):
+            def decorator(func):
+                return func
+            return decorator
+
+        def run(self, app, host="127.0.0.1", port=5000, debug=False, allow_unsafe_werkzeug=True):
+            return app.run(host=host, port=port, debug=debug)
+
+    def emit(event, data=None):
+        return None
 from queue import Queue
 
 from core.bsr.candidate_recall import BSRecall
+from core.automation import TAPEngine, TAPRuleStore
+from core.execution import CommandValidator
 from core.lsr.precision_ranking import LSRecify as PrecisionRanking
 from core.llm.decision import LLMDecider as LLMWrapper
 from core.dqn.policy import DQNPolicy
 from core.rag.knowledge_base import KnowledgeBase
 from core.utils.embedding import get_model as get_embedding_model
 from core.language.normalizer import LanguageNormalizer
+from core.memory import PreferenceStore, SessionStore
+from core.privacy import PrivacyRedactor
+from core.router import InferenceRouter
 from core.voice.vosk_asr import VoskASR
 from core.voice.feedback_store import VoiceFeedbackStore
+from core.constants import SCENE_INDEX_MAP
 from demo.context import HomeContext
 from demo.device_simulator import DeviceSimulator
 import tools.device_control as device_ctrl
@@ -55,12 +85,27 @@ class HomeMindWebAgent:
     
     def __init__(self, protocol_gateway=None):
         self._gateway = protocol_gateway
+        self.confidence_threshold = 0.75
         self._init_components()
         self._start_agent_loop()
+        self._start_scheduler_loop()
     
     def _init_components(self):
         """初始化所有组件"""
         print("[初始化] HomeMind Web Agent 组件...")
+
+        self.session_store = SessionStore()
+        self.preference_store = PreferenceStore()
+        self.privacy_redactor = PrivacyRedactor()
+        self.router = InferenceRouter()
+        self.command_validator = CommandValidator()
+        self.tap_engine = TAPEngine()
+        self.tap_rule_store = TAPRuleStore()
+        self.last_cloud_context = {}
+        self.last_route_info = {}
+        self.scheduler_enabled = True
+        self.scheduler_interval = float(os.environ.get("HOMEMIND_RULE_SCHEDULER_INTERVAL", "5"))
+        self._last_rule_fire = {}
         
         # 初始化上下文
         self.context = HomeContext()
@@ -87,6 +132,7 @@ class HomeMindWebAgent:
             self.embedding_model = get_embedding_model()
             embedding_fn = self.embedding_model.encode if self.embedding_model else None
             self.kb = KnowledgeBase(embedding_fn=embedding_fn)
+            self.kb.preference_store = self.preference_store
             self.kb_writer = kb_writer.KBWriter(self.kb)
             print("[初始化] 知识库已加载")
         except Exception as e:
@@ -115,7 +161,13 @@ class HomeMindWebAgent:
             print(f"[警告] LSR 初始化失败: {e}")
         
         try:
-            self.llm = LLMWrapper(backend="mock")
+            self.llm = LLMWrapper(
+                backend=os.environ.get("LLM_BACKEND", "mock"),
+                model_path=os.environ.get("LLM_MODEL_PATH", ""),
+                api_base=os.environ.get("LLM_API_BASE", ""),
+                api_key=os.environ.get("LLM_API_KEY", ""),
+                cloud_model=os.environ.get("LLM_MODEL", ""),
+            )
             print("[初始化] LLM 决策模块已加载")
         except Exception as e:
             print(f"[警告] LLM 初始化失败: {e}")
@@ -127,7 +179,237 @@ class HomeMindWebAgent:
         except Exception as e:
             print(f"[警告] DQN 初始化失败: {e}")
         
+        self._restore_persisted_state()
         print("[初始化] 完成!")
+
+    def _restore_persisted_state(self):
+        current_scene = self.session_store.get_current_scene()
+        if current_scene:
+            self.context.current_scene = current_scene
+            self.context.last_scene = SCENE_INDEX_MAP.get(current_scene, -1)
+
+    def _record_query_context(self, raw_text: str, normalized_text: str):
+        self.session_store.update_from_query(raw_text, normalized_text)
+        if normalized_text and normalized_text != raw_text:
+            self.preference_store.record_feedback(raw_text, normalized_text, "接受")
+
+    def _build_cloud_context(self, candidates):
+        payload = self.privacy_redactor.build_cloud_context(
+            self.context,
+            candidates,
+            session_store=self.session_store,
+            preference_store=self.preference_store,
+        )
+        self.last_cloud_context = payload
+        return payload
+
+    def _record_success(self, decision: dict, result_text: str):
+        route = "cloud" if getattr(self.llm, "backend", "mock") == "openai" else "local"
+        self.session_store.update_from_decision(decision, route=route, result=result_text)
+        self.preference_store.record_action_accept(decision, self.context)
+
+    def _validate_decision(self, decision: dict):
+        return self.command_validator.validate(decision)
+
+    def _execute_structured_command(self, command: dict, route: str = "tap") -> dict:
+        validation = self._validate_decision(command)
+        if not validation["valid"]:
+            return {"status": "invalid", "errors": validation["errors"], "command": command}
+        if validation["requires_confirmation"]:
+            return {"status": "confirmation_required", "command": validation["normalized_command"]}
+
+        normalized = validation["normalized_command"]
+        action_type = normalized.get("action", "")
+        device = normalized.get("device", "")
+        device_action = normalized.get("device_action", "")
+        scene = normalized.get("scene", "")
+        params = normalized.get("params", {})
+
+        if action_type == "设备控制" and device and device_action:
+            message = self.device_control.execute(device, device_action, params)
+            self.session_store.update_from_decision(normalized, route=route, result=message)
+            self.preference_store.record_action_accept(normalized, self.context)
+            return {
+                "status": "success",
+                "action": f"{device}_{device_action}",
+                "response": message,
+                "command": normalized,
+            }
+        if action_type == "场景切换" and scene:
+            message = self.scene_switcher.execute(scene)
+            self.context.current_scene = scene
+            self.context.last_scene = SCENE_INDEX_MAP.get(scene, -1)
+            self.session_store.update_scene(scene)
+            self.session_store.update_from_decision(normalized, route=route, result=message)
+            self.preference_store.record_action_accept(normalized, self.context)
+            return {
+                "status": "success",
+                "action": "scene_switch",
+                "response": message,
+                "command": normalized,
+            }
+        if action_type == "信息查询":
+            result = self.info_query.execute(normalized.get("query_type", "status"), params)
+            return {
+                "status": "success",
+                "action": "info_query",
+                "response": result,
+                "command": normalized,
+            }
+        return {"status": "no_action", "command": normalized}
+
+    def _context_snapshot(self):
+        snapshot = HomeContext()
+        snapshot.hour = self.context.hour
+        snapshot.temperature = self.context.temperature
+        snapshot.humidity = self.context.humidity
+        snapshot.members_home = self.context.members_home
+        snapshot.day_of_week = self.context.day_of_week
+        snapshot.last_scene = self.context.last_scene
+        snapshot.devices = deepcopy(getattr(self.context, "devices", {}))
+        snapshot.current_scene = getattr(self.context, "current_scene", "")
+        return snapshot
+
+    def evaluate_rules(self, execute: bool = False, context_overrides: dict = None, now: datetime = None) -> dict:
+        evaluation_context = self._context_snapshot()
+        for key, value in (context_overrides or {}).items():
+            if hasattr(evaluation_context, key):
+                setattr(evaluation_context, key, value)
+            elif key == "current_scene":
+                evaluation_context.current_scene = value
+
+        matches = self.tap_engine.evaluate(
+            evaluation_context,
+            self.tap_rule_store.list_rules(),
+            now=now,
+        )
+        results = []
+        for item in matches:
+            payload = {
+                "rule": item["rule"],
+                "command": item["command"],
+            }
+            if execute:
+                payload["execution"] = self._execute_structured_command(item["command"], route="tap")
+            results.append(payload)
+        return {"status": "success", "matches": results}
+
+    def _scheduler_fire_key(self, rule: dict, now: datetime) -> str:
+        return f"{rule.get('id', '')}:{now.strftime('%Y-%m-%d %H:%M')}"
+
+    def _scheduler_tick(self, now: datetime = None) -> dict:
+        now = now or datetime.now()
+        if not self.scheduler_enabled:
+            return {"status": "disabled", "executed": []}
+
+        evaluated = self.evaluate_rules(execute=False, now=now)
+        executed = []
+        for item in evaluated.get("matches", []):
+            rule = item.get("rule", {})
+            fire_key = self._scheduler_fire_key(rule, now)
+            if fire_key in self._last_rule_fire:
+                continue
+            execution = self._execute_structured_command(item.get("command", {}), route="tap")
+            self._last_rule_fire[fire_key] = now.isoformat()
+            executed.append({
+                "rule": rule,
+                "command": item.get("command", {}),
+                "execution": execution,
+            })
+            if execution.get("status") == "success":
+                socketio.emit("message", {
+                    "type": "automation_update",
+                    "data": {
+                        "rule": rule.get("name", ""),
+                        "result": execution.get("response", ""),
+                    }
+                })
+
+        stale = []
+        for key, timestamp in self._last_rule_fire.items():
+            try:
+                fired_at = datetime.fromisoformat(timestamp)
+            except ValueError:
+                stale.append(key)
+                continue
+            if (now - fired_at).total_seconds() > 3600:
+                stale.append(key)
+        for key in stale:
+            self._last_rule_fire.pop(key, None)
+
+        return {"status": "success", "executed": executed}
+
+    def _start_scheduler_loop(self):
+        def scheduler_worker():
+            while True:
+                try:
+                    self.context.hour = datetime.now().hour
+                    self._scheduler_tick()
+                    time.sleep(max(1.0, self.scheduler_interval))
+                except Exception as e:
+                    print(f"[Scheduler Error] {e}")
+                    time.sleep(2)
+
+        self.scheduler_thread = threading.Thread(target=scheduler_worker, daemon=True)
+        self.scheduler_thread.start()
+
+    def get_scheduler_status(self) -> dict:
+        return {
+            "status": "success",
+            "enabled": self.scheduler_enabled,
+            "interval_seconds": self.scheduler_interval,
+            "rule_count": len(self.tap_rule_store.list_rules()),
+        }
+
+    def set_scheduler_enabled(self, enabled: bool) -> dict:
+        self.scheduler_enabled = bool(enabled)
+        return self.get_scheduler_status()
+
+    def get_preference_snapshot(self) -> dict:
+        return self.preference_store.snapshot()
+
+    def get_memory_summary(self) -> dict:
+        session = self.session_store.get_runtime_context()
+        preferences = self.preference_store.snapshot()
+        recent_memory = []
+        if self.kb:
+            try:
+                recent_memory = self.kb.memory_store[-5:]
+            except Exception:
+                recent_memory = []
+        return {
+            "status": "success",
+            "session": {
+                "current_scene": session.get("current_scene", ""),
+                "last_user_input": session.get("last_user_input", ""),
+                "last_normalized_input": session.get("last_normalized_input", ""),
+                "last_action": session.get("last_action", {}),
+                "last_clarification": session.get("last_clarification", {}),
+                "recent_turns": session.get("recent_turns", []),
+            },
+            "preferences": {
+                "devices": preferences.get("devices", {}),
+                "scenes": preferences.get("scenes", {}),
+                "recommendation": preferences.get("recommendation", {}),
+                "language": preferences.get("language", {}),
+            },
+            "recent_memory": recent_memory,
+        }
+
+    def get_privacy_status(self) -> dict:
+        backend = getattr(self.llm, "backend", "mock")
+        cloud_enabled = backend == "openai" and self.llm.is_cloud_available()
+        session = self.session_store.get_runtime_context()
+        route = session.get("last_route", self.last_route_info.get("route", "local"))
+        return {
+            "status": "success",
+            "cloud_enabled": cloud_enabled,
+            "llm_backend": backend,
+            "last_route": route,
+            "last_route_reason": self.last_route_info.get("reason", ""),
+            "last_cloud_context": self.last_cloud_context,
+            "minimal_fields": ["hour", "temperature", "humidity", "occupancy", "scene", "top_candidates", "preference_summary"],
+        }
     
     def _start_agent_loop(self):
         """启动 Agent 处理循环（后台线程）"""
@@ -164,6 +446,7 @@ class HomeMindWebAgent:
         user_text = data.get("text", "")
         normalized = self.language_normalizer.normalize(user_text)
         query_text = normalized.normalized or user_text
+        self._record_query_context(user_text, query_text)
         query_id = f"q_{int(time.time() * 1000)}"
         print(f"[Agent] 收到用户输入: {user_text}")
 
@@ -221,8 +504,44 @@ class HomeMindWebAgent:
                     self._emit_fallback(query_id, query_text)
                     return
 
+                route_info = self.router.decide_route(
+                    user_text,
+                    ranked,
+                    normalized_query=query_text,
+                    cloud_available=self.llm.is_cloud_available(),
+                )
+                self.last_route_info = route_info
+
                 # Step 3: LLM 决策
-                decision = self.llm.decide(query_text, ranked, self.context, rag_context="")
+                cloud_context = self._build_cloud_context(ranked[:3])
+                print(f"[Privacy] 云端最小上下文: {cloud_context}")
+                if route_info["route"] == "clarify":
+                    question = self.llm.ask_clarification(query_text, ranked)
+                    self.session_store.update_clarification(question)
+                    socketio.emit("message", {
+                        "type": "agent_clarification",
+                        "data": {
+                            "question": question,
+                            "candidates": route_info["top_candidates"],
+                            "query_id": query_id
+                        }
+                    })
+                    return
+                if route_info["route"] == "cloud":
+                    decision = self.llm.decide_cloud(
+                        query_text,
+                        ranked,
+                        self.context,
+                        rag_context="",
+                        context_summary=cloud_context,
+                    )
+                else:
+                    decision = self.llm.decide_local(
+                        query_text,
+                        ranked,
+                        self.context,
+                        rag_context="",
+                    )
                 action_type = decision.get("action", "")
                 device = decision.get("device", "")
                 device_action = decision.get("device_action", "")
@@ -238,12 +557,59 @@ class HomeMindWebAgent:
                         "device_action": device_action,
                         "params": params,
                         "confidence": float(confidence),
-                        "reasoning": reasoning
+                        "reasoning": reasoning,
+                        "route": route_info["route"],
+                        "route_reason": route_info["reason"],
                     }
                 }
                 socketio.emit("pipeline_update", {"type": "pipeline_step", "data": {
                     "query_id": query_id, "step": "llm", "data": pipeline["steps"]["llm"]
                 }})
+
+                if confidence < self.confidence_threshold:
+                    question = self.llm.ask_clarification(query_text, ranked)
+                    self.session_store.update_clarification(question)
+                    socketio.emit("message", {
+                        "type": "agent_clarification",
+                        "data": {
+                            "question": question,
+                            "candidates": route_info["top_candidates"],
+                            "query_id": query_id
+                        }
+                    })
+                    return
+
+                validation = self._validate_decision(decision)
+                if not validation["valid"]:
+                    message = "我暂时不能执行这个指令：" + "；".join(validation["errors"])
+                    self.session_store.update_clarification(message)
+                    socketio.emit("message", {
+                        "type": "agent_clarification",
+                        "data": {
+                            "question": message,
+                            "candidates": route_info["top_candidates"],
+                            "query_id": query_id
+                        }
+                    })
+                    return
+                if validation["requires_confirmation"]:
+                    message = "这个操作风险较高，需要二次确认后再执行。"
+                    self.session_store.update_clarification(message)
+                    socketio.emit("message", {
+                        "type": "agent_clarification",
+                        "data": {
+                            "question": message,
+                            "candidates": route_info["top_candidates"],
+                            "query_id": query_id
+                        }
+                    })
+                    return
+                decision = validation["normalized_command"]
+                action_type = decision.get("action", "")
+                device = decision.get("device", "")
+                device_action = decision.get("device_action", "")
+                scene = decision.get("scene", "")
+                params = decision.get("params", {})
 
                 # Step 4: 执行
                 if action_type == "设备控制" and device and device_action:
@@ -259,6 +625,7 @@ class HomeMindWebAgent:
                 elif action_type == "场景切换" and scene:
                     message = self.scene_switcher.execute(scene)
                     self.context.current_scene = scene
+                    self.context.last_scene = SCENE_INDEX_MAP.get(scene, -1)
                     result = {
                         "status": "success",
                         "action": "scene_switch",
@@ -277,6 +644,8 @@ class HomeMindWebAgent:
                 # 最终响应
                 if result["status"] == "success":
                     result_text = result.get("message", f"已执行: {device} {device_action}")
+                    self.session_store.update_from_decision(decision, route=route_info["route"], result=result_text)
+                    self.preference_store.record_action_accept(decision, self.context)
                     socketio.emit("message", {
                         "type": "agent_response",
                         "data": {
@@ -284,10 +653,13 @@ class HomeMindWebAgent:
                             "result": result_text,
                             "confidence": confidence,
                             "scene": self.context.current_scene,
-                            "query_id": query_id
+                            "query_id": query_id,
+                            "route": route_info["route"],
+                            "route_reason": route_info["reason"],
                         }
                     })
                 else:
+                    self.session_store.update_clarification("我需要更多信息")
                     socketio.emit("message", {
                         "type": "agent_clarification",
                         "data": {
@@ -320,6 +692,7 @@ class HomeMindWebAgent:
         socketio.emit("pipeline_update", {"type": "pipeline_error", "data": pipeline})
 
     def _emit_fallback(self, query_id: str, user_text: str):
+        self.session_store.update_clarification(f"未找到合适候选动作: {user_text}")
         for step in ["bsr", "lsr", "llm", "exec"]:
             socketio.emit("pipeline_update", {"type": "pipeline_step", "data": {
                 "query_id": query_id, "step": step,
@@ -359,6 +732,18 @@ class HomeMindWebAgent:
                 action_taken = True
         
         if action_taken:
+            self.session_store.update_from_decision(
+                {
+                    "action": "简单规则",
+                    "device": "",
+                    "scene": "",
+                    "device_action": "",
+                    "params": {},
+                    "confidence": 1.0,
+                },
+                route="local",
+                result="已处理您的指令",
+            )
             socketio.emit("message", {
                 "type": "agent_response",
                 "data": {
@@ -415,6 +800,7 @@ class HomeMindWebAgent:
         
         self.scene_switcher.execute(scene)
         self.context.current_scene = scene_id
+        self.session_store.update_scene(scene)
         
         socketio.emit("message", {
             "type": "scene_update",
@@ -440,6 +826,15 @@ class HomeMindWebAgent:
         
         if self.dqn_fb:
             self.dqn_fb.record(self.context, action, response)
+        scene_map = {
+            0: "睡眠模式",
+            1: "待客模式",
+            2: "离家模式",
+            3: "观影模式",
+            4: "起床模式",
+            5: "无推荐",
+        }
+        self.preference_store.record_recommendation_feedback(scene_map.get(action, ""), response)
     
     def _execute_action(self, action: str):
         """执行动作"""
@@ -506,6 +901,7 @@ class HomeMindWebAgent:
         self.context.hour = datetime.now().hour
         normalized = self.language_normalizer.normalize(query)
         query_for_ai = normalized.normalized or query
+        self._record_query_context(query, query_for_ai)
         
         if not self.bsr or not self.lsr or not self.llm:
             return {"status": "no_action", "message": "AI 模块未加载"}
@@ -515,7 +911,76 @@ class HomeMindWebAgent:
             ranked = self.lsr.rank(query_for_ai, candidates, self.context, kb=self.kb)
             
             if ranked:
-                decision = self.llm.decide(query_for_ai, ranked, self.context, rag_context="")
+                route_info = self.router.decide_route(
+                    query,
+                    ranked,
+                    normalized_query=query_for_ai,
+                    cloud_available=self.llm.is_cloud_available(),
+                )
+                self.last_route_info = route_info
+                if route_info["route"] == "clarify":
+                    question = self.llm.ask_clarification(query_for_ai, ranked)
+                    self.session_store.update_clarification(question)
+                    return {
+                        "status": "clarification",
+                        "question": question,
+                        "candidates": route_info["top_candidates"],
+                        "route": route_info["route"],
+                        "route_reason": route_info["reason"],
+                        "normalized_query": normalized.to_dict(),
+                    }
+                cloud_context = self._build_cloud_context(ranked[:3])
+                print(f"[Privacy] 云端最小上下文: {cloud_context}")
+                if route_info["route"] == "cloud":
+                    decision = self.llm.decide_cloud(
+                        query_for_ai,
+                        ranked,
+                        self.context,
+                        rag_context="",
+                        context_summary=cloud_context,
+                    )
+                else:
+                    decision = self.llm.decide_local(
+                        query_for_ai,
+                        ranked,
+                        self.context,
+                        rag_context="",
+                    )
+                if decision.get("confidence", 0.0) < self.confidence_threshold:
+                    question = self.llm.ask_clarification(query_for_ai, ranked)
+                    self.session_store.update_clarification(question)
+                    return {
+                        "status": "clarification",
+                        "question": question,
+                        "candidates": route_info["top_candidates"],
+                        "route": route_info["route"],
+                        "route_reason": route_info["reason"],
+                        "normalized_query": normalized.to_dict(),
+                    }
+                validation = self._validate_decision(decision)
+                if not validation["valid"]:
+                    message = "我暂时不能执行这个指令：" + "；".join(validation["errors"])
+                    self.session_store.update_clarification(message)
+                    return {
+                        "status": "clarification",
+                        "question": message,
+                        "candidates": route_info["top_candidates"],
+                        "route": route_info["route"],
+                        "route_reason": route_info["reason"],
+                        "normalized_query": normalized.to_dict(),
+                    }
+                if validation["requires_confirmation"]:
+                    message = "这个操作风险较高，需要二次确认后再执行。"
+                    self.session_store.update_clarification(message)
+                    return {
+                        "status": "clarification",
+                        "question": message,
+                        "candidates": route_info["top_candidates"],
+                        "route": route_info["route"],
+                        "route_reason": route_info["reason"],
+                        "normalized_query": normalized.to_dict(),
+                    }
+                decision = validation["normalized_command"]
                 
                 action_type = decision.get("action", "")
                 device = decision.get("device", "")
@@ -525,28 +990,40 @@ class HomeMindWebAgent:
                 
                 if action_type == "设备控制" and device and device_action:
                     message = self.device_control.execute(device, device_action, params)
+                    self.session_store.update_from_decision(decision, route=route_info["route"], result=message)
+                    self.preference_store.record_action_accept(decision, self.context)
                     return {
                         "status": "success",
                         "action": f"{device}_{device_action}",
                         "response": message,
                         "confidence": decision.get("confidence", 0.9),
+                        "route": route_info["route"],
+                        "route_reason": route_info["reason"],
                         "normalized_query": normalized.to_dict(),
                     }
                 elif action_type == "场景切换" and scene:
                     message = self.scene_switcher.execute(scene)
                     self.context.current_scene = scene
+                    self.context.last_scene = SCENE_INDEX_MAP.get(scene, -1)
+                    self.session_store.update_from_decision(decision, route=route_info["route"], result=message)
+                    self.preference_store.record_action_accept(decision, self.context)
                     return {
                         "status": "success",
                         "action": "scene_switch",
                         "response": message,
                         "confidence": decision.get("confidence", 0.9),
+                        "route": route_info["route"],
+                        "route_reason": route_info["reason"],
                         "normalized_query": normalized.to_dict(),
                     }
                 else:
+                    self.session_store.update_clarification("我需要更多信息")
                     return {
                         "status": "clarification",
                         "question": "我需要更多信息",
                         "candidates": [r["action"] for r in ranked[:3]],
+                        "route": route_info["route"],
+                        "route_reason": route_info["reason"],
                         "normalized_query": normalized.to_dict(),
                     }
         except Exception as e:
@@ -716,6 +1193,121 @@ def kb_add():
     return jsonify({"error": "Agent 未初始化"}), 500
 
 
+@app.route("/api/preferences", methods=["GET"])
+def preferences():
+    """读取结构化偏好快照"""
+    if agent:
+        return jsonify({"status": "success", "preferences": agent.get_preference_snapshot()})
+    return jsonify({"error": "Agent 未初始化"}), 500
+
+
+@app.route("/api/memory/summary", methods=["GET"])
+def memory_summary():
+    """读取记忆与上下文摘要"""
+    if agent:
+        return jsonify(agent.get_memory_summary())
+    return jsonify({"error": "Agent 未初始化"}), 500
+
+
+@app.route("/api/privacy/status", methods=["GET"])
+def privacy_status():
+    """读取隐私与云调用状态"""
+    if agent:
+        return jsonify(agent.get_privacy_status())
+    return jsonify({"error": "Agent 未初始化"}), 500
+
+
+@app.route("/api/rules/scheduler", methods=["GET"])
+def rule_scheduler_status():
+    """读取规则调度器状态"""
+    if agent:
+        return jsonify(agent.get_scheduler_status())
+    return jsonify({"error": "Agent 未初始化"}), 500
+
+
+@app.route("/api/rules/scheduler", methods=["POST"])
+def rule_scheduler_toggle():
+    """启停规则调度器"""
+    data = request.get_json(silent=True) or {}
+    if agent:
+        enabled = data.get("enabled", True)
+        return jsonify(agent.set_scheduler_enabled(bool(enabled)))
+    return jsonify({"error": "Agent 未初始化"}), 500
+
+
+@app.route("/api/rules", methods=["GET"])
+def list_rules():
+    """列出所有 TAP 规则"""
+    if agent:
+        return jsonify({"status": "success", "rules": agent.tap_rule_store.list_rules()})
+    return jsonify({"error": "Agent 未初始化"}), 500
+
+
+@app.route("/api/rules", methods=["POST"])
+def create_rule():
+    """创建 TAP 规则"""
+    data = request.get_json(silent=True) or {}
+    if agent:
+        rule = agent.tap_rule_store.add_rule(data)
+        return jsonify({"status": "success", "rule": rule})
+    return jsonify({"error": "Agent 未初始化"}), 500
+
+
+@app.route("/api/rules/<rule_id>", methods=["PUT"])
+def update_rule(rule_id):
+    """更新 TAP 规则"""
+    data = request.get_json(silent=True) or {}
+    if agent:
+        updated = agent.tap_rule_store.update_rule(rule_id, data)
+        if updated is None:
+            return jsonify({"error": "规则不存在"}), 404
+        return jsonify({"status": "success", "rule": updated})
+    return jsonify({"error": "Agent 未初始化"}), 500
+
+
+@app.route("/api/rules/<rule_id>", methods=["DELETE"])
+def delete_rule(rule_id):
+    """删除 TAP 规则"""
+    if agent:
+        deleted = agent.tap_rule_store.delete_rule(rule_id)
+        if not deleted:
+            return jsonify({"error": "规则不存在"}), 404
+        return jsonify({"status": "success"})
+    return jsonify({"error": "Agent 未初始化"}), 500
+
+
+@app.route("/api/rules/<rule_id>/toggle", methods=["POST"])
+def toggle_rule(rule_id):
+    """启用或禁用 TAP 规则"""
+    data = request.get_json(silent=True) or {}
+    enabled = data.get("enabled")
+    if agent:
+        updated = agent.tap_rule_store.toggle_rule(rule_id, enabled=enabled)
+        if updated is None:
+            return jsonify({"error": "规则不存在"}), 404
+        return jsonify({"status": "success", "rule": updated})
+    return jsonify({"error": "Agent 未初始化"}), 500
+
+
+@app.route("/api/rules/evaluate", methods=["POST"])
+def evaluate_rules():
+    """评估当前 TAP 规则，可选择直接执行"""
+    data = request.get_json(silent=True) or {}
+    if agent:
+        execute = bool(data.get("execute", False))
+        overrides = dict(data.get("context", {}) or {})
+        now = None
+        at = data.get("time")
+        if at:
+            try:
+                now = datetime.strptime(str(at), "%H:%M")
+            except ValueError:
+                return jsonify({"error": "time 格式必须为 HH:MM"}), 400
+        result = agent.evaluate_rules(execute=execute, context_overrides=overrides, now=now)
+        return jsonify(result)
+    return jsonify({"error": "Agent 未初始化"}), 500
+
+
 @app.route("/api/gateway/status", methods=["GET"])
 def gateway_status():
     """获取协议网关状态"""
@@ -785,6 +1377,9 @@ def voice_feedback():
         "engine": data.get("engine", "vosk"),
     })
 
+    if agent:
+        final_text = corrected_normalized or normalized
+        agent.preference_store.record_feedback(asr_text, final_text, feedback)
     if agent and agent.kb:
         final_text = corrected_normalized or normalized
         content = (

@@ -7,6 +7,9 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 DATA_KEY_FILES = [
     REPO_ROOT / "data" / ".key",
     REPO_ROOT / "data" / ".key.salt",
+    REPO_ROOT / "data" / "session_state.json",
+    REPO_ROOT / "data" / "preferences.json",
+    REPO_ROOT / "data" / "tap_rules.json",
 ]
 
 
@@ -116,19 +119,28 @@ class HomeMindWebMockFlowTests(unittest.TestCase):
             json={"text": "用户喜欢26度空调", "category": "用户习惯"},
         )
         query_response = self.client.post("/api/kb/query", json={"query": "26度空调", "top_k": 1})
+        preferences_response = self.client.get("/api/preferences")
+        memory_response = self.client.get("/api/memory/summary")
+        privacy_response = self.client.get("/api/privacy/status")
 
         self.assertEqual(info_response.status_code, 200)
         self.assertEqual(recommend_response.status_code, 200)
         self.assertEqual(feedback_response.status_code, 200)
         self.assertEqual(add_response.status_code, 200)
         self.assertEqual(query_response.status_code, 200)
+        self.assertEqual(preferences_response.status_code, 200)
+        self.assertEqual(memory_response.status_code, 200)
+        self.assertEqual(privacy_response.status_code, 200)
 
         info_payload = info_response.get_json()
         self.assertEqual(info_payload["status"], "success")
         self.assertIn("温度", info_payload["result"])
-        self.assertEqual(recommend_response.get_json()["status"], "success")
+        self.assertIn(recommend_response.get_json()["status"], ("success", "no_recommendation"))
         self.assertEqual(feedback_response.get_json()["status"], "success")
         self.assertEqual(add_response.get_json()["status"], "success")
+        self.assertEqual(preferences_response.get_json()["status"], "success")
+        self.assertEqual(memory_response.get_json()["status"], "success")
+        self.assertEqual(privacy_response.get_json()["status"], "success")
 
         kb_results = query_response.get_json()["results"]
         self.assertGreaterEqual(len(kb_results), 1)

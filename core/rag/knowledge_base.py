@@ -32,6 +32,7 @@ class KnowledgeBase:
     def __init__(self, persist_dir: str = os.path.join(DATA_DIR, "chroma_db"), embedding_fn=None):
         self.persist_dir = persist_dir
         self.embedding_fn = embedding_fn
+        self.preference_store = None
         self.preset_knowledge = self._init_preset_kb()
         self.memory_store: List[Dict] = []
         self._client = None
@@ -214,6 +215,12 @@ class KnowledgeBase:
 
     def get_user_preference_score(self, candidate_action: str, context) -> float:
         score = 0.5
+        if self.preference_store is not None:
+            try:
+                score = max(score, float(self.preference_store.get_preference_boost(candidate_action, context)))
+            except Exception as exc:
+                logger.warning("PreferenceStore score lookup failed: %s", exc)
+
         history = self.query(candidate_action, top_k=5, category="用户习惯")
         if history:
             accepted_count = sum(1 for item in history if item.get("accepted"))

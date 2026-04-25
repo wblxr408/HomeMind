@@ -7,7 +7,9 @@ a structured command. Mock mode remains deterministic for demos and tests.
 
 import json
 import logging
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
+
+from .cloud_client import CloudClient
 
 logger = logging.getLogger(__name__)
 
@@ -46,13 +48,21 @@ SCENE_ACTION_MAP = {
 class LLMDecider:
     """Constrained decider supporting mock, llama.cpp, and OpenAI-compatible APIs."""
 
-    def __init__(self, backend: str = "mock", model_path: str = "", api_base: str = "", api_key: str = ""):
+    def __init__(
+        self,
+        backend: str = "mock",
+        model_path: str = "",
+        api_base: str = "",
+        api_key: str = "",
+        cloud_model: str = "",
+    ):
         self.backend = backend
         self.model_path = model_path
         self.api_base = api_base
         self.api_key = api_key
+        self.cloud_model = cloud_model
         self._llm = None
-        self._client = None
+        self._cloud_client = None
         self._init_backend()
 
     def _init_backend(self):
@@ -68,45 +78,85 @@ class LLMDecider:
                 logger.warning("llama-cpp-python is not installed; falling back to mock")
                 self.backend = "mock"
         elif self.backend == "openai":
-            try:
-                import openai
-
-                self._client = openai.OpenAI(api_key=self.api_key, base_url=self.api_base)
-                logger.info("LLMDecider initialized with OpenAI-compatible API: %s", self.api_base)
-            except ImportError:
-                logger.warning("openai package is not installed; falling back to mock")
+            self._cloud_client = CloudClient(
+                api_base=self.api_base,
+                api_key=self.api_key,
+                model=self.cloud_model,
+            )
+            if self._cloud_client.is_available():
+                logger.info("LLMDecider initialized with OpenAI-compatible cloud backend")
+            else:
+                logger.warning("Cloud backend unavailable; falling back to mock")
                 self.backend = "mock"
 
-    def decide(self, query: str, candidates: List[Dict[str, Any]], context, rag_context: str = "") -> Dict[str, Any]:
-        if self.backend == "mock":
-            return self._mock_decide(query, candidates, context, rag_context=rag_context)
+    def is_cloud_available(self) -> bool:
+        return self.backend == "openai" and self._cloud_client is not None and self._cloud_client.is_available()
 
-        prompt = self._build_prompt(query, candidates, context, rag_context)
-
-        if self.backend == "llama_cpp":
+    def decide_local(
+        self,
+        query: str,
+        candidates: List[Dict[str, Any]],
+        context,
+        rag_context: str = "",
+    ) -> Dict[str, Any]:
+        if self.backend == "llama_cpp" and self._llm is not None:
+            prompt = self._build_prompt(query, candidates, context, rag_context)
             output = self._llm(prompt, max_tokens=256, stop=["```"])
             text = output.get("choices", [{}])[0].get("text", "") if isinstance(output, dict) else str(output)
-        elif self.backend == "openai":
-            resp = self._client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[{"role": "user", "content": prompt}],
-                max_tokens=256,
-            )
-            text = resp.choices[0].message.content
-        else:
-            return self._mock_decide(query, candidates, context, rag_context=rag_context)
+            parsed = self._parse_output(text)
+            if parsed.get("confidence", 0.0) > 0:
+                return parsed
+        return self._mock_decide(query, candidates, context, rag_context=rag_context)
 
-        return self._parse_output(text)
+    def decide_cloud(
+        self,
+        query: str,
+        candidates: List[Dict[str, Any]],
+        context,
+        rag_context: str = "",
+        context_summary: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
+        if not self.is_cloud_available():
+            return self.decide_local(query, candidates, context, rag_context=rag_context)
+        prompt = self._build_prompt(query, candidates, context, rag_context, context_summary=context_summary)
+        try:
+            text = self._cloud_client.complete(prompt, max_tokens=256)
+            return self._parse_output(text)
+        except Exception as exc:
+            logger.warning("Cloud decision failed: %s; falling back to local", exc)
+            return self.decide_local(query, candidates, context, rag_context=rag_context)
 
-    def _build_prompt(self, query: str, candidates: List[Dict[str, Any]], context, rag_context: str = "") -> str:
+    def decide(
+        self,
+        query: str,
+        candidates: List[Dict[str, Any]],
+        context,
+        rag_context: str = "",
+        context_summary: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
+        if self.backend == "openai":
+            return self.decide_cloud(query, candidates, context, rag_context=rag_context, context_summary=context_summary)
+        return self.decide_local(query, candidates, context, rag_context=rag_context)
+
+    def _build_prompt(
+        self,
+        query: str,
+        candidates: List[Dict[str, Any]],
+        context,
+        rag_context: str = "",
+        context_summary: Optional[Dict[str, Any]] = None,
+    ) -> str:
         candidate_str = "\n".join(f"{idx + 1}. {item['action']}" for idx, item in enumerate(candidates))
         rag_block = f"\n参考知识:\n{rag_context}\n" if rag_context else ""
+        cloud_context = context_summary or {
+            "hour": getattr(context, "hour", 0),
+            "temperature": getattr(context, "temperature", 0.0),
+            "humidity": getattr(context, "humidity", 0.0),
+            "occupancy": getattr(context, "members_home", 0),
+            "scene": getattr(context, "current_scene", ""),
+        }
         return (
-            f"当前环境:\n"
-            f"时间: {context.hour}:00\n"
-            f"温度: {context.temperature}°C\n"
-            f"湿度: {context.humidity}%\n"
-            f"在家人数: {context.members_home}\n"
+            f"当前环境摘要:\n{json.dumps(cloud_context, ensure_ascii=False, indent=2)}\n"
             f"{rag_block}"
             f"用户输入: {query}\n\n"
             f"候选动作:\n{candidate_str}\n\n"

@@ -1,354 +1,393 @@
-# HomeMind：家庭端侧模糊意图理解智能体
+# HomeMind：家庭场景智能家居 Agent
 
 ![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)
 ![License](https://img.shields.io/badge/License-MIT-green.svg)
-![Architecture](https://img.shields.io/badge/Architecture-5--Layer-orange.svg)
+![Architecture](https://img.shields.io/badge/Architecture-Edge--Cloud-orange.svg)
 
-**赛题方向：** 兴享智家（2026中兴捧月）
-**技术架构：** 端侧 AI Agent，RAG + DQN 强化学习
-**部署方式：** 全本地运行，数据永不离开设备
+**赛题方向：** 兴享智家（2026 中兴捧月）  
+**当前形态：** 端侧优先、可选端云协同、可持续学习、可渐进自动化的家庭智能体
 
 ---
 
 ## 项目概述
 
-HomeMind 是一个运行在家庭端侧设备上的智能家居大脑，能理解"有点闷"、"像昨天晚上那样"等模糊自然语言指令，通过 RAG 保证回答可信，通过 DQN 强化学习主动感知用户习惯并推荐场景。越用越懂你，且数据永不离开本地设备。
+HomeMind 面向家庭智能家居场景，目标不是做一个只能识别固定命令的控制器，而是做一个：
 
-### 核心能力
+- 能理解模糊表达的 Agent
+- 能保留上下文和用户偏好的 Agent
+- 能在需要时调用云端、但始终由端侧掌握执行权的 Agent
+- 能逐步引入自动化规则的 Agent
 
-| 能力 | 说明 |
+当前仓库已经具备这些核心能力：
+
+- `BSR + LSR + LLM` 的自然语言主链路
+- 本地 `RAG` 记忆与偏好闭环
+- `DQN` 主动推荐骨架
+- `Vosk` 本地语音识别 + 中英/口语/方言归一化
+- `SessionStore / PreferenceStore` 结构化持久化
+- `PrivacyRedactor` 最小必要上下文上传
+- `InferenceRouter` 本地 / 云端 / 澄清 / fallback 路由
+- `CommandValidator` 执行前校验
+- `TAP` 最小规则引擎、规则存储、规则自动调度
+- Web 控制台中的规则、记忆、隐私可视化面板
+
+---
+
+## 当前架构
+
+当前 HomeMind 更接近下面这条链路：
+
+```text
+用户文本 / 语音输入
+-> LanguageNormalizer
+-> BSR 候选召回
+-> LSR 轻量精排
+-> InferenceRouter
+   -> local
+   -> cloud
+   -> clarify
+   -> fallback
+-> PrivacyRedactor（仅 cloud path）
+-> LLMDecider / CloudClient
+-> CommandValidator
+-> DeviceController / SceneSwitcher / InfoQuery
+-> SessionStore / PreferenceStore / KnowledgeBase 写回
+```
+
+自动化链路独立存在：
+
+```text
+TAPRuleStore
+-> TAPEngine
+-> Scheduler
+-> CommandValidator
+-> 执行层
+```
+
+---
+
+## 核心能力
+
+| 能力 | 当前状态 |
 |------|------|
-| **模糊意图理解** | 理解"有点闷"、"像昨天晚上那样"等自然语言，而非精确指令 |
-| **RAG 知识库** | 本地 ChromaDB 持久化，持续学习用户偏好，形成 RAG 闭环 |
-| **DQN 主动推荐** | 强化学习感知用户习惯，ε-greedy 策略独立于用户指令流程 |
-| **全本地运行** | 数据永不离开设备，无隐私风险 |
-
----
-
-## 快速开始
-
-### 安装依赖
-
-```bash
-# 基础依赖
-pip install -r requirements.txt
-
-# Web 服务依赖（可选，需要 Web 界面时安装）
-pip install -r requirements-web.txt
-```
-
-### 运行方式
-
-**方式一：命令行交互**
-
-```bash
-python main.py
-```
-
-输入示例：
-```
-有点闷
-我要出门了
-像昨天晚上那样
-```
-
-**方式二：Web 控制面板**
-
-```bash
-python web/server.py
-# 访问 http://localhost:5000
-```
-
----
-
-## 技术架构
-
-### 五层架构
-
-```
-┌──────────────────────────────────────────────────────────┐
-│                         交互层                             │
-│       语音输入（浏览器 Web Speech API）  文字输入   环境上下文注入     │
-└─────────────────────────┬────────────────────────────────┘
-                          │
-┌─────────────────────────▼────────────────────────────────┐
-│                       BSR 层（广召回）                      │
-│                      候选召回（Top-K 3~5）                  │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐   │
-│  │   规则召回   │  │  向量召回    │  │  用户历史    │   │
-│  │  关键词匹配  │  │  MiniLM     │  │    RAG      │   │
-│  └──────────────┘  └──────────────┘  └──────────────┘   │
-└─────────────────────────┬────────────────────────────────┘
-                          │
-┌─────────────────────────▼────────────────────────────────┐
-│                       LSR 层（轻量精排）                     │
-│                      轻量打分（Top-1/3）                   │
-│  ┌──────────────────────────────────────────────────┐   │
-│  │  特征：语义相似度 + 温度 + 湿度 + 时间周期 + RAG偏好 │   │
-│  │  权重向量 [0.30, 0.10, 0.05, 0.20, 0.35]         │   │
-│  └──────────────────────────────────────────────────┘   │
-└─────────────────────────┬────────────────────────────────┘
-                          │
-┌─────────────────────────▼────────────────────────────────┐
-│                         理解层                            │
-│   ┌──────────────────────────┐  ┌─────────────────────┐  │
-│   │  LLM 决策与参数生成       │  │   DQN 场景推荐      │  │
-│   │  Mock/LlamaCpp/OpenAI    │  │   5→32→6 网络      │  │
-│   │  置信度评估 + 主动澄清     │  │   ε-greedy 探索    │  │
-│   └──────────────┬───────────┘  └──────────┬──────────┘  │
-│                  │     ←→  RAG 检索增强       │            │
-└──────────────────┼────────────────────────────┼────────────┘
-                   │                            │
-┌──────────────────▼────────────────────────────▼────────────┐
-│                         执行层                             │
-│      任务规划 → 工具调用（设备控制/信息查询/场景切换）         │
-│                      ↓ 用户反馈收集                        │
-└──────────────────────────┬─────────────────────────────────┘
-                           │
-┌──────────────────────────▼─────────────────────────────────┐
-│                         学习层                             │
-│   知识库增量更新（ChromaDB写回）  DQN经验回放池 → 策略更新  │
-│              ↑──────────────────────────────────────↑      │
-│                        RAG 闭环 + DQN 闭环                  │
-└───────────────────────────────────────────────────────────┘
-```
-
-### 核心模块
-
-| 模块 | 文件 | 职责 |
-|------|------|------|
-| **BSR** | `core/bsr/candidate_recall.py` | 三路融合召回：规则 + 向量 + 历史 |
-| **LSR** | `core/lsr/precision_ranking.py` | 5维特征加权打分排序 |
-| **LLM** | `core/llm/decision.py` | 意图识别、置信度评估、参数生成 |
-| **DQN** | `core/dqn/policy.py` | 强化学习策略网络，主动场景推荐 |
-| **RAG** | `core/rag/knowledge_base.py` | ChromaDB 知识库，RAG 检索增强 |
-| **Embedding** | `core/utils/embedding.py` | MiniLM 统一向量服务（单例） |
-
-### 双轨容错机制
-
-| 轨道 | 路径 | 说明 |
-|------|------|------|
-| **主轨** | BSR → LSR → LLM 决策 | 正常流程 |
-| **备轨** | 规则树兜底 | 置信度 < 阈值时自动降级 |
-
-### 两层核心闭环
-
-**RAG 闭环：** 用户纠正 → ChromaDB 写入 → 下次优先检索 → 模型不再犯同样错误
-
-**DQN 闭环：** 环境状态 → 策略推理 → 推荐 → 用户响应（奖励信号）→ 经验回放池 → 增量更新
+| 模糊意图理解 | 已实现 |
+| 端云协同路由 | 已实现 |
+| 执行前白名单/范围校验 | 已实现 |
+| 上下文持久化 | 已实现 |
+| 长期结构化偏好 | 已实现 |
+| 隐私脱敏与最小必要上传 | 已实现 |
+| 本地语音识别 | 已实现（Vosk） |
+| 中英/口语/方言归一化 | 已实现基础版 |
+| TAP 规则管理 | 已实现基础版 |
+| TAP 自动调度 | 已实现基础版 |
+| Web 可视化面板 | 已实现基础版 |
 
 ---
 
 ## 目录结构
 
-```
+```text
 HomeMind/
-├── main.py                      # 命令行入口（HomeMindAgent）
+├── main.py
+├── run_web.py
 ├── web/
-│   ├── server.py                # Web 服务（Flask + SocketIO）
+│   ├── server.py
+│   ├── protocol_config.json
 │   └── client/
-│       └── index.html           # 控制面板前端
-├── core/                        # 核心架构层
-│   ├── constants.py             # 共享常量（场景索引/动作池）
-│   ├── config.py                # 配置管理
-│   ├── security.py              # 加密存储
-│   ├── utils/
-│   │   └── embedding.py         # MiniLM 统一向量服务
+│       └── index.html
+├── core/
+│   ├── constants.py
+│   ├── security.py
+│   ├── automation/
+│   │   ├── tap_engine.py
+│   │   └── tap_rules.py
 │   ├── bsr/
-│   │   └── candidate_recall.py # BSR：三路融合召回
-│   ├── lsr/
-│   │   └── precision_ranking.py# LSR：轻量精排（5维特征）
-│   ├── llm/
-│   │   └── decision.py          # LLM：决策（Mock/LlamaCpp/OpenAI）
+│   │   └── candidate_recall.py
 │   ├── dqn/
-│   │   └── policy.py            # DQN：策略网络（5→32→6）
-│   └── rag/
-│       └── knowledge_base.py    # RAG：ChromaDB 知识库
-├── tools/                       # 工具函数层
-│   ├── device_control.py        # 设备控制（空调/灯光/电视/风扇/音响/窗户/热水器）
-│   ├── info_query.py            # 信息查询（温湿度/历史/天气/日程/偏好）
-│   ├── scene_switch.py          # 场景切换（睡眠/待客/离家/观影/起床/回家）
-│   ├── kb_write.py              # 知识库写入
-│   └── dqn_feedback.py         # DQN 反馈记录
-├── demo/                        # 演示与仿真
-│   ├── simulator.py             # 交互演示 + HomeSimulator + AutoSimulation
-│   ├── device_simulator.py      # 设备状态模拟
-│   └── context.py               # HomeContext 数据类
-├── data/                        # 数据目录
-│   └── chroma_db/               # ChromaDB 持久化存储
-└── models/                      # 模型目录
-    └── dqn_policy.pkl           # DQN 策略模型
+│   │   └── policy.py
+│   ├── execution/
+│   │   └── command_validator.py
+│   ├── language/
+│   │   └── normalizer.py
+│   ├── llm/
+│   │   ├── cloud_client.py
+│   │   └── decision.py
+│   ├── lsr/
+│   │   └── precision_ranking.py
+│   ├── memory/
+│   │   ├── preference_store.py
+│   │   └── session_store.py
+│   ├── privacy/
+│   │   └── redactor.py
+│   ├── rag/
+│   │   └── knowledge_base.py
+│   ├── router/
+│   │   └── inference_router.py
+│   ├── utils/
+│   │   └── embedding.py
+│   └── voice/
+│       ├── feedback_store.py
+│       └── vosk_asr.py
+├── demo/
+├── tools/
+├── models/
+│   └── asr/
+├── tests/
+└── data/
 ```
 
 ---
 
-## Web API 接口
+## 快速开始
 
-### REST API
+### 1. 安装依赖
+
+```bash
+pip install -r requirements.txt
+pip install -r requirements-web.txt
+```
+
+如果你使用 conda：
+
+```bash
+conda activate homemind
+pip install -r requirements-web.txt
+```
+
+### 2. 准备 Vosk 模型
+
+将模型放到：
+
+```text
+models/asr/vosk-model-small-cn-0.22/
+models/asr/vosk-model-small-en-us-0.15/
+```
+
+说明见：
+
+- [models/asr/README.md](./models/asr/README.md)
+- [VOSK_ASR_PLAN.md](./VOSK_ASR_PLAN.md)
+
+### 3. 运行 CLI
+
+```bash
+python main.py
+```
+
+### 4. 运行 Web
+
+```bash
+python run_web.py --mode simulated --port 5000
+```
+
+访问：
+
+```text
+http://localhost:5000
+```
+
+---
+
+## Web 控制台当前支持
+
+- 文本指令输入
+- 本地语音上传识别
+- 设备控制
+- 场景切换
+- BSR / LSR / LLM / 执行 流水线可视化
+- 语音反馈提交
+- 自动化规则创建、启停、删除、手动评估
+- 规则自动调度开关
+- 记忆与偏好面板
+- 隐私与云调用面板
+
+---
+
+## 关键模块说明
+
+### 1. Inference Router
+
+文件：
+
+- `core/router/inference_router.py`
+
+职责：
+
+- 明确命令本地直达
+- 中等置信度请求决定是否上云
+- 低置信度请求直接澄清
+- 云端不可用时 fallback
+
+### 2. Command Validator
+
+文件：
+
+- `core/execution/command_validator.py`
+
+职责：
+
+- 字段校验
+- 设备白名单校验
+- 动作白名单校验
+- 参数范围校验
+- 风险等级判断
+
+### 3. Structured Memory
+
+文件：
+
+- `core/memory/session_store.py`
+- `core/memory/preference_store.py`
+- `core/rag/knowledge_base.py`
+
+分工：
+
+- `SessionStore`：短期会话状态
+- `PreferenceStore`：长期结构化偏好
+- `KnowledgeBase`：可检索文本记忆
+
+### 4. Privacy
+
+文件：
+
+- `core/privacy/redactor.py`
+
+职责：
+
+- 构造最小必要云端上下文
+- 避免上传完整历史、原始日志和敏感细节
+
+### 5. TAP Automation
+
+文件：
+
+- `core/automation/tap_engine.py`
+- `core/automation/tap_rules.py`
+
+职责：
+
+- 规则存储
+- 规则评估
+- 简单冲突消解
+- 后台自动调度
+
+---
+
+## 当前主要接口
+
+### 基础接口
 
 | 端点 | 方法 | 说明 |
 |------|------|------|
-| `/api/status` | GET | 获取系统状态（上下文 + 设备状态） |
-| `/api/query` | POST | 自然语言查询接口 |
+| `/api/status` | GET | 系统状态 |
+| `/api/query` | POST | 自然语言查询 |
 | `/api/devices/<device>/control` | POST | 设备控制 |
 | `/api/scenes/<scene>/switch` | POST | 场景切换 |
 | `/api/info/<info_type>` | GET | 信息查询 |
-| `/api/dqn/recommend` | GET | DQN 主动推荐 |
-| `/api/dqn/feedback` | POST | DQN 反馈提交 |
-| `/api/kb/query` | POST | 知识库查询 |
-| `/api/kb/add` | POST | 添加知识 |
 
-### WebSocket 事件
+### 记忆 / 隐私
 
-| 事件 | 方向 | 说明 |
+| 端点 | 方法 | 说明 |
 |------|------|------|
-| `user_input` | 客户端 → 服务端 | 发送自然语言指令 |
-| `device_control` | 客户端 → 服务端 | 设备控制 |
-| `scene_switch` | 客户端 → 服务端 | 场景切换 |
-| `pipeline_update` | 服务端 → 客户端 | 推理流水线状态更新 |
-| `message` | 服务端 → 客户端 | Agent 响应消息 |
+| `/api/preferences` | GET | 结构化偏好快照 |
+| `/api/memory/summary` | GET | 记忆摘要 |
+| `/api/privacy/status` | GET | 隐私与云调用状态 |
+
+### 语音
+
+| 端点 | 方法 | 说明 |
+|------|------|------|
+| `/api/voice/transcribe` | POST | 本地语音识别 |
+| `/api/voice/feedback` | POST | 语音反馈写回 |
+
+### DQN
+
+| 端点 | 方法 | 说明 |
+|------|------|------|
+| `/api/dqn/recommend` | GET | 主动推荐 |
+| `/api/dqn/feedback` | POST | 推荐反馈 |
+
+### TAP 规则
+
+| 端点 | 方法 | 说明 |
+|------|------|------|
+| `/api/rules` | GET | 列出规则 |
+| `/api/rules` | POST | 创建规则 |
+| `/api/rules/<id>` | PUT | 更新规则 |
+| `/api/rules/<id>` | DELETE | 删除规则 |
+| `/api/rules/<id>/toggle` | POST | 启停规则 |
+| `/api/rules/evaluate` | POST | 评估规则 |
+| `/api/rules/scheduler` | GET | 调度器状态 |
+| `/api/rules/scheduler` | POST | 启停调度器 |
 
 ---
 
-## Web 控制面板
+## 语音能力现状
 
-访问 `http://localhost:5000/web/client/index.html` 打开控制面板：
+当前仓库已经不是“浏览器 Web Speech API 唯一路径”，而是：
 
-- **传感器数据**：实时显示温度、湿度、在家人数
-- **设备控制**：灯光、空调、电视等设备开关控制
-- **场景模式**：睡眠/观影/工作/离家/早安/晚归一键切换
-- **语音输入**：支持浏览器 Web Speech API 语音指令
-- **推理可视化**：实时展示 BSR → LSR → LLM → 执行 流水线状态
-
----
-
-## 技术选型
-
-| 模块 | 技术选型 | 规格 |
-|------|----------|------|
-| 核心推理 | llama.cpp（C++）+ Qwen2.5-0.5B | INT4，~500MB |
-| 语音识别 | faster-whisper · Whisper-tiny | FP16，~150MB |
-| 文本向量化 | all-MiniLM-L6-v2 | FP32，~30MB |
-| 向量数据库 | ChromaDB（本地） | ~50MB |
-| 强化学习 | 自研轻量 DQN | <5MB |
-| **合计** | | **~1.24GB（4GB设备可运行）** |
+- 浏览器负责录音
+- 服务端 `/api/voice/transcribe` 接收音频
+- `VoskASR` 本地完成转写
+- `LanguageNormalizer` 做中英/口语/方言归一化
+- 用户可通过 `/api/voice/feedback` 提交反馈并写回历史
 
 ---
 
-## 典型交互流程
+## 隐私边界说明
 
-### 流程一：模糊意图 → BSR → LSR → LLM → 执行 → RAG 写回
+HomeMind 当前采用的是：
 
-```
-用户：  "有点闷"
-────────────────────────────────────────────────────────
-BSR     规则召回: 闷→空调/风扇/开窗（score=0.9）
-        向量召回: 打开空调(0.82)、打开窗户(0.61)
-        RAG历史: 28°C以上偏好开空调（score=0.85）
-        → 候选集: [打开空调, 打开风扇, 打开窗户]
-────────────────────────────────────────────────────────
-LSR     特征打分: 打开空调(0.92) > 打开风扇(0.65) > 打开窗户(0.58)
-        → 精排结果: 打开空调
-────────────────────────────────────────────────────────
-LLM     RAG上下文注入 → confidence=0.91
-        → decision: {action:"设备控制", device:"空调", device_action:"on", params:{temp:26}}
-────────────────────────────────────────────────────────
-执行    device_control(空调, on, temp=26)
-        设备状态同步到 simulator
-────────────────────────────────────────────────────────
-RAG写回 知识库写入: 用户接受28°C开空调的决策
-```
+- **端侧优先**
+- **必要时可选云端协同**
+- **端侧保留最终执行权**
 
-### 流程二：DQN 主动推荐（独立流程）
+云端路径下，上传的不是完整家庭原始数据，而是：
 
-```
-环境感知: 时间22:15，在家2人，上次场景：观影模式
-────────────────────────────────────────────────────────
-DQN推理  状态向量 → Q值输出 → ε-greedy 选择
-        Q值: 睡眠模式=0.89 > 待客=0.12 > 离家=0.05
-────────────────────────────────────────────────────────
-推荐     置信度0.89 > 0.8 → 直接执行
-        scene_switch(睡眠模式)
-────────────────────────────────────────────────────────
-反馈     用户响应"好的" → reward=+1.0
-        经验写入回放池（累计第47条）
-────────────────────────────────────────────────────────
-更新     每50条触发轻量梯度更新
-        ε 衰减 → 探索减少，利用增加
-```
+- 时间
+- 温湿度
+- 在家人数
+- 当前场景
+- Top-K 候选动作
+- 少量偏好摘要
+
+执行前还会经过端侧命令校验。
 
 ---
 
-## 配置说明
+## 当前测试
 
-### 环境变量
+当前仓库已覆盖的测试包括：
 
-| 变量 | 说明 | 默认值 |
-|------|------|--------|
-| `HOMEMIND_MODE` | 运行模式 | `simulated` |
-| `LLM_BACKEND` | LLM 后端 | `mock` |
-| `LLM_MODEL_PATH` | 本地模型路径 | - |
+- 路由与命令校验
+- 结构化上下文与偏好持久化
+- TAP 引擎与规则接口
+- CLI / Web mock 主流程
+- 语音反馈历史
 
-### LLM 后端配置
+运行：
 
-```python
-# Mock 模式（默认，开发/演示）
-LLMDecider(backend="mock")
-
-# Llama.cpp 模式（本地推理）
-LLMDecider(backend="llama_cpp", model_path="./models/qwen2.5-0.5b-int4.gguf")
-
-# OpenAI 兼容模式（云端 API）
-LLMDecider(backend="openai", api_base="https://api.openai.com/v1", api_key="sk-...")
+```bash
+python -m unittest tests.test_tap_engine tests.test_routing_validation tests.test_context_privacy tests.test_mock_flows tests.test_voice_feedback -v
 ```
 
 ---
 
-## 扩展方向
+## 后续可继续扩展
 
-| 方向 | 说明 |
-|------|------|
-| 多模态扩展 | 加入视觉模态，感知房间人员状态，扩展 DQN 状态空间 |
-| LoRA 轻量微调 | 存储余量充足时对 LLM 做增量更新 |
-| 多设备协同 | 不同房间共享知识库和 DQN 模型，实现全屋智能 |
-| 家庭成员识别 | 声纹区分不同成员，维护独立偏好知识库 |
+目前还适合继续做的方向：
 
----
-
-## 优化记录
-
-### 架构优化
-
-| 优化项 | 文件 | 说明 |
-|--------|------|------|
-| 统一 Embedding 服务 | `core/utils/embedding.py` | 合并 BSR 和 RAG 各自的独立单例 |
-| 共享常量中心 | `core/constants.py` | 统一管理场景索引和动作池 |
-| 场景索引常量引用 | `main.py`, `demo/simulator.py` | 引用 constants.py 避免硬编码 |
-
-### 功能修复
-
-| 优化项 | 文件 | 说明 |
-|--------|------|------|
-| DQN 梯度计算修正 | `core/dqn/policy.py` | 完全重写梯度计算逻辑 |
-| LLM Mock 返回结构统一 | `core/llm/decision.py` | 场景切换返回 scene 字段 |
-| 回家模式场景映射补全 | `demo/simulator.py` | 补充回家模式的设备状态配置 |
-| BSR 历史召回动态权重 | `core/bsr/candidate_recall.py` | 基于接受率动态计算权重 |
-
-### 健壮性提升
-
-| 优化项 | 文件 | 说明 |
-|--------|------|------|
-| process 异常处理 | `main.py` | 各分支添加 try-except |
-| Fallback Embedding | `core/utils/embedding.py` | 模型加载失败时返回随机向量 |
-| ChromaDB 内存回退 | `core/rag/knowledge_base.py` | ChromaDB 不可用时使用内存模式 |
+- 规则编辑 UI 进一步完善
+- 更丰富的 TAP 条件类型
+- 更细粒度的隐私可视化
+- 更精细的记忆摘要与偏好展示
+- 更强的云端模型接入
+- README / 答辩材料继续收口
 
 ---
 
-## 致谢
+## 相关文档
 
-本项目基于以下开源技术构建：
-
-- [sentence-transformers](https://github.com/UKPLab/sentence-transformers) - MiniLM 向量模型
-- [ChromaDB](https://github.com/chroma-core/chroma) - 本地向量数据库
-- [Flask](https://github.com/pallets/flask) - Web 服务框架
-- [Socket.IO](https://socket.io/) - 实时通信
+- [UPGRADE_PLAN.md](./UPGRADE_PLAN.md)
+- [CONTEXT_PRIVACY_PLAN.md](./CONTEXT_PRIVACY_PLAN.md)
+- [VOSK_ASR_PLAN.md](./VOSK_ASR_PLAN.md)

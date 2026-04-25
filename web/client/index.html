@@ -470,6 +470,10 @@
             padding: 16px;
         }
 
+        .modal.wide {
+            width: 640px;
+        }
+
         .modal-head {
             display: flex;
             align-items: center;
@@ -495,6 +499,160 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 8px;
+        }
+
+        .stack {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .rule-card,
+        .info-card,
+        .summary-card {
+            border: 0.5px solid var(--border-light);
+            border-radius: var(--radius-md);
+            background: var(--bg-secondary);
+            padding: 10px 12px;
+        }
+
+        .rule-head,
+        .summary-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .rule-name,
+        .summary-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .rule-meta,
+        .summary-meta,
+        .info-text {
+            font-size: 11px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin-top: 4px;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .mini-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 10px;
+        }
+
+        .mini-btn {
+            border: 0.5px solid var(--border-light);
+            border-radius: 999px;
+            background: var(--bg-primary);
+            color: var(--text-secondary);
+            font-size: 11px;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+
+        .mini-btn:hover {
+            border-color: rgba(29, 158, 117, 0.35);
+            color: #0F6E56;
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 999px;
+            padding: 2px 8px;
+            font-size: 10px;
+            background: var(--bg-primary);
+            color: var(--text-secondary);
+            border: 0.5px solid var(--border-light);
+            white-space: nowrap;
+        }
+
+        .pill.on {
+            background: var(--accent-bg);
+            color: #0F6E56;
+            border-color: rgba(29, 158, 117, 0.25);
+        }
+
+        .kv-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+        }
+
+        .kv-item {
+            border: 0.5px solid var(--border-light);
+            border-radius: var(--radius-md);
+            background: var(--bg-primary);
+            padding: 8px 10px;
+        }
+
+        .kv-label {
+            font-size: 10px;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .kv-value {
+            font-size: 12px;
+            color: var(--text-primary);
+            margin-top: 4px;
+            line-height: 1.45;
+            word-break: break-word;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .field.full {
+            grid-column: 1 / -1;
+        }
+
+        .field label {
+            font-size: 10px;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .field input,
+        .field select {
+            border: 0.5px solid var(--border-light);
+            border-radius: var(--radius-md);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 12px;
+            padding: 8px 10px;
+            outline: none;
+        }
+
+        .field input:focus,
+        .field select:focus {
+            border-color: var(--border-mid);
+        }
+
+        .empty-hint {
+            font-size: 11px;
+            color: var(--text-tertiary);
         }
 
         .scene-card {
@@ -705,6 +863,27 @@
                         </div>
                         <span class="entry-card-arrow">›</span>
                     </button>
+                    <button class="entry-card" onclick="openModal('rules')">
+                        <div>
+                            <div class="entry-card-title">自动化规则</div>
+                            <div class="entry-card-sub">查看 · 新建 · 启停 · 执行</div>
+                        </div>
+                        <span class="entry-card-arrow">›</span>
+                    </button>
+                    <button class="entry-card" onclick="openModal('memory')">
+                        <div>
+                            <div class="entry-card-title">记忆与偏好</div>
+                            <div class="entry-card-sub">上下文 · 长期偏好 · 近期记忆</div>
+                        </div>
+                        <span class="entry-card-arrow">›</span>
+                    </button>
+                    <button class="entry-card" onclick="openModal('privacy')">
+                        <div>
+                            <div class="entry-card-title">隐私与云调用</div>
+                            <div class="entry-card-sub">路由结果 · 上传摘要 · 本地兜底</div>
+                        </div>
+                        <span class="entry-card-arrow">›</span>
+                    </button>
                 </div>
 
                 <div class="panel-section">
@@ -761,6 +940,24 @@
         let lastVoiceResult = null;
         let toastTimer = null;
         let currentModal = null;
+        let rulesCache = [];
+        let memorySnapshot = null;
+        let privacySnapshot = null;
+        let schedulerSnapshot = null;
+
+        async function apiGet(url) {
+            const response = await fetch(url);
+            return response.json();
+        }
+
+        async function apiJson(url, method = "POST", body = {}) {
+            const response = await fetch(url, {
+                method,
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(body)
+            });
+            return response.json();
+        }
 
         function pad(n) { return String(n).padStart(2, "0"); }
 
@@ -930,8 +1127,14 @@
 
         function openModal(type) {
             currentModal = type;
+            const modal = document.querySelector(".modal");
+            modal.classList.toggle("wide", ["rules", "memory", "privacy"].includes(type));
             renderModal(type);
             document.getElementById("overlay").classList.add("open");
+            if (type === "rules") loadRules();
+            if (type === "rules") loadSchedulerStatus();
+            if (type === "memory") loadMemorySummary();
+            if (type === "privacy") loadPrivacyStatus();
         }
 
         function renderModal(type) {
@@ -977,6 +1180,188 @@
                         controlDevice(id, state.is_on ? "off" : "on");
                     });
                 });
+            } else if (type === "rules") {
+                title.textContent = "自动化规则";
+                const rules = rulesCache || [];
+                const scheduler = schedulerSnapshot || {};
+                body.innerHTML = `
+                    <div class="summary-card">
+                        <div class="summary-head">
+                            <div>
+                                <div class="summary-title">新建规则</div>
+                                <div class="summary-meta">支持时间、高温、人数触发；动作可切场景或控设备。</div>
+                            </div>
+                            <button class="mini-btn" id="refresh-rules-btn">刷新</button>
+                        </div>
+                        <div class="mini-actions">
+                            <span class="pill ${scheduler.enabled ? "on" : ""}">${scheduler.enabled ? "自动调度中" : "自动调度已停用"}</span>
+                            <button class="mini-btn" id="toggle-scheduler-btn">${scheduler.enabled ? "暂停自动调度" : "启用自动调度"}</button>
+                        </div>
+                        <div class="form-grid">
+                            <div class="field">
+                                <label>规则名</label>
+                                <input id="rule-name" placeholder="例如：夜间睡眠">
+                            </div>
+                            <div class="field">
+                                <label>优先级</label>
+                                <input id="rule-priority" type="number" value="10">
+                            </div>
+                            <div class="field">
+                                <label>触发类型</label>
+                                <select id="rule-trigger-type">
+                                    <option value="time">时间</option>
+                                    <option value="temperature">温度</option>
+                                    <option value="occupancy">人数</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label>触发值</label>
+                                <input id="rule-trigger-value" placeholder="22:30 或 30">
+                            </div>
+                            <div class="field">
+                                <label>动作类型</label>
+                                <select id="rule-action-type">
+                                    <option value="scene_switch">场景切换</option>
+                                    <option value="device_control">设备控制</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label>动作目标</label>
+                                <input id="rule-action-target" placeholder="睡眠模式 或 空调">
+                            </div>
+                            <div class="field">
+                                <label>设备动作</label>
+                                <select id="rule-device-action">
+                                    <option value="on">on</option>
+                                    <option value="off">off</option>
+                                    <option value="adjust">adjust</option>
+                                    <option value="open">open</option>
+                                    <option value="close">close</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label>参数值</label>
+                                <input id="rule-param-value" placeholder="温度/亮度，可空">
+                            </div>
+                            <div class="field full">
+                                <button class="mini-btn" id="create-rule-btn">保存规则</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stack" id="rules-list">
+                        ${rules.length ? rules.map((rule) => `
+                            <div class="rule-card">
+                                <div class="rule-head">
+                                    <div>
+                                        <div class="rule-name">${rule.name}</div>
+                                        <div class="rule-meta">触发：${formatRuleTrigger(rule.trigger)} ｜ 动作：${formatRuleAction(rule.action)}</div>
+                                    </div>
+                                    <span class="pill ${rule.enabled ? "on" : ""}">${rule.enabled ? "已启用" : "已停用"}</span>
+                                </div>
+                                <div class="mini-actions">
+                                    <button class="mini-btn" data-rule-toggle="${rule.id}">${rule.enabled ? "停用" : "启用"}</button>
+                                    <button class="mini-btn" data-rule-run="${rule.id}">评估</button>
+                                    <button class="mini-btn" data-rule-delete="${rule.id}">删除</button>
+                                </div>
+                            </div>
+                        `).join("") : `<div class="empty-hint">还没有自动化规则。</div>`}
+                    </div>
+                `;
+                document.getElementById("refresh-rules-btn").onclick = loadRules;
+                document.getElementById("toggle-scheduler-btn").onclick = toggleScheduler;
+                document.getElementById("create-rule-btn").onclick = createRuleFromForm;
+                body.querySelectorAll("[data-rule-toggle]").forEach((btn) => {
+                    btn.onclick = () => toggleRule(btn.dataset.ruleToggle);
+                });
+                body.querySelectorAll("[data-rule-delete]").forEach((btn) => {
+                    btn.onclick = () => deleteRule(btn.dataset.ruleDelete);
+                });
+                body.querySelectorAll("[data-rule-run]").forEach((btn) => {
+                    btn.onclick = () => runSingleRule(btn.dataset.ruleRun);
+                });
+            } else if (type === "memory") {
+                title.textContent = "记忆与偏好";
+                const snapshot = memorySnapshot || {};
+                const session = snapshot.session || {};
+                const prefs = snapshot.preferences || {};
+                const turns = session.recent_turns || [];
+                const recentMemory = snapshot.recent_memory || [];
+                body.innerHTML = `
+                    <div class="kv-grid">
+                        <div class="kv-item">
+                            <div class="kv-label">当前场景</div>
+                            <div class="kv-value">${session.current_scene || "暂无"}</div>
+                        </div>
+                        <div class="kv-item">
+                            <div class="kv-label">最近输入</div>
+                            <div class="kv-value">${session.last_user_input || "暂无"}</div>
+                        </div>
+                        <div class="kv-item">
+                            <div class="kv-label">归一化结果</div>
+                            <div class="kv-value">${session.last_normalized_input || "暂无"}</div>
+                        </div>
+                        <div class="kv-item">
+                            <div class="kv-label">最近动作</div>
+                            <div class="kv-value">${formatLastAction(session.last_action || {})}</div>
+                        </div>
+                    </div>
+                    <div class="summary-card" style="margin-top: 10px;">
+                        <div class="summary-title">结构化偏好</div>
+                        <div class="summary-meta">${formatPreferences(prefs)}</div>
+                    </div>
+                    <div class="summary-card" style="margin-top: 10px;">
+                        <div class="summary-title">近期交互</div>
+                        <div class="stack" style="margin-top: 8px;">
+                            ${turns.length ? turns.map((turn) => `
+                                <div class="info-card">
+                                    <div class="info-text">${turn.role} · ${turn.text}</div>
+                                </div>
+                            `).join("") : `<div class="empty-hint">暂无近期交互。</div>`}
+                        </div>
+                    </div>
+                    <div class="summary-card" style="margin-top: 10px;">
+                        <div class="summary-title">近期记忆写回</div>
+                        <div class="stack" style="margin-top: 8px;">
+                            ${recentMemory.length ? recentMemory.map((item) => `
+                                <div class="info-card">
+                                    <div class="info-text">${item.category || "记忆"} · ${item.content || ""}</div>
+                                </div>
+                            `).join("") : `<div class="empty-hint">暂无近期记忆。</div>`}
+                        </div>
+                    </div>
+                `;
+            } else if (type === "privacy") {
+                title.textContent = "隐私与云调用";
+                const info = privacySnapshot || {};
+                const context = info.last_cloud_context || {};
+                body.innerHTML = `
+                    <div class="kv-grid">
+                        <div class="kv-item">
+                            <div class="kv-label">云端可用</div>
+                            <div class="kv-value">${info.cloud_enabled ? "是" : "否"}</div>
+                        </div>
+                        <div class="kv-item">
+                            <div class="kv-label">LLM 后端</div>
+                            <div class="kv-value">${info.llm_backend || "mock"}</div>
+                        </div>
+                        <div class="kv-item">
+                            <div class="kv-label">最近路由</div>
+                            <div class="kv-value">${info.last_route || "local"}</div>
+                        </div>
+                        <div class="kv-item">
+                            <div class="kv-label">路由原因</div>
+                            <div class="kv-value">${info.last_route_reason || "暂无"}</div>
+                        </div>
+                    </div>
+                    <div class="summary-card" style="margin-top: 10px;">
+                        <div class="summary-title">最小必要上传字段</div>
+                        <div class="summary-meta">${(info.minimal_fields || []).join(" / ") || "暂无"}</div>
+                    </div>
+                    <div class="summary-card" style="margin-top: 10px;">
+                        <div class="summary-title">最近一次云端摘要</div>
+                        <div class="summary-meta">${formatJson(context)}</div>
+                    </div>
+                `;
             }
         }
 
@@ -998,7 +1383,224 @@
 
         function closeOverlay() {
             document.getElementById("overlay").classList.remove("open");
+            document.querySelector(".modal").classList.remove("wide");
             currentModal = null;
+        }
+
+        function formatRuleTrigger(trigger = {}) {
+            if (trigger.type === "time") return `时间 ${trigger.at || "--:--"}`;
+            if (trigger.type === "temperature") return `温度 ${trigger.op || ">"} ${trigger.value ?? "-"}`;
+            if (trigger.type === "occupancy") return `人数 ${trigger.op || ">"} ${trigger.value ?? "-"}`;
+            if (trigger.type === "scene") return `场景 = ${trigger.equals || "-"}`;
+            return "未配置";
+        }
+
+        function formatRuleAction(action = {}) {
+            if (action.type === "scene_switch") return `切换到 ${action.scene || "-"}`;
+            if (action.type === "device_control") return `${action.device || "-"} ${action.device_action || "-"}`;
+            return action.type || "未配置";
+        }
+
+        function formatLastAction(action = {}) {
+            if (!action || !Object.keys(action).length) return "暂无";
+            if (action.scene) return `${action.type || "场景切换"} · ${action.scene}`;
+            if (action.device) return `${action.type || "设备控制"} · ${action.device} ${action.device_action || ""}`.trim();
+            return action.type || "暂无";
+        }
+
+        function formatPreferences(prefs = {}) {
+            const devicesPref = prefs.devices || {};
+            const scenesPref = prefs.scenes || {};
+            const parts = [];
+            if (devicesPref["空调"]?.preferred_temperature !== undefined) {
+                parts.push(`空调偏好 ${devicesPref["空调"].preferred_temperature}°C`);
+            }
+            if (devicesPref["灯光"]?.preferred_brightness !== undefined) {
+                parts.push(`灯光偏好亮度 ${devicesPref["灯光"].preferred_brightness}%`);
+            }
+            const favoriteScene = Object.entries(scenesPref).sort((a, b) => (b[1].accept_count || 0) - (a[1].accept_count || 0))[0];
+            if (favoriteScene) {
+                parts.push(`常用场景 ${favoriteScene[0]}`);
+            }
+            return parts.length ? parts.join("；") : "暂无稳定偏好。";
+        }
+
+        function formatJson(value) {
+            try {
+                return JSON.stringify(value || {}, null, 2);
+            } catch (e) {
+                return "{}";
+            }
+        }
+
+        async function loadRules() {
+            try {
+                const data = await apiGet("/api/rules");
+                rulesCache = data.rules || [];
+                if (currentModal === "rules") renderModal("rules");
+            } catch (e) {
+                showToast("规则加载失败");
+            }
+        }
+
+        async function loadSchedulerStatus() {
+            try {
+                schedulerSnapshot = await apiGet("/api/rules/scheduler");
+                if (currentModal === "rules") renderModal("rules");
+            } catch (e) {
+                showToast("调度器状态加载失败");
+            }
+        }
+
+        async function loadMemorySummary() {
+            try {
+                memorySnapshot = await apiGet("/api/memory/summary");
+                if (currentModal === "memory") renderModal("memory");
+            } catch (e) {
+                showToast("记忆摘要加载失败");
+            }
+        }
+
+        async function loadPrivacyStatus() {
+            try {
+                privacySnapshot = await apiGet("/api/privacy/status");
+                if (currentModal === "privacy") renderModal("privacy");
+            } catch (e) {
+                showToast("隐私状态加载失败");
+            }
+        }
+
+        async function createRuleFromForm() {
+            const triggerType = document.getElementById("rule-trigger-type").value;
+            const triggerValue = document.getElementById("rule-trigger-value").value.trim();
+            const actionType = document.getElementById("rule-action-type").value;
+            const actionTarget = document.getElementById("rule-action-target").value.trim();
+            const paramValue = document.getElementById("rule-param-value").value.trim();
+            const rule = {
+                name: document.getElementById("rule-name").value.trim() || "未命名规则",
+                enabled: true,
+                priority: Number(document.getElementById("rule-priority").value || 10),
+                trigger: buildTrigger(triggerType, triggerValue),
+                conditions: [],
+                action: buildRuleAction(actionType, actionTarget, document.getElementById("rule-device-action").value, paramValue)
+            };
+            try {
+                const data = await apiJson("/api/rules", "POST", rule);
+                if (data.status !== "success") {
+                    showToast(data.error || "规则创建失败");
+                    return;
+                }
+                showToast("规则已保存");
+                await loadRules();
+            } catch (e) {
+                showToast("规则创建失败");
+            }
+        }
+
+        function buildTrigger(type, rawValue) {
+            if (type === "time") return { type: "time", at: rawValue || "22:30" };
+            if (type === "temperature") return { type: "temperature", op: ">", value: Number(rawValue || 30) };
+            if (type === "occupancy") return { type: "occupancy", op: ">", value: Number(rawValue || 0) };
+            return { type: "time", at: "22:30" };
+        }
+
+        function buildRuleAction(type, target, deviceAction, paramValue) {
+            if (type === "scene_switch") {
+                return { type: "scene_switch", scene: target || "睡眠模式" };
+            }
+            const action = {
+                type: "device_control",
+                device: target || "空调",
+                device_action: deviceAction || "on",
+                params: {}
+            };
+            if (paramValue) {
+                const value = Number(paramValue);
+                if ((target || "").includes("灯")) action.params.brightness = value;
+                else action.params.temperature = value;
+            }
+            return action;
+        }
+
+        async function toggleRule(ruleId) {
+            try {
+                const data = await apiJson(`/api/rules/${ruleId}/toggle`, "POST", {});
+                if (data.status !== "success") {
+                    showToast(data.error || "规则切换失败");
+                    return;
+                }
+                await loadRules();
+            } catch (e) {
+                showToast("规则切换失败");
+            }
+        }
+
+        async function toggleScheduler() {
+            const enabled = !(schedulerSnapshot && schedulerSnapshot.enabled);
+            try {
+                const data = await apiJson("/api/rules/scheduler", "POST", { enabled });
+                if (data.status !== "success") {
+                    showToast(data.error || "调度器切换失败");
+                    return;
+                }
+                schedulerSnapshot = data;
+                showToast(enabled ? "自动调度已启用" : "自动调度已暂停");
+                if (currentModal === "rules") renderModal("rules");
+            } catch (e) {
+                showToast("调度器切换失败");
+            }
+        }
+
+        async function deleteRule(ruleId) {
+            try {
+                const response = await fetch(`/api/rules/${ruleId}`, { method: "DELETE" });
+                const data = await response.json();
+                if (!response.ok || data.status !== "success") {
+                    showToast(data.error || "规则删除失败");
+                    return;
+                }
+                showToast("规则已删除");
+                await loadRules();
+            } catch (e) {
+                showToast("规则删除失败");
+            }
+        }
+
+        async function runSingleRule(ruleId) {
+            const rule = (rulesCache || []).find((item) => item.id === ruleId);
+            if (!rule) return;
+            const payload = {
+                execute: true,
+                context: {
+                    temperature: Number(document.getElementById("current-temp").textContent || 25),
+                    humidity: Number(document.getElementById("current-humidity").textContent || 60),
+                    members_home: Number(document.getElementById("current-occupancy").textContent || 1),
+                    current_scene: currentScene
+                }
+            };
+            if (rule.trigger?.type === "time") {
+                payload.time = rule.trigger.at || "22:30";
+            }
+            try {
+                const data = await apiJson("/api/rules/evaluate", "POST", payload);
+                if (data.status !== "success") {
+                    showToast(data.error || "规则评估失败");
+                    return;
+                }
+                const hit = (data.matches || []).find((item) => item.rule?.id === ruleId);
+                if (!hit) {
+                    showToast("当前上下文下未命中该规则");
+                    return;
+                }
+                if (hit.execution?.status === "success") {
+                    showToast("规则已执行");
+                    loadStatus();
+                } else {
+                    showToast(hit.execution?.status || "规则命中但未执行");
+                }
+            } catch (e) {
+                showToast("规则评估失败");
+            }
         }
 
         async function initVoiceRecognition() {
@@ -1156,15 +1758,27 @@
                 case "connected":
                     updateContext(data.context || {});
                     updateDevices(data.devices || {});
+                    loadRules();
+                    loadMemorySummary();
+                    loadPrivacyStatus();
                     break;
                 case "agent_response":
                     addMsg("ai", data.result, "执行完成");
                     addLog("系统", data.result);
                     loadStatus();
+                    loadMemorySummary();
+                    loadPrivacyStatus();
+                    break;
+                case "automation_update":
+                    addMsg("system", `${data.rule || "自动化规则"}：${data.result || "已执行"}`, "自动触发");
+                    addLog("自动化", `${data.rule || "规则"} → ${data.result || "已执行"}`);
+                    loadStatus();
+                    loadMemorySummary();
                     break;
                 case "agent_clarification":
                     addMsg("ai", data.question, "需要澄清");
                     addLog("系统", data.question);
+                    loadPrivacyStatus();
                     break;
                 case "device_update":
                     updateDeviceState(data.device, data.state);
@@ -1210,6 +1824,10 @@
             initVoiceRecognition();
             initWebSocket();
             loadStatus();
+            loadRules();
+            loadSchedulerStatus();
+            loadMemorySummary();
+            loadPrivacyStatus();
         });
     </script>
 </body>
