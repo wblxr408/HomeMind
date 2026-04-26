@@ -1,0 +1,63 @@
+{
+  "user_id": "default",
+  "current_scene": "观影模式",
+  "last_user_input": "我要看电影了",
+  "last_normalized_input": "切换观影模式",
+  "last_action": {
+    "type": "场景切换",
+    "device": "",
+    "scene": "观影模式",
+    "device_action": "scene",
+    "params": {},
+    "confidence": 1.0,
+    "result": "已切换到观影模式。已为您亮度调整为30%。 已为您温度调整为25°C。 已开启电视。 已开启音响。"
+  },
+  "last_clarification": {
+    "question": "目前我还不能控制“洗衣机”。我现在支持灯光、空调、电视、音响、风扇、窗户，以及回家、离家、睡眠、观影、起床、待客等场景模式。",
+    "answer": ""
+  },
+  "last_route": "local",
+  "last_updated_at": "2026-04-26T18:23:22.845291+08:00",
+  "recent_turns": [
+    {
+      "role": "user",
+      "text": "帮我打开闹钟",
+      "timestamp": "2026-04-26T18:09:53.882180+08:00"
+    },
+    {
+      "role": "user",
+      "text": "打开洗衣机",
+      "timestamp": "2026-04-26T18:23:00.599587+08:00"
+    },
+    {
+      "role": "user",
+      "text": "打开空调",
+      "timestamp": "2026-04-26T18:23:06.841150+08:00"
+    },
+    {
+      "role": "assistant",
+      "text": "已开启空调，温度26°C。",
+      "timestamp": "2026-04-26T18:23:07.910485+08:00"
+    },
+    {
+      "role": "user",
+      "text": "调低一点",
+      "timestamp": "2026-04-26T18:23:13.751324+08:00"
+    },
+    {
+      "role": "assistant",
+      "text": "已为您温度调整为24°C。",
+      "timestamp": "2026-04-26T18:23:14.729863+08:00"
+    },
+    {
+      "role": "user",
+      "text": "我要看电影了",
+      "timestamp": "2026-04-26T18:23:22.123016+08:00"
+    },
+    {
+      "role": "assistant",
+      "text": "已切换到观影模式。已为您亮度调整为30%。 已为您温度调整为25°C。 已开启电视。 已开启音响。",
+      "timestamp": "2026-04-26T18:23:22.845291+08:00"
+    }
+  ]
+}

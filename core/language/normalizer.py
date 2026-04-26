@@ -42,6 +42,24 @@ class LanguageNormalizer:
             return NormalizedQuery(original="", normalized="", language=language, confidence=0.0)
 
         detected = self._detect_language(original, language)
+        comparable = self._compact(original.lower())
+        matched_rule = None
+        for rule in self._rules:
+            if rule["language"] not in (detected, "any"):
+                continue
+            if rule["pattern"].search(comparable):
+                matched_rule = rule
+                if float(rule["confidence"]) >= 0.9:
+                    return NormalizedQuery(
+                        original=original,
+                        normalized=rule["normalized"],
+                        language=detected,
+                        confidence=rule["confidence"],
+                        matched_rule=rule["name"],
+                        extra_candidates=list(rule.get("extra_candidates", [])),
+                    )
+                break
+
         feedback_match = self._lookup_feedback(original)
         if feedback_match:
             normalized = str(feedback_match.get("corrected_normalized") or feedback_match.get("normalized"))
@@ -53,19 +71,15 @@ class LanguageNormalizer:
                 matched_rule="voice_feedback_history",
             )
 
-        comparable = self._compact(original.lower())
-        for rule in self._rules:
-            if rule["language"] not in (detected, "any"):
-                continue
-            if rule["pattern"].search(comparable):
-                return NormalizedQuery(
-                    original=original,
-                    normalized=rule["normalized"],
-                    language=detected,
-                    confidence=rule["confidence"],
-                    matched_rule=rule["name"],
-                    extra_candidates=list(rule.get("extra_candidates", [])),
-                )
+        if matched_rule:
+            return NormalizedQuery(
+                original=original,
+                normalized=matched_rule["normalized"],
+                language=detected,
+                confidence=matched_rule["confidence"],
+                matched_rule=matched_rule["name"],
+                extra_candidates=list(matched_rule.get("extra_candidates", [])),
+            )
 
         return NormalizedQuery(
             original=original,
@@ -122,7 +136,7 @@ class LanguageNormalizer:
             ("zh_close_light_colloquial", "zh", r"(关|关闭).{0,3}(灯|灯光)", "关闭灯光", 0.92, []),
             ("zh_sleep_scene_colloquial", "zh", r"(睡觉|睡了|歇了|困告|睡眠模式)", "切换睡眠模式", 0.9, []),
             ("zh_movie_scene_colloquial", "zh", r"(看电影|观影|电影模式)", "切换观影模式", 0.9, []),
-            ("zh_away_scene_colloquial", "zh", r"(出门|离家|不在家)", "切换离家模式", 0.9, []),
+            ("zh_away_scene_colloquial", "zh", r"(出门|离家|不在家|要走了|我走了|走了|准备走|马上走)", "切换离家模式", 0.9, []),
         ]
         return [
             {

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HomeMind — 智能家居中央指令器</title>
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -204,10 +204,16 @@
         .msg {
             display: flex;
             flex-direction: column;
-            max-width: 78%;
+            max-width: 66%;
         }
 
-        .msg.user { align-self: flex-end; align-items: flex-end; }
+        .msg.user {
+            align-self: flex-end;
+            align-items: flex-end;
+            display: inline-flex;
+            width: max-content;
+            max-width: 66%;
+        }
         .msg.ai, .msg.system { align-self: flex-start; align-items: flex-start; }
 
         .bubble {
@@ -223,6 +229,7 @@
             background: var(--bubble-user);
             color: var(--bubble-user-text);
             border-bottom-right-radius: 4px;
+            display: inline-block;
         }
 
         .msg.ai .bubble,
@@ -762,6 +769,8 @@
 
         @media (max-width: 760px) {
             .main { flex-direction: column; }
+            .msg { max-width: 84%; }
+            .msg.user { max-width: 84%; }
             .panel {
                 width: 100%;
                 border-left: none;
@@ -987,13 +996,8 @@
         function addMsg(role, html, tag) {
             const el = document.createElement("div");
             el.className = "msg " + role;
-            el.innerHTML = `
-                <div class="bubble">
-                    ${escapeHtml(html)}
-                    ${tag ? `<span class="action-tag">${tag}</span>` : ""}
-                </div>
-                <div class="msg-time">${getTime()}</div>
-            `;
+            const tagHtml = tag ? `<span class="action-tag">${tag}</span>` : "";
+            el.innerHTML = `<div class="bubble">${escapeHtml(html)}${tagHtml}</div><div class="msg-time">${getTime()}</div>`;
             const msgs = document.getElementById("messages");
             msgs.appendChild(el);
             msgs.scrollTop = msgs.scrollHeight;
@@ -1005,18 +1009,7 @@
             el.className = "msg system";
             const asrText = escapeHtml(data.text || "");
             const normalized = escapeHtml(data.normalized || data.text || "");
-            el.innerHTML = `
-                <div class="bubble">
-                    语音识别：${asrText}<br>
-                    归一化：${normalized}
-                    <div class="voice-feedback">
-                        <button onclick="sendVoiceFeedback('accepted')">正确</button>
-                        <button onclick="sendVoiceFeedback('corrected')">纠正</button>
-                        <button onclick="sendVoiceFeedback('ignored')">忽略</button>
-                    </div>
-                </div>
-                <div class="msg-time">${getTime()}</div>
-            `;
+            el.innerHTML = `<div class="bubble">语音识别：${asrText}<br>归一化：${normalized}<div class="voice-feedback"><button onclick="sendVoiceFeedback('accepted')">正确</button><button onclick="sendVoiceFeedback('corrected')">纠正</button><button onclick="sendVoiceFeedback('ignored')">忽略</button></div></div><div class="msg-time">${getTime()}</div>`;
             const msgs = document.getElementById("messages");
             msgs.appendChild(el);
             msgs.scrollTop = msgs.scrollHeight;
@@ -1101,19 +1094,52 @@
             Object.entries(states || {}).forEach(([id, state]) => updateDeviceState(id, state));
         }
 
-        function sendQuery(query) {
-            socket.emit("user_input", { text: query });
+        async function sendQuery(query) {
+            if (socket && socket.connected) {
+                socket.emit("user_input", { text: query });
+                return;
+            }
+
+            const data = await apiJson("/api/query", "POST", { query });
+            if (data.status === "success") {
+                const text = data.response || data.message || "已处理您的指令";
+                addMsg("ai", text, "执行完成");
+                addLog("系统", text);
+                loadStatus();
+                return;
+            }
+            if (data.status === "unsupported") {
+                const text = data.response || data.message || "当前暂不支持这个指令";
+                addMsg("ai", text, "暂不支持");
+                addLog("系统", text);
+                return;
+            }
+            if (data.status === "clarification") {
+                const text = data.question || "我需要更多信息";
+                addMsg("ai", text, "需要澄清");
+                addLog("系统", text);
+                return;
+            }
+
+            const text = data.message || data.question || "我需要更多信息";
+            addMsg("ai", text, "系统响应");
+            addLog("系统", text);
         }
 
-        function submitQuery() {
+        async function submitQuery() {
             const box = document.getElementById("inputBox");
             const val = box.value.trim();
             if (!val) return;
             addMsg("user", val);
             addLog("用户", val);
-            sendQuery(val);
             box.value = "";
             autoResize();
+            try {
+                await sendQuery(val);
+            } catch (e) {
+                showToast("发送失败");
+                addMsg("ai", "抱歉，当前没有收到系统回复。", "发送失败");
+            }
         }
 
         function handleKey(e) {
@@ -1157,7 +1183,7 @@
                         closeOverlay();
                     });
                 });
-            } else {
+            } else if (type === "device") {
                 title.textContent = "设备控制";
                 body.innerHTML = `<div class="card-grid">${
                     deviceList.map((device) => {
@@ -1763,7 +1789,7 @@
                     loadPrivacyStatus();
                     break;
                 case "agent_response":
-                    addMsg("ai", data.result, "执行完成");
+                    addMsg("ai", data.result, data.status === "unsupported" ? "暂不支持" : "执行完成");
                     addLog("系统", data.result);
                     loadStatus();
                     loadMemorySummary();
@@ -1798,7 +1824,11 @@
         }
 
         function initWebSocket() {
-            socket = io("http://localhost:5000");
+            if (typeof io === "undefined") {
+                addLog("系统", "Socket.IO 客户端未加载，已切换到 API 回复模式");
+                return;
+            }
+            socket = io(window.location.origin);
             socket.on("connect", () => addLog("系统", "连接已建立"));
             socket.on("disconnect", () => addLog("系统", "连接已断开"));
             socket.on("message", handleMessage);
@@ -1806,7 +1836,7 @@
         }
 
         function loadStatus() {
-            fetch("http://localhost:5000/api/status")
+            fetch(`${window.location.origin}/api/status`)
                 .then((r) => r.json())
                 .then((data) => {
                     updateContext(data.context || {});

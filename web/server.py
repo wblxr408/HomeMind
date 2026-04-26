@@ -211,6 +211,13 @@ class HomeMindWebAgent:
     def _validate_decision(self, decision: dict):
         return self.command_validator.validate(decision)
 
+    def _detect_unsupported_request(self, raw_text: str, normalized_text: str = ""):
+        unsupported = self.router.detect_unsupported_request(raw_text, normalized_query=normalized_text)
+        if unsupported:
+            self.last_route_info = unsupported
+            self.session_store.update_clarification(unsupported["message"])
+        return unsupported
+
     def _execute_structured_command(self, command: dict, route: str = "tap") -> dict:
         validation = self._validate_decision(command)
         if not validation["valid"]:
@@ -467,6 +474,32 @@ class HomeMindWebAgent:
         }
         socketio.emit("pipeline_update", {"type": "pipeline_start", "data": pipeline})
 
+        unsupported = self._detect_unsupported_request(user_text, normalized_text=query_text)
+        if unsupported:
+            result = {
+                "status": "unsupported",
+                "action": "unsupported",
+                "message": unsupported["message"],
+                "target": unsupported["target"],
+            }
+            pipeline["steps"]["exec"] = {"status": "done", "result": result}
+            socketio.emit("pipeline_update", {"type": "pipeline_step", "data": {
+                "query_id": query_id, "step": "exec", "data": pipeline["steps"]["exec"]
+            }})
+            socketio.emit("message", {
+                "type": "agent_response",
+                "data": {
+                    "action": "unsupported",
+                    "result": unsupported["message"],
+                    "status": "unsupported",
+                    "target": unsupported["target"],
+                    "query_id": query_id,
+                    "route": unsupported["route"],
+                    "route_reason": unsupported["reason"],
+                }
+            })
+            return
+
         # 尝试使用完整流程，否则使用简单规则匹配
         if self.bsr and self.lsr and self.llm:
             try:
@@ -488,7 +521,13 @@ class HomeMindWebAgent:
                     return
 
                 # Step 2: LSR 精排
-                ranked = self.lsr.rank(query_text, candidates, self.context, kb=self.kb)
+                ranked = self.lsr.rank(
+                    query_text,
+                    candidates,
+                    self.context,
+                    kb=self.kb,
+                    session_store=self.session_store,
+                )
                 pipeline["steps"]["lsr"] = {
                     "status": "done",
                     "ranked": [
@@ -902,13 +941,30 @@ class HomeMindWebAgent:
         normalized = self.language_normalizer.normalize(query)
         query_for_ai = normalized.normalized or query
         self._record_query_context(query, query_for_ai)
+
+        unsupported = self._detect_unsupported_request(query, normalized_text=query_for_ai)
+        if unsupported:
+            return {
+                "status": "unsupported",
+                "target": unsupported["target"],
+                "response": unsupported["message"],
+                "route": unsupported["route"],
+                "route_reason": unsupported["reason"],
+                "normalized_query": normalized.to_dict(),
+            }
         
         if not self.bsr or not self.lsr or not self.llm:
             return {"status": "no_action", "message": "AI 模块未加载"}
         
         try:
             candidates = self.bsr.recall(query_for_ai, self.context)
-            ranked = self.lsr.rank(query_for_ai, candidates, self.context, kb=self.kb)
+            ranked = self.lsr.rank(
+                query_for_ai,
+                candidates,
+                self.context,
+                kb=self.kb,
+                session_store=self.session_store,
+            )
             
             if ranked:
                 route_info = self.router.decide_route(
@@ -1405,6 +1461,8 @@ def voice_feedback():
 def on_connect():
     """客户端连接"""
     print(f"[WebSocket] 客户端连接: {request.sid}")
+    if not agent:
+        init_agent()
     if agent:
         emit("message", {
             "type": "connected",
@@ -1422,7 +1480,8 @@ def on_disconnect():
 def on_message(data):
     """处理前端消息"""
     print(f"[WebSocket] 收到消息: {data}")
-    
+    if not agent:
+        init_agent()
     if agent:
         agent_queue.put(data)
         if data.get("type") == "device_control":
@@ -1439,6 +1498,8 @@ def on_message(data):
 @socketio.on("user_input")
 def on_user_input(data):
     """处理用户自然语言输入"""
+    if not agent:
+        init_agent()
     if agent:
         agent_queue.put({"type": "user_input", "data": data})
 

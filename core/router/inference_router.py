@@ -7,6 +7,20 @@ from typing import Any, Dict, List, Optional
 class InferenceRouter:
     """Route requests based on explicitness, score, and cloud availability."""
 
+    SUPPORTED_CAPABILITY_SUMMARY = (
+        "我现在支持灯光、空调、电视、音响、风扇、窗户，以及回家、离家、睡眠、观影、起床、待客等场景模式。"
+    )
+    UNSUPPORTED_TARGETS = {
+        "闹钟": "如果你是想早上提醒，我可以先帮你切换到起床模式。",
+        "洗衣机": "",
+        "扫地机器人": "",
+        "咖啡机": "",
+        "空气净化器": "",
+        "加湿器": "",
+        "门锁": "",
+        "电饭煲": "",
+    }
+
     def __init__(
         self,
         local_threshold: float = 0.85,
@@ -27,6 +41,30 @@ class InferenceRouter:
         if not text:
             return False
         return any(pattern.search(text) for pattern in self._explicit_patterns)
+
+    def detect_unsupported_request(self, query: str, normalized_query: str = "") -> Optional[Dict[str, Any]]:
+        raw_text = str(query or "").strip()
+        route_text = str(normalized_query or raw_text or "").strip()
+        haystack = f"{raw_text} {route_text}"
+        if not haystack.strip():
+            return None
+
+        for target in sorted(self.UNSUPPORTED_TARGETS, key=len, reverse=True):
+            if target not in haystack:
+                continue
+            suggestion = self.UNSUPPORTED_TARGETS.get(target, "")
+            message = f"目前我还不能控制“{target}”。{self.SUPPORTED_CAPABILITY_SUMMARY}"
+            if suggestion:
+                message += suggestion
+            return {
+                "route": "unsupported",
+                "reason": "unsupported_target",
+                "target": target,
+                "message": message,
+                "top_candidates": [],
+                "top_score": 0.0,
+            }
+        return None
 
     def decide_route(
         self,

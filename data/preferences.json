@@ -1,0 +1,21 @@
+{
+  "user_id": "default",
+  "devices": {
+    "空调": {
+      "preferred_temperature": 24
+    }
+  },
+  "scenes": {
+    "观影模式": {
+      "accept_count": 1,
+      "preferred_hour": 18
+    }
+  },
+  "recommendation": {},
+  "language": {
+    "dialect_terms": {
+      "我要看电影了": "切换观影模式"
+    }
+  },
+  "updated_at": "2026-04-26T18:23:22.845291+08:00"
+}

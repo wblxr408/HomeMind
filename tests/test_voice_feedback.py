@@ -55,6 +55,20 @@ class VoiceFeedbackStoreTests(unittest.TestCase):
 
         self.assertEqual(self.store.recent(limit=10), [saved])
 
+    def test_builtin_leave_home_rule_overrides_bad_feedback_history(self):
+        self.store.add({
+            "asr_text": "我要走了",
+            "normalized": "打开空调",
+            "corrected_normalized": "打开空调",
+            "feedback": "accepted",
+        })
+
+        normalizer = LanguageNormalizer(feedback_store=self.store)
+        result = normalizer.normalize("我要走了")
+
+        self.assertEqual(result.normalized, "切换离家模式")
+        self.assertEqual(result.matched_rule, "zh_away_scene_colloquial")
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

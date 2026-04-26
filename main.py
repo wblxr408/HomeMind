@@ -141,10 +141,23 @@ class HomeMindAgent:
             logger.info(f"归一化输入: {query_for_ai}")
             self.preference_store.record_feedback(user_input, query_for_ai, "接受")
 
+        unsupported = self.router.detect_unsupported_request(user_input, normalized_query=query_for_ai)
+        if unsupported:
+            logger.info(f"路由结果: {unsupported}")
+            message = unsupported["message"]
+            self.session_store.update_clarification(message)
+            return message
+
         candidates = self.bsr.recall(query_for_ai, self.context)
         logger.info(f"BSR 召回 {len(candidates)} 个候选: {[c['action'] for c in candidates]}")
 
-        ranked = self.lsr.rank(query_for_ai, candidates, self.context, kb=self.kb)
+        ranked = self.lsr.rank(
+            query_for_ai,
+            candidates,
+            self.context,
+            kb=self.kb,
+            session_store=self.session_store,
+        )
         if ranked:
             logger.info(f"LSR 精排 Top: {ranked[0]['action']} (score={ranked[0].get('final_score', 0):.3f})")
         else:

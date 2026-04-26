@@ -29,9 +29,15 @@ except ImportError:
 class KnowledgeBase:
     """Local knowledge base with ChromaDB and in-memory fallback."""
 
-    def __init__(self, persist_dir: str = os.path.join(DATA_DIR, "chroma_db"), embedding_fn=None):
+    def __init__(
+        self,
+        persist_dir: str = os.path.join(DATA_DIR, "chroma_db"),
+        embedding_fn=None,
+        max_records: int = 500,
+    ):
         self.persist_dir = persist_dir
         self.embedding_fn = embedding_fn
+        self.max_records = max(1, int(max_records))
         self.preference_store = None
         self.preset_knowledge = self._init_preset_kb()
         self.memory_store: List[Dict] = []
@@ -170,28 +176,105 @@ class KnowledgeBase:
             return np.array(emb)
         return emb
 
+    def _find_memory_record(self, memory_key: str) -> Optional[Dict[str, Any]]:
+        if not memory_key:
+            return None
+        for record in self.memory_store:
+            if record.get("memory_key") == memory_key:
+                return record
+        return None
+
+    def _upsert_collection_record(self, record: Dict[str, Any]) -> None:
+        if self._collection is None:
+            return
+        try:
+            emb = self._get_embedding(record["content"])
+            payload = dict(record)
+            record_id = payload.get("record_id") or f"user_{datetime.now().timestamp()}"
+            if hasattr(self._collection, "upsert"):
+                self._collection.upsert(
+                    embeddings=[emb],
+                    documents=[payload["content"]],
+                    metadatas=[payload],
+                    ids=[record_id],
+                )
+            else:
+                try:
+                    self._collection.delete(ids=[record_id])
+                except Exception:
+                    pass
+                self._collection.add(
+                    embeddings=[emb],
+                    documents=[payload["content"]],
+                    metadatas=[payload],
+                    ids=[record_id],
+                )
+        except Exception as exc:
+            logger.warning("ChromaDB add failed: %s", exc)
+
+    def _prune_memory_store(self) -> None:
+        if len(self.memory_store) <= self.max_records:
+            return
+
+        ranked = sorted(
+            self.memory_store,
+            key=lambda item: (
+                float(item.get("value_score", 0.0) or 0.0),
+                int(item.get("count", 1) or 1),
+                str(item.get("last_seen", item.get("timestamp", "")) or ""),
+            ),
+            reverse=True,
+        )
+        kept = ranked[:self.max_records]
+        removed = ranked[self.max_records:]
+        self.memory_store = sorted(
+            kept,
+            key=lambda item: str(item.get("last_seen", item.get("timestamp", "")) or ""),
+        )
+
+        if self._collection is not None and removed:
+            removed_ids = [item.get("record_id") for item in removed if item.get("record_id")]
+            if removed_ids:
+                try:
+                    self._collection.delete(ids=removed_ids)
+                except Exception as exc:
+                    logger.warning("ChromaDB prune failed: %s", exc)
+
     def add(self, content: str, category: str = "用户习惯", accepted: bool = True, **metadata) -> bool:
+        memory_key = str(metadata.pop("memory_key", "") or "").strip()
+        value_score = float(metadata.pop("value_score", 1.0) or 1.0)
+        now = datetime.now().isoformat()
+        existing = self._find_memory_record(memory_key)
+
+        if existing is not None:
+            existing["content"] = content
+            existing["accepted"] = bool(existing.get("accepted", False) or accepted)
+            existing["last_seen"] = now
+            existing["timestamp"] = now
+            existing["count"] = int(existing.get("count", 1) or 1) + 1
+            existing["value_score"] = max(float(existing.get("value_score", 0.0) or 0.0), value_score)
+            existing.update(metadata)
+            self._upsert_collection_record(existing)
+            self._prune_memory_store()
+            return True
+
         record = {
             "content": content,
             "category": category,
             "accepted": accepted,
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": now,
+            "first_seen": now,
+            "last_seen": now,
+            "count": 1,
+            "value_score": value_score,
+            "memory_key": memory_key,
+            "record_id": metadata.get("record_id") or memory_key or f"user_{datetime.now().timestamp()}",
             **metadata,
         }
 
-        if self._collection is not None:
-            try:
-                emb = self._get_embedding(content)
-                self._collection.add(
-                    embeddings=[emb],
-                    documents=[content],
-                    metadatas=[record],
-                    ids=[f"user_{datetime.now().timestamp()}"],
-                )
-            except Exception as exc:
-                logger.warning("ChromaDB add failed: %s", exc)
-
         self.memory_store.append(record)
+        self._upsert_collection_record(record)
+        self._prune_memory_store()
         return True
 
     def update_feedback(self, original_query: str, action: str, feedback: str) -> bool:
@@ -256,6 +339,7 @@ class KnowledgeBase:
         data = self._storage.load_pickle(path)
         if data and "memory_store" in data:
             self.memory_store = data["memory_store"]
+            self._prune_memory_store()
             logger.info("Knowledge base restored, records=%s", len(self.memory_store))
             return True
         logger.warning("Knowledge base restore failed or backup missing: %s", path)
