@@ -1,73 +1,43 @@
 """
-场景模式切换工具
-预设场景：睡眠 / 待客 / 离家 / 起床 / 观影
-批量执行多设备操作
+Scene switching tool.
+
+Scene definitions are persisted through SceneStore, while SCENE_CONFIGS remains
+as a compatibility alias for validators and older imports.
 """
 
 import logging
-from typing import Dict, Optional
+from typing import List, Optional
+
+from core.automation.scene_store import DEFAULT_SCENE_CONFIGS, SceneStore
 
 logger = logging.getLogger(__name__)
 
-SCENE_CONFIGS = {
-    "睡眠模式": {
-        "灯光": {"action": "adjust", "params": {"brightness": 10}},
-        "空调": {"action": "adjust", "params": {"temperature": 26}},
-        "电视": {"action": "off", "params": {}},
-        "音响": {"action": "off", "params": {}},
-    },
-    "待客模式": {
-        "灯光": {"action": "adjust", "params": {"brightness": 100}},
-        "空调": {"action": "adjust", "params": {"temperature": 25}},
-        "音响": {"action": "on", "params": {"volume": 30, "mode": "背景音乐"}},
-    },
-    "离家模式": {
-        "灯光": {"action": "off", "params": {}},
-        "空调": {"action": "off", "params": {}},
-        "电视": {"action": "off", "params": {}},
-        "音响": {"action": "off", "params": {}},
-    },
-    "观影模式": {
-        "灯光": {"action": "adjust", "params": {"brightness": 30}},
-        "空调": {"action": "adjust", "params": {"temperature": 25}},
-        "电视": {"action": "on", "params": {}},
-        "音响": {"action": "on", "params": {"volume": 40}},
-    },
-    "起床模式": {
-        "灯光": {"action": "adjust", "params": {"brightness": 80}},
-        "空调": {"action": "adjust", "params": {"temperature": 24}},
-        "音响": {"action": "on", "params": {"volume": 20, "mode": "闹钟"}},
-    },
-    "回家模式": {
-        "灯光": {"action": "on", "params": {"brightness": 70}},
-        "空调": {"action": "on", "params": {"temperature": 26}},
-    },
-}
+SCENE_CONFIGS = DEFAULT_SCENE_CONFIGS
 
 
 class SceneSwitcher:
-    """场景切换器，批量执行预设的多设备操作"""
+    """Batch execute device operations for a named scene."""
 
-    def __init__(self, device_controller):
+    def __init__(self, device_controller, scene_store: Optional[SceneStore] = None):
         self.device_ctrl = device_controller
+        self.scene_store = scene_store or SceneStore()
 
     def execute(self, scene: str) -> str:
-        """
-        执行场景切换
-        scene: 睡眠模式 / 待客模式 / 离家模式 / 起床模式 / 观影模式 / 回家模式
-        """
-        config = SCENE_CONFIGS.get(scene)
+        config = self.scene_store.get_scene(scene)
         if config is None:
             return f"不支持的场景: {scene}"
 
         results = []
         for device, cmd in config.items():
-            result = self.device_ctrl.execute(device, cmd["action"], cmd["params"])
+            result = self.device_ctrl.execute(device, cmd.get("action", ""), cmd.get("params", {}))
             results.append(result)
 
-        logger.info(f"场景切换: {scene}，执行了{len(results)}项操作")
+        logger.info("场景切换: %s，执行了%s项操作", scene, len(results))
         return f"已切换到{scene}。" + " ".join(results)
 
+    def list_scenes(self) -> List[str]:
+        return self.scene_store.list_scenes()
+
     def switch(self, scene: str) -> str:
-        """兼容旧调用名。"""
+        """Compatibility wrapper for older callers."""
         return self.execute(scene)

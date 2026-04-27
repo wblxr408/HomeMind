@@ -1,0 +1,471 @@
+# HomeMind 架构增强计划
+
+## 修改概览
+
+| # | 问题                      | 优先级 | 改动范围                                                                                  |
+| - | ------------------------- | ------ | ----------------------------------------------------------------------------------------- |
+| 1 | DQN 未纳入常驻调度/主链路 | 高     | `web/server.py`                                                                         |
+| 2 | 场景语义不一致            | 中     | `core/constants.py`,`web/server.py`                                                   |
+| 3 | DQN 实现过于简单          | 中     | `core/dqn/policy.py`                                                                    |
+| 4 | 协议层安全方案不完善      | 高     | `core/llm/cloud_client.py`,`core/protocols/smart_home_gateway.py`,`web/server.py`   |
+| 5 | NL→TAP 规则入口缺失      | 高     | 新增 `core/automation/nl_to_tap.py`                                                     |
+| 6 | Web RAG 上下文未喂给 LLM  | 高     | `web/server.py`                                                                         |
+| 7 | 场景缺少 CRUD 接口        | 中     | 新增 `core/automation/scene_store.py`, 修改 `tools/scene_switch.py`,`web/server.py` |
+
+---
+
+## 详细改动
+
+### 1. DQN 纳入常驻调度 + 融入主链路
+
+ **文件** : `web/server.py`
+
+在 `HomeMindWebAgent` 的 `_scheduler_loop()` 中添加 DQN 定时推荐逻辑：
+
+```python:web/server.py
+# 在 _scheduler_loop() 中新增逻辑
+def _scheduler_tick(self, now: datetime = None) -> dict:
+    # ... 现有 TAP 调度逻辑 ...
+  
+    # 新增: DQN 主动推荐调度
+    if self.dqn:
+        self._dqn_proactive_recommend()
+```
+
+新增方法 `_dqn_proactive_recommend()`，参考 `main.py` 的 `proactive_recommend()` 实现，通过 SocketIO 推送推荐给前端。
+
+---
+
+### 2. 场景语义统一与扩展
+
+ **文件 A** : `core/constants.py`
+
+扩展 `SCENE_INDEX_MAP` 和 `SCENE_NAMES`，新增 Web 端使用的场景：
+
+```python:core/constants.py
+SCENE_INDEX_MAP = {
+    "睡眠模式": 0, "待客模式": 1, "离家模式": 2,
+    "观影模式": 3, "起床模式": 4, "回家模式": 1,
+    "工作模式": 6, "早安模式": 7, "晚归模式": 8,  # 新增
+}
+SCENE_NAMES = {
+    0: "睡眠模式", 1: "待客模式", 2: "离家模式",
+    3: "观影模式", 4: "起床模式", 5: "无推荐",
+    6: "工作模式", 7: "早安模式", 8: "晚归模式",  # 新增
+}
+```
+
+ **文件 B** : `web/server.py`
+
+更新 `SCENE_ID_MAP` 以匹配核心定义：
+
+```python:web/server.py
+    SCENE_ID_MAP = {
+        "sleep": "睡眠模式",
+        "entertainment": "观影模式",
+        "work": "工作模式",
+        "away": "离家模式",
+        "morning": "早安模式",
+        "evening": "晚归模式",
+    }
+```
+
+同步更新 `DQNPolicy` 的 `SCENES` 映射：
+
+```python:core/dqn/policy.py
+SCENES = {
+    0: "睡眠模式", 1: "待客模式", 2: "离家模式",
+    3: "观影模式", 4: "起床模式", 5: "无推荐",
+    6: "工作模式", 7: "早安模式", 8: "晚归模式",  # 新增
+}
+```
+
+---
+
+### 3. DQN 适度增强（PyTorch + Double DQN）
+
+ **文件** : `core/dqn/policy.py`
+
+保留轻量级设计，但引入 PyTorch 和 Double DQN：
+
+```python:core/dqn/policy.py
+# 新增导入
+import torch
+import torch.nn as nn
+import torch.optim as optim
+
+# 扩展状态向量: 5维 -> 8维
+# 新增: humidity, device_states_encoded
+def _state_to_vector(self, context) -> np.ndarray:
+    device_state_score = sum(
+        1 for v in context.devices.values() if v == "开"
+    ) / max(len(context.devices), 1)
+    return np.array([
+        context.hour / 23.0,
+        (context.temperature - 15.0) / 20.0,
+        context.members_home / 5.0,
+        (context.last_scene + 1) / 8.0,  # 更新上限
+        context.day_of_week / 6.0,
+        context.humidity / 100.0,  # 新增
+        device_state_score,         # 新增
+    ], dtype=np.float32)
+
+# 替换手动梯度为 PyTorch
+class QNetwork(nn.Module):
+    def __init__(self, state_dim=7, action_dim=9, hidden_dim=64):
+        super().__init__()
+        self.net = nn.Sequential(
+            nn.Linear(state_dim, hidden_dim),
+            nn.Tanh(),
+            nn.Linear(hidden_dim, hidden_dim),
+            nn.Tanh(),
+            nn.Linear(hidden_dim, action_dim),
+        )
+
+# Double DQN 更新逻辑
+def _light_update(self):
+    # Double DQN: 使用 online net 选动作，target net 算 Q 值
+    with torch.no_grad():
+        next_actions = self.online_net(next_states).argmax(1)
+        next_q = self.target_net(next_states).gather(1, next_actions.unsqueeze(1)).squeeze()
+    # ...
+```
+
+---
+
+### 4. 协议层安全方案完善
+
+根据端侧 Agent 架构原则： **本地 IPC 优先，远程访问再补 TLS，各协议走原生安全通道** 。
+
+#### 4.1 云端 LLM 调用（`core/llm/cloud_client.py`）
+
+对外部网络调用强制 HTTPS：
+
+```python:core/llm/cloud_client.py
+    def _init_client(self):
+        if self.api_base and not self.api_base.startswith("https://"):
+            logger.warning("CloudClient: forcing HTTPS for external API call")
+            self.api_base = self.api_base.replace("http://", "https://", 1)
+        # 使用 https://urllib3 对外部调用进行 TLS 验证
+```
+
+#### 4.2 MQTT → MQTTS（`core/protocols/smart_home_gateway.py`）
+
+```python:core/protocols/smart_home_gateway.py
+class MQTTProtocol(ProtocolInterface):
+    def __init__(self, broker: str = "192.168.1.100", port: int = 1883,
+                 username: str = "", password: str = "", use_tls: bool = False,
+                 cert_path: str = ""):
+        self.port = 8883 if use_tls else 1883  # MQTTS 默认端口
+        self.use_tls = use_tls
+        self.cert_path = cert_path
+        # ...
+```
+
+在配置中增加 `use_tls` 和 `cert_path` 选项。
+
+#### 4.3 HomeAssistant → HTTPS（`core/protocols/smart_home_gateway.py`）
+
+```python:core/protocols/smart_home_gateway.py
+class HomeAssistantProtocol(ProtocolInterface):
+    def __init__(self, url: str = "https://192.168.1.200:8123", token: str = ""):
+        self.url = url.rstrip("/")
+        if not self.url.startswith("https://"):
+            logger.warning("[HomeAssistant] Forcing HTTPS")
+            self.url = self.url.replace("http://", "https://", 1)
+```
+
+#### 4.4 Web 调试面板本地绑定（`web/server.py`）
+
+浏览器面板定位为 **开发调试工具** ，仅绑定本地：
+
+```python:web/server.py
+# 启动服务时
+socketio.run(app, host="127.0.0.1", port=5000, ...)  # 仅本地访问
+```
+
+#### 4.5 配置文件更新（`web/protocol_config.json`）
+
+```json:web/protocol_config.json
+{
+    "mqtt": {
+        "enabled": false,
+        "broker": "192.168.1.100",
+        "port": 8883,
+        "use_tls": true,
+        "cert_path": "",
+        "description": "MQTT broker - use MQTTS (port 8883) for production"
+    },
+    "home_assistant": {
+        "enabled": false,
+        "url": "https://192.168.1.200:8123",
+        "description": "Home Assistant API - HTTPS required"
+    }
+}
+```
+
+#### 架构原则总结
+
+| 层次           | 当前状态         | 改进后                          |
+| -------------- | ---------------- | ------------------------------- |
+| 核心模块间     | 进程内调用       | 保持不变（已最优）              |
+| 云端 LLM       | HTTP 可选        | **强制 HTTPS**            |
+| MQTT           | 明文 1883        | **MQTTS 8883 + 可选证书** |
+| HomeAssistant  | HTTP 可选        | **强制 HTTPS**            |
+| 浏览器调试面板 | `0.0.0.0:5000` | `**127.0.0.1:5000`**          |
+
+---
+
+### 5. 新增 NL→TAP 规则转换器
+
+ **文件** : 新增 `core/automation/nl_to_tap.py`
+
+利用现有 LLM 能力，将自然语言解析为 TAP 规则：
+
+```python:core/automation/nl_to_tap.py
+class NLToTAPConverter:
+    """将自然语言转换为 TAP 规则"""
+  
+    # 节假日检测模式
+    HOLIDAY_PATTERNS = [
+        r"节假日", r"周末", r"周六", r"周日",
+        r"元旦", r"春节", r"清明", r"五一", r"端午",
+        r"中秋", r"国庆", r"圣诞",
+    ]
+  
+    def __init__(self, llm_decider=None):
+        self.llm = llm_decider
+  
+    def parse(self, nl_text: str) -> Optional[Dict]:
+        """解析自然语言为 TAP 规则结构"""
+        # 检测时间条件
+        time_condition = self._extract_time_condition(nl_text)
+        # 检测动作
+        action = self._extract_action(nl_text)
+        if not action:
+            return None
+        return {
+            "trigger": time_condition,
+            "action": action,
+            "priority": 50,
+        }
+  
+    def _extract_time_condition(self, text: str) -> Dict:
+        """提取时间条件"""
+        for pattern in self.HOLIDAY_PATTERNS:
+            if re.search(pattern, text):
+                if pattern in ["周六", "周日", "周末"]:
+                    return {"type": "day_of_week", "days": [5, 6]}  # 0=Monday
+                return {"type": "holiday", "pattern": pattern}
+        # 尝试精确时间
+        match = re.search(r"(\d{1,2}):(\d{2})", text)
+        if match:
+            return {"type": "time", "at": f"{match.group(1)}:{match.group(2)}"}
+        return {"type": "time", "at": "08:00"}  # 默认早8点
+  
+    def _extract_action(self, text: str) -> Optional[Dict]:
+        """提取动作（设备控制或场景切换）"""
+        # 使用 LLM 或规则匹配
+        # ...
+```
+
+---
+
+### 6. 修复 Web RAG 上下文喂给 LLM
+
+ **文件** : `web/server.py`
+
+修复两处空 `rag_context` 参数：
+
+```python:web/server.py
+# 在 _process_user_input() 和 process_query() 中
+
+# 第574行附近
+rag_context = self.kb.get_context_prompt(query_text, self.context) if self.kb else ""
+
+if route_info["route"] == "cloud":
+    decision = self.llm.decide_cloud(
+        query_text,
+        ranked,
+        self.context,
+        rag_context=rag_context,  # 修复：传入实际 RAG 上下文
+        context_summary=cloud_context,
+    )
+else:
+    decision = self.llm.decide_local(
+        query_text,
+        ranked,
+        self.context,
+        rag_context=rag_context,  # 修复：传入实际 RAG 上下文
+    )
+```
+
+同样修复 `process_query()` 方法中的对应位置。
+
+---
+
+### 7. 场景 CRUD 持久化接口
+
+当前场景定义硬编码在 `tools/scene_switch.py` 的 `SCENE_CONFIGS` 中，无法动态增删改。需要将场景配置持久化，并提供完整的 CRUD 接口。
+
+#### 7.1 新增场景持久化存储（`core/automation/scene_store.py`）
+
+```python:core/automation/scene_store.py
+"""场景配置持久化存储"""
+import json
+import os
+import uuid
+from copy import deepcopy
+from typing import Any, Dict, List, Optional
+
+# 默认场景配置（冷启动用）
+DEFAULT_SCENE_CONFIGS = {
+    "睡眠模式": {
+        "灯光": {"action": "adjust", "params": {"brightness": 10}},
+        "空调": {"action": "adjust", "params": {"temperature": 26}},
+        "电视": {"action": "off", "params": {}},
+        "音响": {"action": "off", "params": {}},
+    },
+    "待客模式": {
+        "灯光": {"action": "adjust", "params": {"brightness": 100}},
+        "空调": {"action": "adjust", "params": {"temperature": 25}},
+        "音响": {"action": "on", "params": {"volume": 30}},
+    },
+    # ... 其他默认场景
+}
+
+class SceneStore:
+    """场景配置持久化存储，支持 CRUD 操作"""
+
+    def __init__(self, path: str = "data/scenes.json"):
+        self.path = path
+        self.scenes: Dict[str, Dict] = {}
+        self.load()
+
+    def load(self) -> Dict[str, Dict]:
+        if not os.path.exists(self.path):
+            # 冷启动：使用默认场景
+            self.scenes = deepcopy(DEFAULT_SCENE_CONFIGS)
+            self.save()
+            return self.scenes
+        with open(self.path, "r", encoding="utf-8") as f:
+            self.scenes = json.load(f)
+        return self.scenes
+
+    def save(self) -> bool:
+        os.makedirs(os.path.dirname(self.path) or ".", exist_ok=True)
+        with open(self.path, "w", encoding="utf-8") as f:
+            json.dump(self.scenes, f, ensure_ascii=False, indent=2)
+        return True
+
+    def list_scenes(self) -> List[str]:
+        return list(self.scenes.keys())
+
+    def get_scene(self, name: str) -> Optional[Dict]:
+        return deepcopy(self.scenes.get(name))
+
+    def add_scene(self, name: str, config: Dict) -> Dict:
+        self.scenes[name] = deepcopy(config)
+        self.save()
+        return self.get_scene(name)
+
+    def update_scene(self, name: str, config: Dict) -> Optional[Dict]:
+        if name not in self.scenes:
+            return None
+        self.scenes[name] = deepcopy(config)
+        self.save()
+        return self.get_scene(name)
+
+    def delete_scene(self, name: str) -> bool:
+        if name not in self.scenes:
+            return False
+        del self.scenes[name]
+        self.save()
+        return True
+```
+
+#### 7.2 修改 SceneSwitcher（`tools/scene_switch.py`）
+
+```python:tools/scene_switch.py
+from core.automation.scene_store import SceneStore
+
+class SceneSwitcher:
+    def __init__(self, device_controller, scene_store: SceneStore = None):
+        self.device_ctrl = device_controller
+        self.scene_store = scene_store or SceneStore()
+
+    def execute(self, scene: str) -> str:
+        config = self.scene_store.get_scene(scene)
+        if config is None:
+            return f"不支持的场景: {scene}"
+        # ... 执行逻辑
+
+    def list_scenes(self) -> List[str]:
+        return self.scene_store.list_scenes()
+```
+
+#### 7.3 Web API 接口（`web/server.py`）
+
+```python:web/server.py
+# 初始化场景存储
+self.scene_store = SceneStore()
+
+# API 路由
+@app.route("/api/scenes", methods=["GET"])
+def list_scenes():
+    return jsonify({"status": "success", "scenes": agent.scene_store.list_scenes()})
+
+@app.route("/api/scenes", methods=["POST"])
+def create_scene():
+    data = request.get_json()
+    scene = agent.scene_store.add_scene(data["name"], data["config"])
+    return jsonify({"status": "success", "scene": scene})
+
+@app.route("/api/scenes/<scene_name>", methods=["PUT"])
+def update_scene(scene_name):
+    data = request.get_json()
+    scene = agent.scene_store.update_scene(scene_name, data.get("config", {}))
+    return jsonify({"status": "success", "scene": scene})
+
+@app.route("/api/scenes/<scene_name>", methods=["DELETE"])
+def delete_scene(scene_name):
+    deleted = agent.scene_store.delete_scene(scene_name)
+    return jsonify({"status": "success" if deleted else "error"})
+```
+
+#### 7.4 NL→TAP 集成
+
+用户说"创建一个叫'健身模式'的场景，关闭所有灯，打开空调"时，NL→TAP 转换器可以：
+
+1. 解析出场景名"健身模式"
+2. 解析出设备动作：关闭灯光、打开空调
+3. 自动调用 `scene_store.add_scene()` 创建场景
+4. 将新场景注册到 DQN 的动作空间
+
+---
+
+## 依赖变更
+
+无需新增依赖。PyTorch 已在 `requirements-web.txt` 中声明且已安装。
+
+---
+
+## 风险与注意事项
+
+1. **DQN 状态维度变更** ：状态向量从5维扩展到7维，会重置现有 DQN 模型。需要引导用户备份或接受冷启动。
+2. **场景数量变更** ：动作空间从6扩展到9，需更新前端 UI 以支持新场景。
+3. **NL→TAP 节假日检测** ：当前为简单正则匹配，生产环境应接入节假日 API。
+4. **MQTTS 证书** ：启用 TLS 时需要提供有效的 CA 证书路径。
+5. **浏览器调试面板** ：修改 host 为 `127.0.0.1` 后，跨设备访问需要通过 VPN 或 SSH 隧道。
+
+---
+
+## 架构原则
+
+本计划遵循端侧 Agent 部署原则：
+
+* **本地进程内调用优先** ：Agent core、LLM、DQN、Memory、Router、Executor 均在同一进程内，无网络开销
+* **协议层走原生安全通道** ：MQTT→MQTTS，HomeAssistant→HTTPS，Matter 使用其原生安全机制
+* **浏览器面板定位为调试工具** ：仅绑定本地 loopback，作为仿真媒介，可以是家庭环境中可视化面板，不作为正式产品通信架构
+
+  ![1777301185079](image/plan/1777301185079.png)

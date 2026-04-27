@@ -12,10 +12,12 @@
     "mqtt": {
         "enabled": false,
         "broker": "192.168.1.100",
-        "port": 1883,
+        "port": 8883,
         "username": "",
         "password": "",
-        "description": "MQTT broker for smart home devices"
+        "use_tls": true,
+        "cert_path": "",
+        "description": "MQTT broker - use MQTTS (port 8883) for production"
     },
     "xiaomi": {
         "enabled": false,
@@ -25,8 +27,8 @@
     },
     "home_assistant": {
         "enabled": false,
-        "url": "http://192.168.1.200:8123",
+        "url": "https://192.168.1.200:8123",
         "token": "",
-        "description": "Home Assistant API"
+        "description": "Home Assistant API - HTTPS required"
     }
 }

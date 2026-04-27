@@ -3,11 +3,15 @@
 from copy import deepcopy
 from typing import Any, Dict, List
 
+from core.automation.scene_store import SceneStore
 from tools.scene_switch import SCENE_CONFIGS
 
 
 class CommandValidator:
     """Validate device control and scene switch commands."""
+
+    def __init__(self, scene_store: SceneStore = None):
+        self.scene_store = scene_store
 
     DEVICE_ACTIONS = {
         "空调": {"on", "off", "adjust"},
@@ -100,7 +104,8 @@ class CommandValidator:
 
     def _validate_scene_switch(self, command: Dict[str, Any]) -> List[str]:
         scene = command.get("scene", "")
-        if scene not in SCENE_CONFIGS:
+        dynamic_scenes = set(self.scene_store.list_scenes()) if self.scene_store else set()
+        if scene not in SCENE_CONFIGS and scene not in dynamic_scenes:
             return [f"场景不在白名单中: {scene}"]
         return []
 

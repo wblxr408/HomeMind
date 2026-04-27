@@ -47,7 +47,7 @@ def init_protocol_gateway(mode: str):
 
 def main():
     parser = argparse.ArgumentParser(description="HomeMind 中央指令器")
-    parser.add_argument("--host", default="0.0.0.0", help="服务地址")
+    parser.add_argument("--host", default="127.0.0.1", help="服务地址")
     parser.add_argument("--port", type=int, default=5000, help="服务端口")
     parser.add_argument("--debug", action="store_true", help="调试模式")
     parser.add_argument("--mode", choices=["simulated", "real"], default="simulated",
