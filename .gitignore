@@ -2,11 +2,18 @@ __pycache__/
 *.py[cod]
 gcm-diagnose.log
 
-data/chroma_db/
-data/voice_feedback.jsonl
+.pytest_cache/
+.mypy_cache/
+
+uploads/*
+!uploads/floor-plans/
+uploads/floor-plans/*
+!uploads/floor-plans/*.svg
+data/scenes.json
 data/.key
 data/.key.salt
-data/scenes.json
+data/chroma_db/
+data/voice_feedback.jsonl
 models/
 !models/
 models/*
