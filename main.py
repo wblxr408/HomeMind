@@ -151,24 +151,25 @@ class HomeMindAgent:
             logger.info(f"归一化输入: {query_for_ai}")
             self.preference_store.record_feedback(user_input, query_for_ai, "接受")
 
-        intent_info = self.router.classify_intent(user_input, normalized_query=query_for_ai)
-        if intent_info["route"] == "automation":
-            logger.info(f"Automation route: {intent_info}")
+        intent_info = self.llm.plan_intent(user_input, normalized_query=query_for_ai, context=self.context)
+        if intent_info["intent_type"] == "automation_request":
+            logger.info(f"LLM intent plan: {intent_info}")
             proposal = self._build_automation_confirmation(user_input, query_for_ai)
             if proposal:
                 self.session_store.append_turn("assistant", proposal)
                 self.session_store.save()
                 return proposal
             message = "我理解到你想创建定时任务，但还缺少明确的时间或动作。你可以试试“晚上7:00打开空调”。"
-            self.session_store.update_clarification(message)
+            self.session_store.append_turn("assistant", message)
+            self.session_store.save()
             return message
-        if intent_info["route"] == "unsupported":
-            logger.info(f"Unsupported route: {intent_info}")
-            message = intent_info["message"]
-            self.session_store.update_clarification(message)
-            return message
-        if intent_info["route"] == "reply":
+        if intent_info["intent_type"] == "chat_reply":
             logger.info(f"Reply route: {intent_info}")
+            message = intent_info.get("reply_message") or "你好，我在。"
+            self.session_store.update_clarification(message)
+            return message
+        if intent_info["intent_type"] == "clarification_needed":
+            logger.info(f"Clarification route: {intent_info}")
             message = intent_info.get("reply_message") or "你好，我在。"
             self.session_store.append_turn("assistant", message)
             self.session_store.save()
@@ -441,6 +442,177 @@ class HomeMindAgent:
         for key, value in kwargs.items():
             if hasattr(self.context, key):
                 setattr(self.context, key, value)
+
+def _llm_first_process(self: HomeMindAgent, user_input: str) -> str:
+    if not self.llm:
+        return "AI 模块未加载"
+
+    if self._simulator:
+        self.context = self._simulator.get_context()
+        self.context.current_scene = self.session_store.get_current_scene()
+
+    pending = self.session_store.get_pending_confirmation()
+    if pending:
+        pending_reply = self._handle_pending_confirmation(user_input, pending)
+        if pending_reply:
+            return pending_reply
+
+    normalized = self.language_normalizer.normalize(user_input)
+    query_for_ai = normalized.normalized or user_input
+    self.session_store.update_from_query(user_input, query_for_ai)
+    logger.info("收到输入: %s", user_input)
+    if query_for_ai != user_input:
+        logger.info("归一化输入: %s", query_for_ai)
+        self.preference_store.record_feedback(user_input, query_for_ai, "接受")
+
+    intent_plan = self.llm.plan_intent(user_input, normalized_query=query_for_ai, context=self.context)
+    logger.info("LLM 主判定: %s", intent_plan)
+
+    if intent_plan["intent_type"] == "chat_reply":
+        message = intent_plan.get("reply_message") or "你好，我在。"
+        self.session_store.append_turn("assistant", message)
+        self.session_store.save()
+        return message
+
+    if intent_plan["intent_type"] == "clarification_needed":
+        message = intent_plan.get("reply_message") or "请问你是想控制设备、切换场景，还是创建定时任务？"
+        self.session_store.update_clarification(message)
+        return message
+
+    if intent_plan["intent_type"] == "automation_request":
+        proposal = self._build_automation_confirmation(user_input, query_for_ai)
+        if proposal:
+            self.session_store.append_turn("assistant", proposal)
+            self.session_store.save()
+            return proposal
+        message = "我理解到你想创建定时任务，但还缺少明确的时间或动作。你可以试试“晚上7:00打开空调”。"
+        self.session_store.update_clarification(message)
+        return message
+
+    goal_query = intent_plan.get("normalized_goal") or query_for_ai
+    unsupported = self.router.detect_unsupported_request(user_input, normalized_query=goal_query)
+    if unsupported:
+        logger.info("后置能力校验拒绝: %s", unsupported)
+        message = unsupported["message"]
+        self.session_store.update_clarification(message)
+        return message
+
+    candidates = self.bsr.recall(goal_query, self.context)
+    logger.info("BSR 召回 %s 个候选: %s", len(candidates), [c["action"] for c in candidates])
+
+    ranked = self.lsr.rank(
+        goal_query,
+        candidates,
+        self.context,
+        kb=self.kb,
+        session_store=self.session_store,
+    )
+    if not ranked:
+        clarification = self.llm.ask_clarification(goal_query, candidates)
+        self.session_store.update_clarification(clarification)
+        return clarification
+
+    route_info = self.router.decide_route(
+        user_input,
+        ranked,
+        normalized_query=goal_query,
+        cloud_available=self.llm.is_cloud_available(),
+    )
+    logger.info("候选路由建议: %s", route_info)
+    if route_info["route"] == "clarify":
+        clarification = self.llm.ask_clarification(goal_query, ranked)
+        self.session_store.update_clarification(clarification)
+        return clarification
+
+    rag_context = self.kb.get_context_prompt(goal_query, self.context)
+    cloud_context = self.privacy_redactor.build_cloud_context(
+        self.context,
+        ranked[:3],
+        session_store=self.session_store,
+        preference_store=self.preference_store,
+    )
+    logger.info("云端最小上下文: %s", cloud_context)
+
+    if route_info["route"] == "cloud":
+        decision = self.llm.decide_cloud(
+            goal_query,
+            ranked,
+            self.context,
+            rag_context=rag_context,
+            context_summary=cloud_context,
+        )
+    else:
+        decision = self.llm.decide_local(
+            goal_query,
+            ranked,
+            self.context,
+            rag_context=rag_context,
+        )
+    logger.info("LLM 结构化决策: confidence=%.3f, %s", decision.get("confidence", 0), decision)
+
+    if decision.get("confidence", 0) < self.confidence_threshold:
+        clarification = self.llm.ask_clarification(goal_query, ranked)
+        self.session_store.update_clarification(clarification)
+        return clarification
+
+    validation = self.command_validator.validate(decision)
+    logger.info("命令校验: %s", validation)
+    if not validation["valid"]:
+        message = "我暂时不能执行这个指令：" + "；".join(validation["errors"])
+        self.session_store.update_clarification(message)
+        return message
+    if validation["requires_confirmation"]:
+        message = "这个操作风险较高，需要二次确认后再执行。"
+        self.session_store.update_clarification(message)
+        return message
+    decision = validation["normalized_command"]
+
+    action = decision.get("action", "")
+    params = decision.get("params", {})
+    self._last_dqn_action = None
+    route = route_info["route"]
+
+    if action == "设备控制":
+        device = decision.get("device", "")
+        device_action = decision.get("device_action", "")
+        try:
+            result = self.device_ctrl.execute(device, device_action, params)
+            self._sync_devices_from_controller()
+        except Exception as exc:
+            logger.error("设备控制失败: %s", exc)
+            result = "设备控制失败，请稍后重试"
+    elif action == "场景切换":
+        scene = decision.get("scene", "")
+        try:
+            result = self.scene_switcher.execute(scene)
+            self._sync_scene_to_simulator(scene)
+            self.context.current_scene = scene
+            self.context.last_scene = SCENE_INDEX_MAP.get(scene, -1)
+            self.session_store.update_scene(scene)
+        except Exception as exc:
+            logger.error("场景切换失败: %s", exc)
+            result = "场景切换失败，请稍后重试"
+    elif action == "信息查询":
+        query_type = decision.get("query_type", "")
+        try:
+            result = self.info_query.execute(query_type, params)
+        except Exception as exc:
+            logger.error("信息查询失败: %s", exc)
+            result = "信息查询失败"
+    else:
+        result = f"执行了 {action}，参数 {params}"
+
+    confidence = decision.get("confidence", 0)
+    feedback = "接受" if confidence >= 0.85 else "忽略"
+    self.session_store.update_from_decision(decision, route=route, result=result)
+    self.preference_store.record_feedback(user_input, query_for_ai, feedback)
+    if feedback == "接受":
+        self.preference_store.record_action_accept(decision, self.context)
+    self.kb_writer.write_feedback(user_input, decision, feedback)
+    return result
+
+
+HomeMindAgent.process = _llm_first_process
 
 
 def run_cli():

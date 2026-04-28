@@ -1467,6 +1467,409 @@ class HomeMindWebAgent:
         return {"status": "no_action", "message": "无法理解您的请求"}
 
 
+def _webagent_run_llm_first_query(self: HomeMindWebAgent, raw_text: str, normalized_text: str) -> dict:
+    if not self.llm:
+        return {"status": "no_action", "message": "AI 模块未加载", "_debug": {}}
+
+    intent_plan = self.llm.plan_intent(raw_text, normalized_query=normalized_text, context=self.context)
+    self.last_route_info = {
+        "intent_type": intent_plan.get("intent_type", ""),
+        "route": intent_plan.get("route", ""),
+        "reason": intent_plan.get("reasoning", ""),
+    }
+
+    if intent_plan["intent_type"] == "chat_reply":
+        interaction = self._build_message_metadata(
+            "decision",
+            raw_text,
+            normalized_text,
+            decision_snapshot={"intent_type": intent_plan["intent_type"], "route": "reply"},
+        )
+        return {
+            "status": "success",
+            "response_type": "chat",
+            "message_id": interaction["message_id"],
+            "response": intent_plan.get("reply_message") or "你好，我在。",
+            "route": "reply",
+            "route_reason": intent_plan.get("reasoning", ""),
+            "feedback_target": {"message_id": interaction["message_id"], "target_type": "decision"},
+            "_debug": {"intent_plan": intent_plan},
+        }
+
+    if intent_plan["intent_type"] == "clarification_needed":
+        message = intent_plan.get("reply_message") or "请问你是想控制设备、切换场景，还是创建定时任务？"
+        self.session_store.update_clarification(message)
+        return {
+            "status": "clarification",
+            "response_type": "clarification",
+            "question": message,
+            "route": "clarify",
+            "route_reason": intent_plan.get("reasoning", ""),
+            "_debug": {"intent_plan": intent_plan},
+        }
+
+    if intent_plan["intent_type"] == "automation_request":
+        proposal = self._build_automation_proposal(raw_text, normalized_text)
+        if proposal:
+            return {
+                "status": "success",
+                "response_type": "automation_proposal",
+                "message_id": proposal["message_id"],
+                "response": proposal["summary"],
+                "proposal": proposal,
+                "route": "automation",
+                "route_reason": intent_plan.get("reasoning", ""),
+                "feedback_target": {"message_id": proposal["message_id"], "target_type": "automation_proposal"},
+                "_debug": {"intent_plan": intent_plan},
+            }
+        message = "我理解到你想创建定时任务，但还缺少明确的时间或动作。你可以试试“晚上7:00打开空调”。"
+        self.session_store.update_clarification(message)
+        return {
+            "status": "clarification",
+            "response_type": "clarification",
+            "question": message,
+            "route": "automation",
+            "route_reason": "automation_proposal_failed",
+            "_debug": {"intent_plan": intent_plan},
+        }
+
+    goal_query = intent_plan.get("normalized_goal") or normalized_text or raw_text
+    unsupported = self._detect_unsupported_request(raw_text, normalized_text=goal_query)
+    if unsupported:
+        return {
+            "status": "unsupported",
+            "response_type": "clarification",
+            "target": unsupported["target"],
+            "response": unsupported["message"],
+            "route": unsupported["route"],
+            "route_reason": unsupported["reason"],
+            "_debug": {"intent_plan": intent_plan},
+        }
+
+    if not self.bsr or not self.lsr or not self.llm:
+        return {"status": "no_action", "message": "AI 模块未加载", "_debug": {"intent_plan": intent_plan}}
+
+    candidates = self.bsr.recall(goal_query, self.context)
+    ranked = self.lsr.rank(
+        goal_query,
+        candidates,
+        self.context,
+        kb=self.kb,
+        session_store=self.session_store,
+    ) if candidates else []
+
+    if not ranked:
+        question = self.llm.ask_clarification(goal_query, candidates)
+        self.session_store.update_clarification(question)
+        return {
+            "status": "clarification",
+            "response_type": "clarification",
+            "question": question,
+            "candidates": [c.get("action", "") for c in candidates[:3]],
+            "route": "clarify",
+            "route_reason": "no_ranked_candidates",
+            "_debug": {"intent_plan": intent_plan, "candidates": candidates, "ranked": ranked},
+        }
+
+    route_info = self.router.decide_route(
+        raw_text,
+        ranked,
+        normalized_query=goal_query,
+        cloud_available=self.llm.is_cloud_available(),
+    )
+    self.last_route_info = {
+        **route_info,
+        "intent_type": intent_plan.get("intent_type", ""),
+        "intent_reason": intent_plan.get("reasoning", ""),
+    }
+    if route_info["route"] == "clarify":
+        question = self.llm.ask_clarification(goal_query, ranked)
+        self.session_store.update_clarification(question)
+        return {
+            "status": "clarification",
+            "response_type": "clarification",
+            "question": question,
+            "candidates": route_info["top_candidates"],
+            "route": route_info["route"],
+            "route_reason": route_info["reason"],
+            "_debug": {"intent_plan": intent_plan, "candidates": candidates, "ranked": ranked, "route_info": route_info},
+        }
+
+    cloud_context = self._build_cloud_context(ranked[:3])
+    rag_context = self.kb.get_context_prompt(goal_query, self.context) if self.kb else ""
+    print(f"[Privacy] 云端最小上下文: {cloud_context}")
+    if route_info["route"] == "cloud":
+        decision = self.llm.decide_cloud(
+            goal_query,
+            ranked,
+            self.context,
+            rag_context=rag_context,
+            context_summary=cloud_context,
+        )
+    else:
+        decision = self.llm.decide_local(
+            goal_query,
+            ranked,
+            self.context,
+            rag_context=rag_context,
+        )
+
+    if decision.get("confidence", 0.0) < self.confidence_threshold:
+        question = self.llm.ask_clarification(goal_query, ranked)
+        self.session_store.update_clarification(question)
+        return {
+            "status": "clarification",
+            "response_type": "clarification",
+            "question": question,
+            "candidates": route_info["top_candidates"],
+            "route": route_info["route"],
+            "route_reason": route_info["reason"],
+            "_debug": {
+                "intent_plan": intent_plan,
+                "candidates": candidates,
+                "ranked": ranked,
+                "route_info": route_info,
+                "decision": decision,
+            },
+        }
+
+    validation = self._validate_decision(decision)
+    if not validation["valid"]:
+        message = "我暂时不能执行这个指令：" + "；".join(validation["errors"])
+        self.session_store.update_clarification(message)
+        return {
+            "status": "clarification",
+            "response_type": "clarification",
+            "question": message,
+            "candidates": route_info["top_candidates"],
+            "route": route_info["route"],
+            "route_reason": route_info["reason"],
+            "_debug": {
+                "intent_plan": intent_plan,
+                "candidates": candidates,
+                "ranked": ranked,
+                "route_info": route_info,
+                "decision": decision,
+            },
+        }
+    if validation["requires_confirmation"]:
+        message = "这个操作风险较高，需要二次确认后再执行。"
+        self.session_store.update_clarification(message)
+        return {
+            "status": "clarification",
+            "response_type": "clarification",
+            "question": message,
+            "candidates": route_info["top_candidates"],
+            "route": route_info["route"],
+            "route_reason": route_info["reason"],
+            "_debug": {
+                "intent_plan": intent_plan,
+                "candidates": candidates,
+                "ranked": ranked,
+                "route_info": route_info,
+                "decision": decision,
+            },
+        }
+
+    decision = validation["normalized_command"]
+    action_type = decision.get("action", "")
+    device = decision.get("device", "")
+    device_action = decision.get("device_action", "")
+    scene = decision.get("scene", "")
+    params = decision.get("params", {})
+
+    debug_payload = {
+        "intent_plan": intent_plan,
+        "goal_query": goal_query,
+        "candidates": candidates,
+        "ranked": ranked,
+        "route_info": route_info,
+        "decision": decision,
+    }
+
+    if action_type == "设备控制" and device and device_action:
+        message = self.device_control.execute(device, device_action, params)
+        self.session_store.update_from_decision(decision, route=route_info["route"], result=message)
+        self.preference_store.record_action_accept(decision, self.context)
+        interaction = self._build_message_metadata(
+            "execution",
+            raw_text,
+            normalized_text,
+            decision_snapshot=decision,
+        )
+        return {
+            "status": "success",
+            "response_type": "execution_result",
+            "message_id": interaction["message_id"],
+            "action": f"{device}_{device_action}",
+            "response": message,
+            "confidence": decision.get("confidence", 0.9),
+            "route": route_info["route"],
+            "route_reason": route_info["reason"],
+            "feedback_target": {"message_id": interaction["message_id"], "target_type": "execution"},
+            "_debug": debug_payload,
+        }
+
+    if action_type == "场景切换" and scene:
+        message = self.scene_switcher.execute(scene)
+        self.context.current_scene = scene
+        self.context.last_scene = SCENE_INDEX_MAP.get(scene, -1)
+        self.session_store.update_from_decision(decision, route=route_info["route"], result=message)
+        self.preference_store.record_action_accept(decision, self.context)
+        interaction = self._build_message_metadata(
+            "execution",
+            raw_text,
+            normalized_text,
+            decision_snapshot=decision,
+        )
+        return {
+            "status": "success",
+            "response_type": "execution_result",
+            "message_id": interaction["message_id"],
+            "action": "scene_switch",
+            "response": message,
+            "confidence": decision.get("confidence", 0.9),
+            "route": route_info["route"],
+            "route_reason": route_info["reason"],
+            "feedback_target": {"message_id": interaction["message_id"], "target_type": "execution"},
+            "_debug": debug_payload,
+        }
+
+    self.session_store.update_clarification("我需要更多信息")
+    return {
+        "status": "clarification",
+        "response_type": "clarification",
+        "question": "我需要更多信息",
+        "candidates": [r["action"] for r in ranked[:3]],
+        "route": route_info["route"],
+        "route_reason": route_info["reason"],
+        "_debug": debug_payload,
+    }
+
+
+def _webagent_process_query(self: HomeMindWebAgent, query: str) -> dict:
+    self.context.hour = datetime.now().hour
+    normalized = self.language_normalizer.normalize(query)
+    query_for_ai = normalized.normalized or query
+    self._record_query_context(query, query_for_ai)
+    result = self._run_llm_first_query(query, query_for_ai)
+    debug = result.pop("_debug", None)
+    result["normalized_query"] = normalized.to_dict()
+    if debug:
+        self.last_route_info = self.last_route_info or {}
+    return result
+
+
+def _webagent_process_user_input(self: HomeMindWebAgent, data: dict):
+    user_text = data.get("text", "").strip()
+    if not user_text:
+        return
+
+    normalized = self.language_normalizer.normalize(user_text)
+    query_text = normalized.normalized or user_text
+    self._record_query_context(user_text, query_text)
+    query_id = f"q_{int(time.time() * 1000)}"
+    print(f"[Agent] 收到用户输入: {user_text}")
+    self.context.hour = datetime.now().hour
+
+    pipeline = {
+        "query_id": query_id,
+        "query": user_text,
+        "normalized_query": normalized.to_dict(),
+        "steps": {
+            "bsr": {"status": "pending", "candidates": []},
+            "lsr": {"status": "pending", "ranked": []},
+            "llm": {"status": "pending", "decision": None},
+            "exec": {"status": "pending", "result": None},
+        },
+    }
+    socketio.emit("pipeline_update", {"type": "pipeline_start", "data": pipeline})
+
+    result = self._run_llm_first_query(user_text, query_text)
+    debug = result.pop("_debug", {}) or {}
+    intent_plan = debug.get("intent_plan", {})
+
+    pipeline["steps"]["llm"] = {
+        "status": "done",
+        "decision": {
+            "intent_type": intent_plan.get("intent_type", ""),
+            "normalized_goal": intent_plan.get("normalized_goal", ""),
+            "confidence": float(intent_plan.get("decision_confidence", 0.0)),
+            "reasoning": intent_plan.get("reasoning", ""),
+        },
+    }
+    socketio.emit("pipeline_update", {"type": "pipeline_step", "data": {
+        "query_id": query_id, "step": "llm", "data": pipeline["steps"]["llm"]
+    }})
+
+    candidates = debug.get("candidates", [])
+    if candidates:
+        pipeline["steps"]["bsr"] = {
+            "status": "done",
+            "candidates": [
+                {"id": i, "action": c.get("action", ""), "score": float(c.get("score", 0))}
+                for i, c in enumerate(candidates)
+            ],
+        }
+        socketio.emit("pipeline_update", {"type": "pipeline_step", "data": {
+            "query_id": query_id, "step": "bsr", "data": pipeline["steps"]["bsr"]
+        }})
+
+    ranked = debug.get("ranked", [])
+    if ranked:
+        pipeline["steps"]["lsr"] = {
+            "status": "done",
+            "ranked": [
+                {"id": i, "action": r.get("action", ""), "score": float(r.get("final_score", 0))}
+                for i, r in enumerate(ranked)
+            ],
+        }
+        socketio.emit("pipeline_update", {"type": "pipeline_step", "data": {
+            "query_id": query_id, "step": "lsr", "data": pipeline["steps"]["lsr"]
+        }})
+
+    pipeline["steps"]["exec"] = {"status": "done", "result": result}
+    socketio.emit("pipeline_update", {"type": "pipeline_step", "data": {
+        "query_id": query_id, "step": "exec", "data": pipeline["steps"]["exec"]
+    }})
+
+    result["query_id"] = query_id
+    if result["status"] == "clarification":
+        socketio.emit("message", {
+            "type": "agent_clarification",
+            "data": {
+                "question": result.get("question", result.get("response", "我需要更多信息")),
+                "candidates": result.get("candidates", []),
+                "query_id": query_id,
+                "route": result.get("route", ""),
+                "route_reason": result.get("route_reason", ""),
+            },
+        })
+        return
+
+    socketio.emit("message", {
+        "type": "agent_response",
+        "data": {
+            "action": result.get("action", result.get("response_type", "")),
+            "result": result.get("response", result.get("question", result.get("message", ""))),
+            "status": result.get("status", "success"),
+            "response_type": result.get("response_type", ""),
+            "message_id": result.get("message_id", ""),
+            "proposal": result.get("proposal"),
+            "target": result.get("target", ""),
+            "feedback_target": result.get("feedback_target"),
+            "query_id": query_id,
+            "route": result.get("route", ""),
+            "route_reason": result.get("route_reason", ""),
+        },
+    })
+
+
+HomeMindWebAgent._run_llm_first_query = _webagent_run_llm_first_query
+HomeMindWebAgent.process_query = _webagent_process_query
+HomeMindWebAgent._process_user_input = _webagent_process_user_input
+
+
 # ==================== REST API ====================
 
 @app.route("/api/status", methods=["GET"])
