@@ -67,6 +67,7 @@ from core.router import InferenceRouter
 from core.voice.vosk_asr import VoskASR
 from core.voice.feedback_store import VoiceFeedbackStore
 from core.constants import SCENE_INDEX_MAP, SCENE_NAMES
+from core.security import get_encrypted_storage
 from demo.context import HomeContext
 from demo.device_simulator import DeviceSimulator
 import tools.device_control as device_ctrl
@@ -207,6 +208,8 @@ class HomeMindWebAgent:
         if current_scene:
             self.context.current_scene = current_scene
             self.context.last_scene = SCENE_INDEX_MAP.get(current_scene, -1)
+        if self.kb and os.path.exists(os.path.join("data", "kb_backup.enc")):
+            self.kb.restore()
 
     def _record_query_context(self, raw_text: str, normalized_text: str):
         self.session_store.update_from_query(raw_text, normalized_text)
@@ -644,11 +647,16 @@ class HomeMindWebAgent:
         session = self.session_store.get_runtime_context()
         preferences = self.preference_store.snapshot()
         recent_memory = []
+        kb_status = {}
         if self.kb:
             try:
                 recent_memory = self.kb.memory_store[-5:]
             except Exception:
                 recent_memory = []
+            try:
+                kb_status = self.kb.get_status()
+            except Exception:
+                kb_status = {}
         return {
             "status": "success",
             "session": {
@@ -666,6 +674,7 @@ class HomeMindWebAgent:
                 "language": preferences.get("language", {}),
             },
             "recent_memory": recent_memory,
+            "kb_status": kb_status,
         }
 
     def get_privacy_status(self) -> dict:
@@ -673,6 +682,7 @@ class HomeMindWebAgent:
         cloud_enabled = backend == "openai" and self.llm.is_cloud_available()
         session = self.session_store.get_runtime_context()
         route = session.get("last_route", self.last_route_info.get("route", "local"))
+        storage_status = get_encrypted_storage().status()
         return {
             "status": "success",
             "cloud_enabled": cloud_enabled,
@@ -680,6 +690,7 @@ class HomeMindWebAgent:
             "last_route": route,
             "last_route_reason": self.last_route_info.get("reason", ""),
             "last_cloud_context": self.last_cloud_context,
+            "storage_security": storage_status,
             "minimal_fields": ["hour", "temperature", "humidity", "occupancy", "scene", "top_candidates", "preference_summary"],
         }
     
@@ -1233,6 +1244,7 @@ class HomeMindWebAgent:
     def get_all_states(self) -> dict:
         """获取所有状态，返回前端统一的设备格式"""
         raw_states = self.device_control.get_all_state()
+        storage_status = get_encrypted_storage().status()
         devices = {}
         for dev_id, dev_name in self.DEVICE_ID_MAP.items():
             raw = raw_states.get(dev_name, {})
@@ -1249,7 +1261,17 @@ class HomeMindWebAgent:
                 "occupancy": self.context.members_home,
                 "hour": datetime.now().hour
             },
-            "devices": devices
+            "devices": devices,
+            "storage_security": storage_status,
+            "kb_status": self.kb.get_status() if self.kb else {
+                "chromadb_importable": False,
+                "chromadb_enabled": False,
+                "collection_name": "",
+                "persist_dir": "",
+                "collection_count": 0,
+                "memory_store_count": 0,
+                "preset_count": 0,
+            },
         }
     
     def _resolve_device(self, device_id: str) -> str:

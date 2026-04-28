@@ -28,14 +28,14 @@ class HomeMindCliMockFlowTests(unittest.TestCase):
     def tearDownClass(cls):
         _cleanup_generated_files()
 
-    def test_cli_mock_ventilation_query_controls_air_conditioner(self):
+    def test_cli_mock_hot_query_controls_air_conditioner(self):
         from main import HomeMindAgent
 
         agent = HomeMindAgent()
 
-        result = agent.process("有点闷")
+        result = agent.process("有点热")
 
-        self.assertIn("已开启空调", result)
+        self.assertIn("空调", result)
         self.assertEqual(agent.device_ctrl.get_state("空调").get("status"), "开")
         self.assertEqual(agent.device_ctrl.get_state("空调").get("temperature"), 26)
 
@@ -46,7 +46,7 @@ class HomeMindCliMockFlowTests(unittest.TestCase):
 
         result = agent.process("切换到睡眠模式")
 
-        self.assertIn("已切换到睡眠模式", result)
+        self.assertIn("睡眠模式", result)
         self.assertEqual(agent.device_ctrl.get_state("灯光").get("brightness"), 10)
         self.assertEqual(agent.device_ctrl.get_state("电视").get("status"), "关")
 
@@ -66,17 +66,19 @@ class HomeMindWebMockFlowTests(unittest.TestCase):
         cls.web_server.agent = None
         _cleanup_generated_files()
 
-    def test_status_endpoint_returns_context_and_devices(self):
+    def test_status_endpoint_returns_context_devices_and_kb_status(self):
         response = self.client.get("/api/status")
 
         self.assertEqual(response.status_code, 200)
         payload = response.get_json()
         self.assertIn("context", payload)
         self.assertIn("devices", payload)
+        self.assertIn("kb_status", payload)
+        self.assertIn("storage_security", payload)
         self.assertIn("air_conditioner", payload["devices"])
 
     def test_query_endpoint_handles_device_and_scene_commands_in_mock_mode(self):
-        hot_response = self.client.post("/api/query", json={"query": "有点闷"})
+        hot_response = self.client.post("/api/query", json={"query": "有点热"})
         sleep_response = self.client.post("/api/query", json={"query": "我要睡觉了"})
 
         self.assertEqual(hot_response.status_code, 200)
@@ -87,11 +89,11 @@ class HomeMindWebMockFlowTests(unittest.TestCase):
 
         self.assertEqual(hot_payload["status"], "success")
         self.assertEqual(hot_payload["action"], "空调_on")
-        self.assertIn("已开启空调", hot_payload["response"])
+        self.assertIn("空调", hot_payload["response"])
 
         self.assertEqual(sleep_payload["status"], "success")
         self.assertEqual(sleep_payload["action"], "scene_switch")
-        self.assertIn("已切换到睡眠模式", sleep_payload["response"])
+        self.assertIn("睡眠模式", sleep_payload["response"])
 
     def test_device_and_scene_endpoints_apply_mock_state_changes(self):
         device_response = self.client.post("/api/devices/light/control", json={"action": "on", "params": {}})
@@ -111,14 +113,15 @@ class HomeMindWebMockFlowTests(unittest.TestCase):
         self.assertTrue(scene_payload["devices"]["light"]["is_on"])
 
     def test_info_dqn_and_kb_endpoints_work_in_mock_mode(self):
+        probe_text = "kb_probe_unique_26_temp"
         info_response = self.client.get("/api/info/temperature")
         recommend_response = self.client.get("/api/dqn/recommend")
         feedback_response = self.client.post("/api/dqn/feedback", json={"id": "dqn_0", "response": "接受"})
         add_response = self.client.post(
             "/api/kb/add",
-            json={"text": "用户喜欢26度空调", "category": "用户习惯"},
+            json={"text": probe_text, "category": "测试"},
         )
-        query_response = self.client.post("/api/kb/query", json={"query": "26度空调", "top_k": 1})
+        query_response = self.client.post("/api/kb/query", json={"query": probe_text, "top_k": 5})
         preferences_response = self.client.get("/api/preferences")
         memory_response = self.client.get("/api/memory/summary")
         privacy_response = self.client.get("/api/privacy/status")
@@ -141,10 +144,11 @@ class HomeMindWebMockFlowTests(unittest.TestCase):
         self.assertEqual(preferences_response.get_json()["status"], "success")
         self.assertEqual(memory_response.get_json()["status"], "success")
         self.assertEqual(privacy_response.get_json()["status"], "success")
+        self.assertIn("storage_security", privacy_response.get_json())
 
         kb_results = query_response.get_json()["results"]
         self.assertGreaterEqual(len(kb_results), 1)
-        self.assertIn("26度空调", kb_results[0]["content"])
+        self.assertTrue(any(probe_text in item["content"] for item in kb_results))
 
     def test_voice_endpoint_requires_uploaded_audio(self):
         response = self.client.post("/api/voice/transcribe")

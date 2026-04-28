@@ -9,6 +9,8 @@ from copy import deepcopy
 from datetime import datetime
 from typing import Any, Dict
 
+from core.security import get_encrypted_storage
+
 logger = logging.getLogger(__name__)
 
 
@@ -18,6 +20,8 @@ class PreferenceStore:
     def __init__(self, path: str = "data/preferences.json"):
         self.path = path
         self.data: Dict[str, Any] = self._default_data()
+        self.legacy_plaintext_loaded = False
+        self._storage = get_encrypted_storage()
         self.load()
 
     def _default_data(self) -> Dict[str, Any]:
@@ -37,8 +41,11 @@ class PreferenceStore:
             return self.snapshot()
 
         try:
-            with open(self.path, "r", encoding="utf-8") as handle:
-                loaded = json.load(handle)
+            loaded = self._storage.load_pickle(self.path, default=None)
+            if loaded is None and self._looks_like_plaintext():
+                with open(self.path, "r", encoding="utf-8") as handle:
+                    loaded = json.load(handle)
+                self.legacy_plaintext_loaded = True
             base = self._default_data()
             if isinstance(loaded, dict):
                 base.update(loaded)
@@ -62,14 +69,13 @@ class PreferenceStore:
 
     def save(self) -> bool:
         self.data["updated_at"] = datetime.now().astimezone().isoformat()
-        try:
-            os.makedirs(os.path.dirname(self.path) or ".", exist_ok=True)
-            with open(self.path, "w", encoding="utf-8") as handle:
-                json.dump(self.data, handle, ensure_ascii=False, indent=2)
-            return True
-        except Exception as exc:
-            logger.warning("PreferenceStore save failed: %s", exc)
+        if not self._storage.is_available():
+            logger.warning("PreferenceStore save skipped: encrypted storage unavailable")
             return False
+        ok = self._storage.save_pickle(self.data, self.path)
+        if ok:
+            self.legacy_plaintext_loaded = False
+        return ok
 
     def record_action_accept(self, decision: Dict[str, Any], context=None) -> None:
         action = str(decision.get("action", "") or "")
@@ -209,3 +215,11 @@ class PreferenceStore:
 
     def snapshot(self) -> Dict[str, Any]:
         return deepcopy(self.data)
+
+    def _looks_like_plaintext(self) -> bool:
+        try:
+            with open(self.path, "rb") as handle:
+                prefix = handle.read(32).lstrip()
+            return prefix.startswith(b"{")
+        except Exception:
+            return False

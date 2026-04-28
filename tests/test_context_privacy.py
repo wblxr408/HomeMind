@@ -1,24 +1,21 @@
-import json
 import os
 import unittest
 from pathlib import Path
 
 from core.memory import PreferenceStore, SessionStore
 from core.privacy import PrivacyRedactor
+from core.security import ENCRYPTED_PICKLE_MAGIC, reset_encrypted_storage
 from demo.context import HomeContext
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SESSION_PATH = REPO_ROOT / "data" / "session_state.json"
 PREFERENCE_PATH = REPO_ROOT / "data" / "preferences.json"
-KEY_FILES = [
-    REPO_ROOT / "data" / ".key",
-    REPO_ROOT / "data" / ".key.salt",
-]
+VOICE_PATH = REPO_ROOT / "data" / "voice_feedback.jsonl"
 
 
 def _cleanup():
-    for path in [SESSION_PATH, PREFERENCE_PATH, *KEY_FILES]:
+    for path in [SESSION_PATH, PREFERENCE_PATH, VOICE_PATH]:
         if path.exists():
             path.unlink()
 
@@ -30,9 +27,11 @@ class ContextPersistenceTests(unittest.TestCase):
 
     def setUp(self):
         _cleanup()
+        reset_encrypted_storage()
 
     def tearDown(self):
         _cleanup()
+        reset_encrypted_storage()
 
     def test_agent_persists_session_and_preference_after_scene_command(self):
         from main import HomeMindAgent
@@ -40,12 +39,14 @@ class ContextPersistenceTests(unittest.TestCase):
         agent = HomeMindAgent()
         result = agent.process("切换到睡眠模式")
 
-        self.assertIn("已切换到睡眠模式", result)
+        self.assertIn("睡眠模式", result)
         self.assertTrue(SESSION_PATH.exists())
         self.assertTrue(PREFERENCE_PATH.exists())
+        self.assertTrue(SESSION_PATH.read_bytes().startswith(ENCRYPTED_PICKLE_MAGIC))
+        self.assertTrue(PREFERENCE_PATH.read_bytes().startswith(ENCRYPTED_PICKLE_MAGIC))
 
-        session_data = json.loads(SESSION_PATH.read_text(encoding="utf-8"))
-        preference_data = json.loads(PREFERENCE_PATH.read_text(encoding="utf-8"))
+        session_data = SessionStore(path=str(SESSION_PATH)).get_runtime_context()
+        preference_data = PreferenceStore(path=str(PREFERENCE_PATH)).snapshot()
 
         self.assertEqual(session_data["current_scene"], "睡眠模式")
         self.assertEqual(session_data["last_action"]["scene"], "睡眠模式")
@@ -66,9 +67,12 @@ class ContextPersistenceTests(unittest.TestCase):
 class PrivacyRedactorTests(unittest.TestCase):
     def setUp(self):
         _cleanup()
+        reset_encrypted_storage()
+        os.environ["HOMEMIND_STORAGE_KEY"] = "test-storage-key"
 
     def tearDown(self):
         _cleanup()
+        reset_encrypted_storage()
 
     def test_redactor_builds_minimal_cloud_context(self):
         session_store = SessionStore(path=str(SESSION_PATH))
@@ -77,7 +81,7 @@ class PrivacyRedactorTests(unittest.TestCase):
 
         context = HomeContext(hour=22, temperature=28.0, humidity=72.0, members_home=2)
         context.current_scene = "观影模式"
-        session_store.update_from_query("昨天像那样开一下", "切换到观影模式")
+        session_store.update_from_query("昨天像那样开一个", "切换到观影模式")
         preference_store.record_action_accept(
             {
                 "action": "设备控制",

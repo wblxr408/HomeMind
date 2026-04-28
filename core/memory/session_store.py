@@ -7,6 +7,8 @@ from copy import deepcopy
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
+from core.security import get_encrypted_storage
+
 logger = logging.getLogger(__name__)
 
 
@@ -17,6 +19,8 @@ class SessionStore:
         self.path = path
         self.max_recent_turns = max_recent_turns
         self.data: Dict[str, Any] = self._default_data()
+        self.legacy_plaintext_loaded = False
+        self._storage = get_encrypted_storage()
         self.load()
 
     def _default_data(self) -> Dict[str, Any]:
@@ -42,8 +46,11 @@ class SessionStore:
             return self.get_runtime_context()
 
         try:
-            with open(self.path, "r", encoding="utf-8") as handle:
-                loaded = json.load(handle)
+            loaded = self._storage.load_pickle(self.path, default=None)
+            if loaded is None and self._looks_like_plaintext():
+                with open(self.path, "r", encoding="utf-8") as handle:
+                    loaded = json.load(handle)
+                self.legacy_plaintext_loaded = True
             base = self._default_data()
             if isinstance(loaded, dict):
                 base.update(loaded)
@@ -57,14 +64,13 @@ class SessionStore:
 
     def save(self) -> bool:
         self.data["last_updated_at"] = datetime.now().astimezone().isoformat()
-        try:
-            os.makedirs(os.path.dirname(self.path) or ".", exist_ok=True)
-            with open(self.path, "w", encoding="utf-8") as handle:
-                json.dump(self.data, handle, ensure_ascii=False, indent=2)
-            return True
-        except Exception as exc:
-            logger.warning("SessionStore save failed: %s", exc)
+        if not self._storage.is_available():
+            logger.warning("SessionStore save skipped: encrypted storage unavailable")
             return False
+        ok = self._storage.save_pickle(self.data, self.path)
+        if ok:
+            self.legacy_plaintext_loaded = False
+        return ok
 
     def update_from_query(self, raw_text: str, normalized_text: str = "") -> None:
         self.data["last_user_input"] = str(raw_text or "").strip()
@@ -150,3 +156,11 @@ class SessionStore:
 
     def get_last_action(self) -> Dict[str, Any]:
         return dict(self.data.get("last_action", {}) or {})
+
+    def _looks_like_plaintext(self) -> bool:
+        try:
+            with open(self.path, "rb") as handle:
+                prefix = handle.read(32).lstrip()
+            return prefix.startswith(b"{")
+        except Exception:
+            return False
