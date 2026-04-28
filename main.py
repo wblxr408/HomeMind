@@ -7,6 +7,7 @@ HomeMind 主入口
 import logging
 import os
 import sys
+import argparse
 from typing import Optional
 
 from demo.context import HomeContext
@@ -355,12 +356,84 @@ class HomeMindAgent:
                 setattr(self.context, key, value)
 
 
-def main():
+def run_cli():
+    """Start the interactive CLI agent."""
     agent = HomeMindAgent()
     sim = HomeSimulator()
     agent.attach_simulator(sim)
     agent.run()
 
 
+def _init_protocol_gateway(mode: str):
+    """Initialize the web protocol gateway based on startup mode."""
+    if mode == "real":
+        from core.protocols.smart_home_gateway import SmartHomeGateway
+
+        try:
+            gateway = SmartHomeGateway()
+            gateway.discover_devices()
+            return gateway
+        except Exception as exc:
+            print(f"[警告] 真实设备网关初始化失败: {exc}")
+            print("[回退] 使用模拟设备模式")
+
+    from demo.device_simulator import DeviceSimulator
+    return DeviceSimulator()
+
+
+def run(argv: Optional[list[str]] = None):
+    """Program entrypoint required by deployment: main.run."""
+    parser = argparse.ArgumentParser(description="HomeMind 中央指令器")
+    parser.add_argument("--host", default="127.0.0.1", help="服务地址")
+    parser.add_argument("--port", type=int, default=5000, help="服务端口")
+    parser.add_argument("--debug", action="store_true", help="调试模式")
+    parser.add_argument(
+        "--mode",
+        choices=["simulated", "real"],
+        default="simulated",
+        help="运行模式: simulated=模拟设备, real=真实设备",
+    )
+    parser.add_argument("--cli", action="store_true", help="启动交互式 CLI，而不是 Web 服务")
+    args = parser.parse_args(argv)
+
+    if args.cli:
+        return run_cli()
+
+    os.environ["HOMEMIND_MODE"] = args.mode
+
+    from web.server import app, socketio, init_agent
+
+    print("=" * 50)
+    print("  HomeMind 中央指令器")
+    print("=" * 50)
+    print()
+    print(f"  模式: {'模拟设备' if args.mode == 'simulated' else '真实设备'}")
+    print(f"  地址: http://{args.host}:{args.port}")
+    print()
+
+    protocol_gateway = _init_protocol_gateway(args.mode)
+    init_agent(mode=args.mode, protocol_gateway=protocol_gateway)
+
+    print()
+    print(f"  控制面板: http://{args.host}:{args.port}")
+    print(f"  API 状态:  http://{args.host}:{args.port}/api/status")
+    print()
+    print("  按 Ctrl+C 停止服务")
+    print()
+
+    socketio.run(
+        app,
+        host=args.host,
+        port=args.port,
+        debug=args.debug,
+        allow_unsafe_werkzeug=True,
+    )
+
+
+def main():
+    """Backward-compatible alias for older imports."""
+    return run()
+
+
 if __name__ == "__main__":
-    main()
+    run()
