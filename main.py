@@ -12,6 +12,7 @@ from typing import Optional
 
 from demo.context import HomeContext
 from core.bsr.candidate_recall import BSRecall
+from core.automation import NLToTAPConverter, TAPRuleStore
 from core.lsr.precision_ranking import LSRecify
 from core.llm.decision import LLMDecider
 from core.dqn.policy import DQNPolicy
@@ -47,6 +48,7 @@ class HomeMindAgent:
         self.privacy_redactor = PrivacyRedactor()
         self.router = InferenceRouter()
         self.command_validator = CommandValidator()
+        self.tap_rule_store = TAPRuleStore()
         self.kb = KnowledgeBase()
         self.kb.preference_store = self.preference_store
         self.bsr = BSRecall(self.kb)
@@ -65,6 +67,7 @@ class HomeMindAgent:
         self.kb_writer = KBWriter(self.kb)
         self.dqn_feedback = DQNFeedback(self.dqn)
         self.language_normalizer = LanguageNormalizer()
+        self.nl_to_tap = NLToTAPConverter()
 
         self.context = HomeContext()
         self.context.current_scene = ""
@@ -134,6 +137,12 @@ class HomeMindAgent:
             self.context = self._simulator.get_context()
             self.context.current_scene = self.session_store.get_current_scene()
 
+        pending = self.session_store.get_pending_confirmation()
+        if pending:
+            pending_reply = self._handle_pending_confirmation(user_input, pending)
+            if pending_reply:
+                return pending_reply
+
         normalized = self.language_normalizer.normalize(user_input)
         query_for_ai = normalized.normalized or user_input
         self.session_store.update_from_query(user_input, query_for_ai)
@@ -142,8 +151,29 @@ class HomeMindAgent:
             logger.info(f"归一化输入: {query_for_ai}")
             self.preference_store.record_feedback(user_input, query_for_ai, "接受")
 
-        unsupported = self.router.detect_unsupported_request(user_input, normalized_query=query_for_ai)
-        if unsupported:
+        intent_info = self.router.classify_intent(user_input, normalized_query=query_for_ai)
+        if intent_info["route"] == "automation":
+            logger.info(f"Automation route: {intent_info}")
+            proposal = self._build_automation_confirmation(user_input, query_for_ai)
+            if proposal:
+                self.session_store.append_turn("assistant", proposal)
+                self.session_store.save()
+                return proposal
+            message = "我理解到你想创建定时任务，但还缺少明确的时间或动作。你可以试试“晚上7:00打开空调”。"
+            self.session_store.update_clarification(message)
+            return message
+        if intent_info["route"] == "unsupported":
+            logger.info(f"Unsupported route: {intent_info}")
+            message = intent_info["message"]
+            self.session_store.update_clarification(message)
+            return message
+        if intent_info["route"] == "reply":
+            logger.info(f"Reply route: {intent_info}")
+            message = intent_info.get("reply_message") or "你好，我在。"
+            self.session_store.append_turn("assistant", message)
+            self.session_store.save()
+            return message
+        if False and intent_info["route"] == "reply":
             logger.info(f"路由结果: {unsupported}")
             message = unsupported["message"]
             self.session_store.update_clarification(message)
@@ -268,6 +298,63 @@ class HomeMindAgent:
         self.kb_writer.write_feedback(user_input, decision, feedback)
 
         return result
+
+    def _handle_pending_confirmation(self, user_input: str, pending: dict) -> Optional[str]:
+        normalized = str(user_input or "").strip().lower()
+        normalized = normalized.replace("，", "").replace("。", "").replace("！", "").replace("!", "")
+        accept_tokens = {"好", "好的", "是", "是的", "确认", "确认创建", "可以", "接受", "yes", "y"}
+        reject_tokens = {"不", "不用", "不要", "取消", "先不用", "拒绝", "no", "n"}
+
+        if normalized in accept_tokens and pending.get("action_type") == "automation_proposal":
+            payload = pending.get("payload", {}) or {}
+            rule = payload.get("rule")
+            if not rule:
+                self.session_store.clear_pending_confirmation()
+                return "这个待确认的定时任务已经失效了，请重新说一次。"
+            created_rule = self.tap_rule_store.add_rule(rule)
+            self.session_store.clear_pending_confirmation()
+            summary = payload.get("summary") or self._summarize_rule(created_rule)
+            reply = f"已为你创建定时任务：{summary}。"
+            self.session_store.append_turn("assistant", reply)
+            self.session_store.save()
+            return reply
+
+        if normalized in reject_tokens:
+            self.session_store.clear_pending_confirmation()
+            reply = "好的，先不创建这个定时任务。"
+            self.session_store.append_turn("assistant", reply)
+            self.session_store.save()
+            return reply
+
+        return None
+
+    def _build_automation_confirmation(self, raw_text: str, normalized_text: str) -> Optional[str]:
+        rule = self.nl_to_tap.parse(raw_text) or self.nl_to_tap.parse(normalized_text)
+        if not rule:
+            return None
+        summary = self._summarize_rule(rule)
+        self.session_store.set_pending_confirmation(
+            "automation_proposal",
+            {
+                "rule": rule,
+                "summary": summary,
+                "original_input": raw_text,
+                "normalized_input": normalized_text,
+            },
+        )
+        return f"我理解成：{summary}。要为你创建定时任务吗？"
+
+    def _summarize_rule(self, rule: dict) -> str:
+        trigger = dict(rule.get("trigger", {}) or {})
+        action = dict(rule.get("action", {}) or {})
+        at_time = trigger.get("at", "08:00")
+        if action.get("type") == "scene_switch":
+            return f"每天 {at_time} 切换到{action.get('scene', '目标场景')}"
+        if action.get("type") == "device_control":
+            action_map = {"on": "打开", "off": "关闭", "adjust": "调整"}
+            verb = action_map.get(action.get("device_action"), "执行")
+            return f"每天 {at_time} {verb}{action.get('device', '设备')}"
+        return f"每天 {at_time} 执行自动化任务"
 
     def _sync_devices_from_controller(self):
         """将 DeviceController 的状态同步到 simulator"""

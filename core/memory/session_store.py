@@ -27,6 +27,10 @@ class SessionStore:
             "last_normalized_input": "",
             "last_action": {},
             "last_clarification": {},
+            "pending_confirmation": {},
+            "pending_action_type": "",
+            "pending_payload": {},
+            "pending_feedback_target": {},
             "last_route": "local",
             "last_updated_at": "",
             "recent_turns": [],
@@ -92,6 +96,34 @@ class SessionStore:
             "answer": str(answer or "").strip(),
         }
         self.save()
+
+    def set_pending_confirmation(self, action_type: str, payload: Dict[str, Any], feedback_target: Optional[Dict[str, Any]] = None) -> None:
+        self.data["pending_confirmation"] = {
+            "action_type": str(action_type or "").strip(),
+            "payload": deepcopy(payload or {}),
+        }
+        self.data["pending_action_type"] = str(action_type or "").strip()
+        self.data["pending_payload"] = deepcopy(payload or {})
+        self.data["pending_feedback_target"] = deepcopy(feedback_target or {})
+        self.save()
+
+    def clear_pending_confirmation(self) -> None:
+        self.data["pending_confirmation"] = {}
+        self.data["pending_action_type"] = ""
+        self.data["pending_payload"] = {}
+        self.data["pending_feedback_target"] = {}
+        self.save()
+
+    def get_pending_confirmation(self) -> Dict[str, Any]:
+        pending = self.data.get("pending_confirmation", {}) or {}
+        if pending:
+            return deepcopy(pending)
+        if self.data.get("pending_action_type"):
+            return {
+                "action_type": self.data.get("pending_action_type", ""),
+                "payload": deepcopy(self.data.get("pending_payload", {}) or {}),
+            }
+        return {}
 
     def update_scene(self, scene: str) -> None:
         self.data["current_scene"] = str(scene or "").strip()

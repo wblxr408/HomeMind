@@ -100,6 +100,8 @@ class HomeMindWebAgent:
     def __init__(self, protocol_gateway=None):
         self._gateway = protocol_gateway
         self.confidence_threshold = 0.75
+        self._interaction_records = {}
+        self._message_counter = 0
         self._init_components()
         self._start_agent_loop()
         self._start_scheduler_loop()
@@ -210,6 +212,207 @@ class HomeMindWebAgent:
         self.session_store.update_from_query(raw_text, normalized_text)
         if normalized_text and normalized_text != raw_text:
             self.preference_store.record_feedback(raw_text, normalized_text, "接受")
+
+    def _next_message_id(self, prefix: str = "msg") -> str:
+        self._message_counter += 1
+        return f"{prefix}_{int(time.time() * 1000)}_{self._message_counter}"
+
+    def _register_interaction(self, record: dict) -> dict:
+        message_id = record.get("message_id") or self._next_message_id()
+        stored = dict(record)
+        stored["message_id"] = message_id
+        self._interaction_records[message_id] = stored
+        return stored
+
+    def _build_message_metadata(
+        self,
+        target_type: str,
+        original_input: str,
+        normalized_input: str,
+        decision_snapshot: dict | None = None,
+        extra: dict | None = None,
+        message_id: str = "",
+    ) -> dict:
+        record = {
+            "message_id": message_id or self._next_message_id(target_type),
+            "target_type": target_type,
+            "original_input": original_input,
+            "normalized_input": normalized_input,
+            "decision_snapshot": dict(decision_snapshot or {}),
+        }
+        if extra:
+            record.update(extra)
+        return self._register_interaction(record)
+
+    def _build_automation_proposal(self, raw_text: str, normalized_text: str) -> dict | None:
+        rule = self.nl_to_tap.parse(raw_text) or self.nl_to_tap.parse(normalized_text or raw_text)
+        if not rule:
+            return None
+        trigger = dict(rule.get("trigger", {}) or {})
+        action = dict(rule.get("action", {}) or {})
+        summary = self._summarize_automation_rule(trigger, action)
+        proposal_id = self._next_message_id("proposal")
+        rule_preview = {
+            "name": rule.get("name", raw_text[:40]),
+            "trigger": trigger,
+            "action": action,
+            "priority": rule.get("priority", 50),
+        }
+        message_id = self._next_message_id("automation")
+        interaction = self._build_message_metadata(
+            "automation_proposal",
+            raw_text,
+            normalized_text,
+            decision_snapshot={"rule": rule_preview},
+            extra={"proposal_id": proposal_id, "rule_preview": rule_preview},
+            message_id=message_id,
+        )
+        proposal = {
+            "message_id": interaction["message_id"],
+            "proposal_id": proposal_id,
+            "summary": summary,
+            "rule_preview": rule_preview,
+            "confirm_actions": ["accept", "change", "reject"],
+        }
+        self.session_store.set_pending_confirmation(
+            "automation_proposal",
+            proposal,
+            feedback_target={"message_id": interaction["message_id"], "target_type": "automation_proposal"},
+        )
+        return proposal
+
+    def _summarize_automation_rule(self, trigger: dict, action: dict) -> str:
+        time_text = trigger.get("at", "--:--") if trigger.get("type") == "time" else "满足条件时"
+        if action.get("type") == "scene_switch":
+            action_text = f"切换到{action.get('scene', '指定场景')}"
+        else:
+            device = action.get("device", "设备")
+            device_action = action.get("device_action", "执行动作")
+            action_text = f"{device}{device_action}"
+        return f"我理解成：每天 {time_text} {action_text}。要为你创建定时任务吗？"
+
+    def _accept_automation_proposal(self, message_id: str, original_input: str, normalized_input: str) -> dict:
+        pending = self.session_store.get_pending_confirmation()
+        payload = dict(pending.get("payload", {}) or {})
+        rule_preview = dict(payload.get("rule_preview", {}) or {})
+        if not rule_preview:
+            interaction = self._interaction_records.get(message_id, {})
+            rule_preview = dict(interaction.get("rule_preview", {}) or interaction.get("decision_snapshot", {}).get("rule", {}) or {})
+        if not rule_preview:
+            raise ValueError("没有待确认的定时任务")
+        created_rule = self.tap_rule_store.add_rule({
+            "name": rule_preview.get("name", original_input[:40]),
+            "enabled": True,
+            "trigger": dict(rule_preview.get("trigger", {}) or {}),
+            "conditions": [],
+            "action": dict(rule_preview.get("action", {}) or {}),
+            "priority": int(rule_preview.get("priority", 50)),
+        })
+        self.session_store.clear_pending_confirmation()
+        self.preference_store.record_interaction_feedback("automation_proposal", "accept")
+        if self.kb:
+            self.kb.add(
+                f"用户确认创建自动化：{original_input}",
+                category="用户反馈",
+                accepted=True,
+                feedback="接受",
+                target_type="automation_proposal",
+            )
+        created_message_id = self._next_message_id("automation_created")
+        self._build_message_metadata(
+            "automation_created",
+            original_input,
+            normalized_input,
+            decision_snapshot={"rule": created_rule},
+            message_id=created_message_id,
+        )
+        return {
+            "status": "success",
+            "response_type": "automation_created",
+            "message_id": created_message_id,
+            "response": f"好的，已为你创建定时任务：{created_rule.get('name', '未命名规则')}",
+            "rule": created_rule,
+        }
+
+    def handle_interaction_feedback(self, payload: dict) -> dict:
+        message_id = str(payload.get("message_id", "")).strip()
+        feedback_type = str(payload.get("feedback_type", "")).strip()
+        target_type = str(payload.get("target_type", "")).strip() or "decision"
+        original_input = str(payload.get("original_input", "")).strip()
+        normalized_input = str(payload.get("normalized_input", "")).strip()
+        correction = str(payload.get("correction", "")).strip()
+        decision_snapshot = dict(payload.get("decision_snapshot", {}) or {})
+
+        interaction = self._interaction_records.get(message_id, {})
+        if interaction:
+            target_type = target_type or interaction.get("target_type", "decision")
+            original_input = original_input or interaction.get("original_input", "")
+            normalized_input = normalized_input or interaction.get("normalized_input", "")
+            decision_snapshot = decision_snapshot or dict(interaction.get("decision_snapshot", {}) or {})
+
+        self.preference_store.record_interaction_feedback(target_type, feedback_type)
+
+        if feedback_type == "accept":
+            if target_type == "automation_proposal":
+                return self._accept_automation_proposal(message_id, original_input, normalized_input)
+            if target_type == "recommendation":
+                action = int(interaction.get("action", 5))
+                if self.dqn_fb:
+                    self.dqn_fb.record(self.context, action, "接受")
+                self.preference_store.record_recommendation_feedback(SCENE_NAMES.get(action, ""), "接受")
+            elif decision_snapshot:
+                self.preference_store.record_action_accept(decision_snapshot, self.context)
+            if self.kb:
+                self.kb.add(
+                    f"用户确认反馈：{original_input or normalized_input}",
+                    category="用户反馈",
+                    accepted=True,
+                    feedback="接受",
+                    target_type=target_type,
+                )
+            return {"status": "success", "message": "反馈已记录"}
+
+        if feedback_type == "reject":
+            if target_type == "recommendation":
+                action = int(interaction.get("action", 5))
+                if self.dqn_fb:
+                    self.dqn_fb.record(self.context, action, "拒绝")
+                self.preference_store.record_recommendation_feedback(SCENE_NAMES.get(action, ""), "拒绝")
+            self.session_store.clear_pending_confirmation()
+            if self.kb:
+                self.kb.add(
+                    f"用户拒绝反馈：{original_input or normalized_input}",
+                    category="用户反馈",
+                    accepted=False,
+                    feedback="拒绝",
+                    target_type=target_type,
+                )
+            return {"status": "success", "message": "已记录拒绝反馈"}
+
+        if feedback_type == "change":
+            corrected = correction or normalized_input
+            if original_input and corrected:
+                self.preference_store.record_feedback(original_input, corrected, "纠正")
+            if self.kb:
+                self.kb.add(
+                    f"用户纠正反馈：原始输入「{original_input}」，纠正为「{corrected}」",
+                    category="用户反馈",
+                    accepted=True,
+                    feedback="纠正",
+                    target_type=target_type,
+                )
+            if target_type == "automation_proposal" and corrected:
+                proposal = self._build_automation_proposal(original_input or corrected, corrected)
+                if proposal:
+                    return {
+                        "status": "success",
+                        "response_type": "automation_proposal",
+                        "message": proposal["summary"],
+                        "proposal": proposal,
+                    }
+            return {"status": "success", "message": "纠正反馈已记录"}
+
+        return {"status": "success", "message": "反馈已记录"}
 
     def _build_cloud_context(self, candidates):
         payload = self.privacy_redactor.build_cloud_context(
@@ -392,6 +595,14 @@ class HomeMindWebAgent:
             "reason": f"基于当前环境状态推荐{scene_name}",
             "confidence": confidence,
         }
+        interaction = self._build_message_metadata(
+            "recommendation",
+            recommendation["reason"],
+            recommendation["scene"],
+            decision_snapshot={"scene": scene_name, "confidence": confidence},
+            extra={"action": action_idx},
+        )
+        recommendation["message_id"] = interaction["message_id"]
         self._last_dqn_recommend_at = current
         socketio.emit("message", {
             "type": "dqn_recommendation",
@@ -528,13 +739,60 @@ class HomeMindWebAgent:
         }
         socketio.emit("pipeline_update", {"type": "pipeline_start", "data": pipeline})
 
-        unsupported = self._detect_unsupported_request(user_text, normalized_text=query_text)
-        if unsupported:
+        intent_info = self.router.classify_intent(user_text, normalized_query=query_text)
+        if intent_info["route"] == "reply":
+            interaction = self._build_message_metadata(
+                "decision",
+                user_text,
+                query_text,
+                decision_snapshot={"intent_type": intent_info["intent_type"], "route": "reply"},
+            )
+            payload = {
+                "action": "chat_reply",
+                "result": intent_info["reply_message"],
+                "status": "success",
+                "response_type": "chat",
+                "message_id": interaction["message_id"],
+                "query_id": query_id,
+                "route": intent_info["route"],
+                "route_reason": intent_info["reason"],
+                "feedback_target": {"message_id": interaction["message_id"], "target_type": "decision"},
+            }
+            pipeline["steps"]["exec"] = {"status": "done", "result": payload}
+            socketio.emit("pipeline_update", {"type": "pipeline_step", "data": {
+                "query_id": query_id, "step": "exec", "data": pipeline["steps"]["exec"]
+            }})
+            socketio.emit("message", {"type": "agent_response", "data": payload})
+            return
+
+        if intent_info["route"] == "automation":
+            proposal = self._build_automation_proposal(user_text, query_text)
+            if proposal:
+                payload = {
+                    "action": "automation_proposal",
+                    "result": proposal["summary"],
+                    "status": "success",
+                    "response_type": "automation_proposal",
+                    "message_id": proposal["message_id"],
+                    "proposal": proposal,
+                    "query_id": query_id,
+                    "route": intent_info["route"],
+                    "route_reason": intent_info["reason"],
+                    "feedback_target": {"message_id": proposal["message_id"], "target_type": "automation_proposal"},
+                }
+                pipeline["steps"]["exec"] = {"status": "done", "result": payload}
+                socketio.emit("pipeline_update", {"type": "pipeline_step", "data": {
+                    "query_id": query_id, "step": "exec", "data": pipeline["steps"]["exec"]
+                }})
+                socketio.emit("message", {"type": "agent_response", "data": payload})
+                return
+
+        if intent_info["route"] == "unsupported":
             result = {
                 "status": "unsupported",
                 "action": "unsupported",
-                "message": unsupported["message"],
-                "target": unsupported["target"],
+                "message": intent_info["message"],
+                "target": intent_info["target"],
             }
             pipeline["steps"]["exec"] = {"status": "done", "result": result}
             socketio.emit("pipeline_update", {"type": "pipeline_step", "data": {
@@ -544,12 +802,13 @@ class HomeMindWebAgent:
                 "type": "agent_response",
                 "data": {
                     "action": "unsupported",
-                    "result": unsupported["message"],
+                    "result": intent_info["message"],
                     "status": "unsupported",
-                    "target": unsupported["target"],
+                    "response_type": "clarification",
+                    "target": intent_info["target"],
                     "query_id": query_id,
-                    "route": unsupported["route"],
-                    "route_reason": unsupported["reason"],
+                    "route": intent_info["route"],
+                    "route_reason": intent_info["reason"],
                 }
             })
             return
@@ -740,12 +999,21 @@ class HomeMindWebAgent:
                     result_text = result.get("message", f"已执行: {device} {device_action}")
                     self.session_store.update_from_decision(decision, route=route_info["route"], result=result_text)
                     self.preference_store.record_action_accept(decision, self.context)
+                    interaction = self._build_message_metadata(
+                        "execution",
+                        user_text,
+                        query_text,
+                        decision_snapshot=decision,
+                    )
                     socketio.emit("message", {
                         "type": "agent_response",
                         "data": {
                             "action": result["action"],
                             "result": result_text,
                             "confidence": confidence,
+                            "response_type": "execution_result",
+                            "message_id": interaction["message_id"],
+                            "feedback_target": {"message_id": interaction["message_id"], "target_type": "execution"},
                             "scene": self.context.current_scene,
                             "query_id": query_id,
                             "route": route_info["route"],
@@ -995,14 +1263,48 @@ class HomeMindWebAgent:
         query_for_ai = normalized.normalized or query
         self._record_query_context(query, query_for_ai)
 
-        unsupported = self._detect_unsupported_request(query, normalized_text=query_for_ai)
-        if unsupported:
+        intent_info = self.router.classify_intent(query, normalized_query=query_for_ai)
+        if intent_info["route"] == "reply":
+            interaction = self._build_message_metadata(
+                "decision",
+                query,
+                query_for_ai,
+                decision_snapshot={"intent_type": intent_info["intent_type"], "route": "reply"},
+            )
+            return {
+                "status": "success",
+                "response_type": "chat",
+                "message_id": interaction["message_id"],
+                "response": intent_info["reply_message"],
+                "route": intent_info["route"],
+                "route_reason": intent_info["reason"],
+                "normalized_query": normalized.to_dict(),
+                "feedback_target": {"message_id": interaction["message_id"], "target_type": "decision"},
+            }
+
+        if intent_info["route"] == "automation":
+            proposal = self._build_automation_proposal(query, query_for_ai)
+            if proposal:
+                return {
+                    "status": "success",
+                    "response_type": "automation_proposal",
+                    "message_id": proposal["message_id"],
+                    "response": proposal["summary"],
+                    "proposal": proposal,
+                    "route": intent_info["route"],
+                    "route_reason": intent_info["reason"],
+                    "normalized_query": normalized.to_dict(),
+                    "feedback_target": {"message_id": proposal["message_id"], "target_type": "automation_proposal"},
+                }
+
+        if intent_info["route"] == "unsupported":
             return {
                 "status": "unsupported",
-                "target": unsupported["target"],
-                "response": unsupported["message"],
-                "route": unsupported["route"],
-                "route_reason": unsupported["reason"],
+                "response_type": "clarification",
+                "target": intent_info["target"],
+                "response": intent_info["message"],
+                "route": intent_info["route"],
+                "route_reason": intent_info["reason"],
                 "normalized_query": normalized.to_dict(),
             }
         
@@ -1032,6 +1334,7 @@ class HomeMindWebAgent:
                     self.session_store.update_clarification(question)
                     return {
                         "status": "clarification",
+                        "response_type": "clarification",
                         "question": question,
                         "candidates": route_info["top_candidates"],
                         "route": route_info["route"],
@@ -1061,6 +1364,7 @@ class HomeMindWebAgent:
                     self.session_store.update_clarification(question)
                     return {
                         "status": "clarification",
+                        "response_type": "clarification",
                         "question": question,
                         "candidates": route_info["top_candidates"],
                         "route": route_info["route"],
@@ -1073,6 +1377,7 @@ class HomeMindWebAgent:
                     self.session_store.update_clarification(message)
                     return {
                         "status": "clarification",
+                        "response_type": "clarification",
                         "question": message,
                         "candidates": route_info["top_candidates"],
                         "route": route_info["route"],
@@ -1084,6 +1389,7 @@ class HomeMindWebAgent:
                     self.session_store.update_clarification(message)
                     return {
                         "status": "clarification",
+                        "response_type": "clarification",
                         "question": message,
                         "candidates": route_info["top_candidates"],
                         "route": route_info["route"],
@@ -1102,14 +1408,23 @@ class HomeMindWebAgent:
                     message = self.device_control.execute(device, device_action, params)
                     self.session_store.update_from_decision(decision, route=route_info["route"], result=message)
                     self.preference_store.record_action_accept(decision, self.context)
+                    interaction = self._build_message_metadata(
+                        "execution",
+                        query,
+                        query_for_ai,
+                        decision_snapshot=decision,
+                    )
                     return {
                         "status": "success",
+                        "response_type": "execution_result",
+                        "message_id": interaction["message_id"],
                         "action": f"{device}_{device_action}",
                         "response": message,
                         "confidence": decision.get("confidence", 0.9),
                         "route": route_info["route"],
                         "route_reason": route_info["reason"],
                         "normalized_query": normalized.to_dict(),
+                        "feedback_target": {"message_id": interaction["message_id"], "target_type": "execution"},
                     }
                 elif action_type == "场景切换" and scene:
                     message = self.scene_switcher.execute(scene)
@@ -1117,19 +1432,29 @@ class HomeMindWebAgent:
                     self.context.last_scene = SCENE_INDEX_MAP.get(scene, -1)
                     self.session_store.update_from_decision(decision, route=route_info["route"], result=message)
                     self.preference_store.record_action_accept(decision, self.context)
+                    interaction = self._build_message_metadata(
+                        "execution",
+                        query,
+                        query_for_ai,
+                        decision_snapshot=decision,
+                    )
                     return {
                         "status": "success",
+                        "response_type": "execution_result",
+                        "message_id": interaction["message_id"],
                         "action": "scene_switch",
                         "response": message,
                         "confidence": decision.get("confidence", 0.9),
                         "route": route_info["route"],
                         "route_reason": route_info["reason"],
                         "normalized_query": normalized.to_dict(),
+                        "feedback_target": {"message_id": interaction["message_id"], "target_type": "execution"},
                     }
                 else:
                     self.session_store.update_clarification("我需要更多信息")
                     return {
                         "status": "clarification",
+                        "response_type": "clarification",
                         "question": "我需要更多信息",
                         "candidates": [r["action"] for r in ranked[:3]],
                         "route": route_info["route"],
@@ -1166,6 +1491,23 @@ def query():
         return jsonify(result)
     
     return jsonify({"error": "Agent 未初始化"}), 500
+
+
+@app.route("/api/interaction/feedback", methods=["POST"])
+def interaction_feedback():
+    """Unified interaction feedback endpoint."""
+    data = request.get_json(silent=True) or {}
+    if not agent:
+        return jsonify({"error": "Agent 未初始化"}), 500
+    if not data.get("message_id"):
+        return jsonify({"status": "error", "error": "message_id is required"}), 400
+    if not data.get("feedback_type"):
+        return jsonify({"status": "error", "error": "feedback_type is required"}), 400
+    try:
+        result = agent.handle_interaction_feedback(data)
+        return jsonify(result)
+    except ValueError as exc:
+        return jsonify({"status": "error", "error": str(exc)}), 400
 
 
 @app.route("/api/devices/<device>/control", methods=["POST"])

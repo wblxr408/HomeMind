@@ -1,5 +1,7 @@
 """Natural language to TAP rule conversion."""
 
+from __future__ import annotations
+
 import re
 from typing import Dict, Optional
 
@@ -12,12 +14,15 @@ class NLToTAPConverter:
         r"元旦", r"春节", r"清明", r"五一", r"端午",
         r"中秋", r"国庆", r"圣诞",
     ]
-
     SCENE_NAMES = [
         "睡眠模式", "待客模式", "离家模式", "观影模式", "起床模式",
         "回家模式", "工作模式", "早安模式", "晚归模式",
     ]
-
+    SCENE_SHORTCUTS = {
+        "早安": "早安模式",
+        "晚安": "睡眠模式",
+        "回家": "回家模式",
+    }
     DEVICE_ALIASES = {
         "灯": "灯光",
         "灯光": "灯光",
@@ -33,7 +38,7 @@ class NLToTAPConverter:
         self.llm = llm_decider
 
     def parse(self, nl_text: str) -> Optional[Dict]:
-        text = str(nl_text or "").strip()
+        text = self._normalize_text(nl_text)
         if not text:
             return None
 
@@ -51,13 +56,13 @@ class NLToTAPConverter:
         }
 
     def parse_scene_creation(self, nl_text: str) -> Optional[Dict]:
-        text = str(nl_text or "").strip()
-        match = re.search(r"(?:叫|名为|名称为)['\"]?([^'\"，,。]+模式)['\"]?", text)
+        text = self._normalize_text(nl_text)
+        match = re.search(r"(?:叫|命名为|名称为)\s*['\"]?([^'\"，。；\s]+模式)['\"]?", text)
         if not match:
             return None
         scene_name = match.group(1).strip()
         config = {}
-        clauses = [item.strip() for item in re.split(r"[，,。；;]", text) if item.strip()]
+        clauses = [item.strip() for item in re.split(r"[，。；;]", text) if item.strip()]
         for clause in clauses or [text]:
             for alias, device in self.DEVICE_ALIASES.items():
                 if alias not in clause:
@@ -67,6 +72,13 @@ class NLToTAPConverter:
                     config[device] = {"action": action, "params": self._extract_params(clause, device)}
         return {"name": scene_name, "config": config}
 
+    def _normalize_text(self, text: str) -> str:
+        normalized = str(text or "").strip()
+        for shortcut, scene in self.SCENE_SHORTCUTS.items():
+            if shortcut in normalized and scene not in normalized:
+                normalized = normalized.replace(shortcut, scene)
+        return normalized
+
     def _extract_time_condition(self, text: str) -> Dict:
         for pattern in self.HOLIDAY_PATTERNS:
             if re.search(pattern, text):
@@ -74,15 +86,35 @@ class NLToTAPConverter:
                     return {"type": "day_of_week", "days": [5, 6]}
                 return {"type": "holiday", "pattern": pattern}
 
-        match = re.search(r"(\d{1,2}):(\d{2})", text)
-        if match:
-            return {"type": "time", "at": f"{int(match.group(1)):02d}:{match.group(2)}"}
+        exact_match = re.search(r"(早上|上午|中午|下午|晚上|今晚)?\s*(\d{1,2}):(\d{2})", text)
+        if exact_match:
+            hour = self._normalize_hour(int(exact_match.group(2)), exact_match.group(1) or "")
+            return {"type": "time", "at": f"{hour:02d}:{exact_match.group(3)}"}
 
-        hour_match = re.search(r"(\d{1,2})点", text)
+        hour_match = re.search(r"(早上|上午|中午|下午|晚上|今晚)?\s*(\d{1,2})点(半|(\d{1,2})分)?", text)
         if hour_match:
-            return {"type": "time", "at": f"{int(hour_match.group(1)):02d}:00"}
+            period = hour_match.group(1) or ""
+            minute_token = hour_match.group(3)
+            if minute_token == "半":
+                minute = "30"
+            elif hour_match.group(4):
+                minute = f"{int(hour_match.group(4)):02d}"
+            else:
+                minute = "00"
+            hour = self._normalize_hour(int(hour_match.group(2)), period)
+            return {"type": "time", "at": f"{hour:02d}:{minute}"}
 
         return {"type": "time", "at": "08:00"}
+
+    def _normalize_hour(self, hour: int, period: str) -> int:
+        hour = hour % 24
+        if period in {"下午", "晚上", "今晚"} and hour < 12:
+            hour += 12
+        elif period == "中午" and hour < 11:
+            hour += 12
+        elif period in {"早上", "上午"} and hour == 12:
+            hour = 0
+        return hour
 
     def _extract_action(self, text: str) -> Optional[Dict]:
         for scene in self.SCENE_NAMES:
@@ -114,7 +146,7 @@ class NLToTAPConverter:
     def _extract_params(self, text: str, device: str) -> Dict:
         params = {}
         if device == "空调":
-            temp_match = re.search(r"(\d{2})\s*(?:度|℃)", text)
+            temp_match = re.search(r"(\d{2})\s*(?:度|℃)?", text)
             if temp_match:
                 params["temperature"] = int(temp_match.group(1))
         if device in ("灯光", "电视", "音响"):

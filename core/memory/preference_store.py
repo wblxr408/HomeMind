@@ -1,5 +1,7 @@
 """Persistent structured long-term preference storage for HomeMind."""
 
+from __future__ import annotations
+
 import json
 import logging
 import os
@@ -24,6 +26,7 @@ class PreferenceStore:
             "devices": {},
             "scenes": {},
             "recommendation": {},
+            "interaction_feedback": {},
             "language": {"dialect_terms": {}},
             "updated_at": "",
         }
@@ -45,6 +48,8 @@ class PreferenceStore:
                 base["scenes"] = {}
             if not isinstance(base.get("recommendation"), dict):
                 base["recommendation"] = {}
+            if not isinstance(base.get("interaction_feedback"), dict):
+                base["interaction_feedback"] = {}
             if not isinstance(base.get("language"), dict):
                 base["language"] = {"dialect_terms": {}}
             if not isinstance(base["language"].get("dialect_terms"), dict):
@@ -113,6 +118,28 @@ class PreferenceStore:
             entry["accepted"] = int(entry.get("accepted", 0)) + 1
         self.save()
 
+    def record_interaction_feedback(self, target_type: str, feedback_type: str) -> None:
+        target = str(target_type or "decision").strip() or "decision"
+        feedback = str(feedback_type or "ignored").strip() or "ignored"
+        entry = self.data.setdefault("interaction_feedback", {}).setdefault(
+            target,
+            {"accepted": 0, "corrected": 0, "rejected": 0, "ignored": 0, "total": 0},
+        )
+        entry["total"] = int(entry.get("total", 0)) + 1
+        metric_map = {
+            "accept": "accepted",
+            "accepted": "accepted",
+            "change": "corrected",
+            "corrected": "corrected",
+            "reject": "rejected",
+            "rejected": "rejected",
+            "ignore": "ignored",
+            "ignored": "ignored",
+        }
+        metric = metric_map.get(feedback, "ignored")
+        entry[metric] = int(entry.get(metric, 0)) + 1
+        self.save()
+
     def get_preference_boost(self, candidate_action: str, context=None) -> float:
         action = str(candidate_action or "")
         score = 0.5
@@ -137,6 +164,8 @@ class PreferenceStore:
             "切换观影模式": "观影模式",
             "切换起床模式": "起床模式",
             "切换回家模式": "回家模式",
+            "切换早安模式": "早安模式",
+            "切换晚归模式": "晚归模式",
         }
         preferred_scene = scene_map.get(action)
         if preferred_scene:

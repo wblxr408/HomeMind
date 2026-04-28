@@ -993,11 +993,26 @@
                 .replace(/\n/g, "<br>");
         }
 
-        function addMsg(role, html, tag) {
+        function buildFeedbackButtons(options = {}) {
+            const target = options.feedbackTarget || {};
+            const correctionPrompt = escapeHtml(options.correctionPrompt || "请输入你期望的正确理解");
+            if (!target.message_id || !target.target_type) return "";
+            const allowAccept = options.allowAccept !== false;
+            const buttons = [];
+            if (allowAccept) {
+                buttons.push(`<button onclick="sendInteractionFeedback('${target.message_id}', '${target.target_type}', 'accept')">Accept</button>`);
+            }
+            buttons.push(`<button onclick="sendInteractionFeedback('${target.message_id}', '${target.target_type}', 'change', '${correctionPrompt}')">Change</button>`);
+            buttons.push(`<button onclick="sendInteractionFeedback('${target.message_id}', '${target.target_type}', 'reject')">Reject</button>`);
+            return `<div class="voice-feedback">${buttons.join("")}</div>`;
+        }
+
+        function addMsg(role, html, tag, options = {}) {
             const el = document.createElement("div");
             el.className = "msg " + role;
             const tagHtml = tag ? `<span class="action-tag">${tag}</span>` : "";
-            el.innerHTML = `<div class="bubble">${escapeHtml(html)}${tagHtml}</div><div class="msg-time">${getTime()}</div>`;
+            const feedbackHtml = buildFeedbackButtons(options);
+            el.innerHTML = `<div class="bubble">${escapeHtml(html)}${tagHtml}${feedbackHtml}</div><div class="msg-time">${getTime()}</div>`;
             const msgs = document.getElementById("messages");
             msgs.appendChild(el);
             msgs.scrollTop = msgs.scrollHeight;
@@ -1745,6 +1760,43 @@
             }
         }
 
+        async function sendInteractionFeedback(messageId, targetType, feedbackType, correctionPrompt = "") {
+            let correction = "";
+            if (feedbackType === "change") {
+                correction = window.prompt(correctionPrompt || "请输入纠正后的理解", "") || "";
+                correction = correction.trim();
+                if (!correction) {
+                    showToast("已取消纠正");
+                    return;
+                }
+            }
+            try {
+                const data = await apiJson("/api/interaction/feedback", "POST", {
+                    message_id: messageId,
+                    target_type: targetType,
+                    feedback_type: feedbackType,
+                    correction
+                });
+                if (data.status !== "success") {
+                    showToast(data.error || "反馈提交失败");
+                    return;
+                }
+                if (data.response_type === "automation_proposal" && data.proposal) {
+                    addMsg("ai", data.message || data.proposal.summary, "待确认任务", {
+                        feedbackTarget: { message_id: data.proposal.message_id, target_type: "automation_proposal" },
+                        correctionPrompt: "请输入修正后的定时任务描述",
+                    });
+                } else if (data.response_type === "automation_created") {
+                    addMsg("ai", data.response || "已创建定时任务", "任务已创建");
+                }
+                showToast(data.message || "反馈已记录");
+                loadMemorySummary();
+                loadPrivacyStatus();
+            } catch (e) {
+                showToast("反馈提交失败");
+            }
+        }
+
         function handlePipelineUpdate(msg) {
             const { type, data } = msg;
             if (type === "pipeline_start") {
@@ -1843,6 +1895,99 @@
                     updateDevices(data.devices || {});
                 })
                 .catch(() => showToast("加载状态失败"));
+        }
+
+        function renderAgentMessage(data, fallbackTag = "系统响应") {
+            const text = data.response || data.result || data.message || data.question || "我需要更多信息";
+            let tag = fallbackTag;
+            if (data.response_type === "automation_proposal") tag = "待确认任务";
+            else if (data.response_type === "automation_created") tag = "任务已创建";
+            else if (data.response_type === "execution_result") tag = "执行完成";
+            else if (data.response_type === "chat") tag = "普通回复";
+            else if (data.status === "unsupported") tag = "暂不支持";
+            else if (data.status === "clarification") tag = "需要澄清";
+            addMsg("ai", text, tag, {
+                feedbackTarget: data.feedback_target,
+                allowAccept: data.status !== "unsupported" && data.status !== "clarification",
+                correctionPrompt: data.response_type === "automation_proposal"
+                    ? "请输入修正后的定时任务描述"
+                    : "请输入你期望的正确理解",
+            });
+            addLog("系统", text);
+        }
+
+        async function sendQuery(query) {
+            if (socket && socket.connected) {
+                socket.emit("user_input", { text: query });
+                return;
+            }
+
+            const data = await apiJson("/api/query", "POST", { query });
+            if (["success", "unsupported", "clarification"].includes(data.status)) {
+                renderAgentMessage(data);
+                if (data.status === "success") {
+                    loadStatus();
+                }
+                return;
+            }
+
+            const text = data.message || data.question || "我需要更多信息";
+            addMsg("ai", text, "系统响应");
+            addLog("系统", text);
+        }
+
+        function handleMessage(msg) {
+            const { type, data } = msg;
+            switch (type) {
+                case "connected":
+                    updateContext(data.context || {});
+                    updateDevices(data.devices || {});
+                    loadRules();
+                    loadMemorySummary();
+                    loadPrivacyStatus();
+                    break;
+                case "agent_response":
+                    renderAgentMessage(data, "执行完成");
+                    loadStatus();
+                    loadMemorySummary();
+                    loadPrivacyStatus();
+                    break;
+                case "automation_update":
+                    addMsg("system", `${data.rule || "自动化规则"}：${data.result || "已执行"}`, "自动触发");
+                    addLog("自动化", `${data.rule || "规则"} -> ${data.result || "已执行"}`);
+                    loadStatus();
+                    loadMemorySummary();
+                    break;
+                case "agent_clarification":
+                    renderAgentMessage({
+                        status: "clarification",
+                        question: data.question,
+                        feedback_target: data.feedback_target,
+                    }, "需要澄清");
+                    loadPrivacyStatus();
+                    break;
+                case "dqn_recommendation":
+                    addMsg("ai", `${data.reason}（置信度 ${(Number(data.confidence || 0) * 100).toFixed(0)}%）`, "主动推荐", {
+                        feedbackTarget: { message_id: data.message_id, target_type: "recommendation" },
+                        correctionPrompt: "请输入更合适的场景建议",
+                    });
+                    addLog("推荐", data.reason || "收到新的场景推荐");
+                    break;
+                case "device_update":
+                    updateDeviceState(data.device, data.state);
+                    addLog(getDeviceName(data.device), buildDeviceStatus(data.device, data.state));
+                    break;
+                case "scene_update":
+                    currentScene = data.scene;
+                    updateDevices(data.devices || {});
+                    addLog("场景", getSceneName(data.scene));
+                    if (currentModal === "scene") {
+                        renderModal("scene");
+                    }
+                    break;
+                default:
+                    break;
+            }
         }
 
         document.addEventListener("DOMContentLoaded", () => {

@@ -85,6 +85,29 @@ class HomeMindSystemRegressionTests(unittest.TestCase):
         self.assertNotEqual(agent.device_ctrl.get_state(AC_DEVICE).get("status"), ON_STATUS)
 
 
+    def test_main_agent_greeting_returns_chat_reply(self):
+        from main import HomeMindAgent
+
+        agent = HomeMindAgent()
+        response = agent.process("\u4f60\u597d")
+
+        self.assertIn("\u4f60\u597d", response)
+        self.assertEqual(agent.session_store.get_runtime_context()["recent_turns"][-1]["role"], "assistant")
+
+    def test_main_agent_time_command_requires_confirmation_then_creates_rule(self):
+        from main import HomeMindAgent
+
+        agent = HomeMindAgent()
+        proposal = agent.process("\u665a\u4e0a7:00\u6253\u5f00\u7a7a\u8c03")
+        created = agent.process("\u597d\u7684")
+
+        self.assertIn("19:00", proposal)
+        self.assertIn("\u521b\u5efa\u5b9a\u65f6\u4efb\u52a1", created)
+        rules = agent.tap_rule_store.list_rules()
+        self.assertEqual(len(rules), 1)
+        self.assertEqual(rules[0]["trigger"]["at"], "19:00")
+
+
 class WebApiSystemTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -270,6 +293,78 @@ class WebApiSystemTests(unittest.TestCase):
         self.assertEqual(normalized.matched_rule, "voice_feedback_history")
         self.assertTrue(normalized.normalized)
 
+
+    def test_query_greeting_returns_chat_response(self):
+        response = self.client.post("/api/query", json={"query": "你好"})
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.get_json()
+        self.assertEqual(payload["status"], "success")
+        self.assertEqual(payload["response_type"], "chat")
+        self.assertIn("你好", payload["response"])
+
+    def test_query_time_command_returns_automation_proposal(self):
+        response = self.client.post("/api/query", json={"query": "晚上7:00打开空调"})
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.get_json()
+        self.assertEqual(payload["status"], "success")
+        self.assertEqual(payload["response_type"], "automation_proposal")
+        self.assertEqual(payload["proposal"]["rule_preview"]["trigger"]["at"], "19:00")
+
+    def test_accepting_automation_proposal_creates_rule(self):
+        proposal_response = self.client.post("/api/query", json={"query": "晚上7:00打开空调"})
+        proposal = proposal_response.get_json()
+
+        feedback_response = self.client.post(
+            "/api/interaction/feedback",
+            json={
+                "message_id": proposal["message_id"],
+                "target_type": "automation_proposal",
+                "feedback_type": "accept",
+            },
+        )
+
+        self.assertEqual(feedback_response.status_code, 200)
+        payload = feedback_response.get_json()
+        self.assertEqual(payload["status"], "success")
+        self.assertEqual(payload["response_type"], "automation_created")
+        rules = self.web_server.agent.tap_rule_store.list_rules()
+        self.assertEqual(len(rules), 1)
+        self.assertEqual(rules[0]["trigger"]["at"], "19:00")
+
+    def test_change_feedback_records_correction_mapping(self):
+        response = self.client.post(
+            "/api/interaction/feedback",
+            json={
+                "message_id": "manual_feedback_case",
+                "target_type": "decision",
+                "feedback_type": "change",
+                "original_input": "早安",
+                "normalized_input": "早安",
+                "correction": "切换早安模式",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        normalized = self.web_server.agent.preference_store.snapshot()["language"]["dialect_terms"]
+        self.assertEqual(normalized.get("早安"), "切换早安模式")
+
+    def test_reject_feedback_updates_interaction_metrics(self):
+        response = self.client.post(
+            "/api/interaction/feedback",
+            json={
+                "message_id": "manual_reject_case",
+                "target_type": "execution",
+                "feedback_type": "reject",
+                "original_input": "打开空调",
+                "normalized_input": "打开空调",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        snapshot = self.web_server.agent.preference_store.snapshot()
+        self.assertEqual(snapshot["interaction_feedback"]["execution"]["rejected"], 1)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
