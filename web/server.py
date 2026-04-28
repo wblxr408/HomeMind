@@ -2,13 +2,25 @@
 HomeMind Web 服务 - 中央指令器
 提供 REST API 和 WebSocket 接口，连接智能家居 Agent 与前端控制面板
 """
-import asyncio
+import inspect
 import json
 import threading
 import time
 from copy import deepcopy
 from datetime import datetime
 import os
+import sys
+import types
+
+try:
+    import asyncio as _asyncio_probe
+    getattr(_asyncio_probe, "iscoroutinefunction")
+    ASYNCIO_AVAILABLE = True
+except Exception:
+    asyncio_stub = types.ModuleType("asyncio")
+    asyncio_stub.iscoroutinefunction = inspect.iscoroutinefunction
+    sys.modules["asyncio"] = asyncio_stub
+    ASYNCIO_AVAILABLE = False
 
 from flask import Flask, request, jsonify
 try:
@@ -17,8 +29,10 @@ except ImportError:
     def CORS(app, resources=None):
         return app
 try:
+    if not ASYNCIO_AVAILABLE:
+        raise ImportError("asyncio unavailable")
     from flask_socketio import SocketIO, emit
-except ImportError:
+except Exception:
     class SocketIO:
         def __init__(self, app, cors_allowed_origins="*", async_mode="threading"):
             self.app = app
@@ -39,7 +53,7 @@ except ImportError:
 from queue import Queue
 
 from core.bsr.candidate_recall import BSRecall
-from core.automation import TAPEngine, TAPRuleStore
+from core.automation import NLToTAPConverter, SceneStore, TAPEngine, TAPRuleStore
 from core.execution import CommandValidator
 from core.lsr.precision_ranking import LSRecify as PrecisionRanking
 from core.llm.decision import LLMDecider as LLMWrapper
@@ -52,7 +66,7 @@ from core.privacy import PrivacyRedactor
 from core.router import InferenceRouter
 from core.voice.vosk_asr import VoskASR
 from core.voice.feedback_store import VoiceFeedbackStore
-from core.constants import SCENE_INDEX_MAP
+from core.constants import SCENE_INDEX_MAP, SCENE_NAMES
 from demo.context import HomeContext
 from demo.device_simulator import DeviceSimulator
 import tools.device_control as device_ctrl
@@ -98,14 +112,18 @@ class HomeMindWebAgent:
         self.preference_store = PreferenceStore()
         self.privacy_redactor = PrivacyRedactor()
         self.router = InferenceRouter()
-        self.command_validator = CommandValidator()
         self.tap_engine = TAPEngine()
         self.tap_rule_store = TAPRuleStore()
+        self.scene_store = SceneStore()
+        self.nl_to_tap = NLToTAPConverter()
+        self.command_validator = CommandValidator(scene_store=self.scene_store)
         self.last_cloud_context = {}
         self.last_route_info = {}
         self.scheduler_enabled = True
         self.scheduler_interval = float(os.environ.get("HOMEMIND_RULE_SCHEDULER_INTERVAL", "5"))
+        self.dqn_scheduler_interval = float(os.environ.get("HOMEMIND_DQN_SCHEDULER_INTERVAL", "300"))
         self._last_rule_fire = {}
+        self._last_dqn_recommend_at = 0.0
         
         # 初始化上下文
         self.context = HomeContext()
@@ -121,7 +139,7 @@ class HomeMindWebAgent:
         # 初始化工具（传入协议网关）
         self.device_control = device_ctrl.DeviceController(protocol_gateway=self._gateway)
         self.info_query = info_query.InfoQuery()
-        self.scene_switcher = scene_switch.SceneSwitcher(self.device_control)
+        self.scene_switcher = scene_switch.SceneSwitcher(self.device_control, scene_store=self.scene_store)
         self.language_normalizer = language_normalizer
         
         # 尝试初始化 Embedding 和知识库
@@ -344,7 +362,42 @@ class HomeMindWebAgent:
         for key in stale:
             self._last_rule_fire.pop(key, None)
 
+        dqn_recommendation = self._dqn_proactive_recommend(now)
+        if dqn_recommendation:
+            executed.append({"type": "dqn_recommendation", "recommendation": dqn_recommendation})
+
         return {"status": "success", "executed": executed}
+
+    def _dqn_proactive_recommend(self, now: datetime = None) -> dict:
+        if not self.dqn:
+            return {}
+        current = time.time()
+        if current - self._last_dqn_recommend_at < self.dqn_scheduler_interval:
+            return {}
+
+        self.context.hour = (now or datetime.now()).hour
+        action_idx, confidence = self.dqn.recommend(self.context)
+        if action_idx == 5:
+            self._last_dqn_recommend_at = current
+            return {}
+
+        scene_name = SCENE_NAMES.get(action_idx, "")
+        if not scene_name:
+            return {}
+
+        recommendation = {
+            "id": f"dqn_{action_idx}",
+            "scene": scene_name,
+            "scene_id": self._scene_id_from_name(scene_name),
+            "reason": f"基于当前环境状态推荐{scene_name}",
+            "confidence": confidence,
+        }
+        self._last_dqn_recommend_at = current
+        socketio.emit("message", {
+            "type": "dqn_recommendation",
+            "data": recommendation,
+        })
+        return recommendation
 
     def _start_scheduler_loop(self):
         def scheduler_worker():
@@ -365,6 +418,7 @@ class HomeMindWebAgent:
             "status": "success",
             "enabled": self.scheduler_enabled,
             "interval_seconds": self.scheduler_interval,
+            "dqn_interval_seconds": self.dqn_scheduler_interval,
             "rule_count": len(self.tap_rule_store.list_rules()),
         }
 
@@ -553,6 +607,7 @@ class HomeMindWebAgent:
 
                 # Step 3: LLM 决策
                 cloud_context = self._build_cloud_context(ranked[:3])
+                rag_context = self.kb.get_context_prompt(query_text, self.context) if self.kb else ""
                 print(f"[Privacy] 云端最小上下文: {cloud_context}")
                 if route_info["route"] == "clarify":
                     question = self.llm.ask_clarification(query_text, ranked)
@@ -571,7 +626,7 @@ class HomeMindWebAgent:
                         query_text,
                         ranked,
                         self.context,
-                        rag_context="",
+                        rag_context=rag_context,
                         context_summary=cloud_context,
                     )
                 else:
@@ -579,7 +634,7 @@ class HomeMindWebAgent:
                         query_text,
                         ranked,
                         self.context,
-                        rag_context="",
+                        rag_context=rag_context,
                     )
                 action_type = decision.get("action", "")
                 device = decision.get("device", "")
@@ -865,15 +920,7 @@ class HomeMindWebAgent:
         
         if self.dqn_fb:
             self.dqn_fb.record(self.context, action, response)
-        scene_map = {
-            0: "睡眠模式",
-            1: "待客模式",
-            2: "离家模式",
-            3: "观影模式",
-            4: "起床模式",
-            5: "无推荐",
-        }
-        self.preference_store.record_recommendation_feedback(scene_map.get(action, ""), response)
+        self.preference_store.record_recommendation_feedback(SCENE_NAMES.get(action, ""), response)
     
     def _execute_action(self, action: str):
         """执行动作"""
@@ -908,6 +955,12 @@ class HomeMindWebAgent:
         "morning": "早安模式",
         "evening": "晚归模式",
     }
+
+    def _scene_id_from_name(self, scene_name: str) -> str:
+        for scene_id, name in self.SCENE_ID_MAP.items():
+            if name == scene_name:
+                return scene_id
+        return scene_name
 
     def get_all_states(self) -> dict:
         """获取所有状态，返回前端统一的设备格式"""
@@ -986,13 +1039,14 @@ class HomeMindWebAgent:
                         "normalized_query": normalized.to_dict(),
                     }
                 cloud_context = self._build_cloud_context(ranked[:3])
+                rag_context = self.kb.get_context_prompt(query_for_ai, self.context) if self.kb else ""
                 print(f"[Privacy] 云端最小上下文: {cloud_context}")
                 if route_info["route"] == "cloud":
                     decision = self.llm.decide_cloud(
                         query_for_ai,
                         ranked,
                         self.context,
-                        rag_context="",
+                        rag_context=rag_context,
                         context_summary=cloud_context,
                     )
                 else:
@@ -1000,7 +1054,7 @@ class HomeMindWebAgent:
                         query_for_ai,
                         ranked,
                         self.context,
-                        rag_context="",
+                        rag_context=rag_context,
                     )
                 if decision.get("confidence", 0.0) < self.confidence_threshold:
                     question = self.llm.ask_clarification(query_for_ai, ranked)
@@ -1134,16 +1188,89 @@ def control_device(device):
     return jsonify({"error": "Agent 未初始化"}), 500
 
 
+@app.route("/api/scenes", methods=["GET"])
+def list_scenes():
+    """场景列表接口"""
+    if agent:
+        return jsonify({"status": "success", "scenes": agent.scene_store.list_scenes()})
+    return jsonify({"error": "Agent 未初始化"}), 500
+
+
+@app.route("/api/scenes", methods=["POST"])
+def create_scene():
+    """场景创建接口"""
+    data = request.get_json(silent=True) or {}
+    if not data.get("name"):
+        return jsonify({"status": "error", "error": "name is required"}), 400
+    if agent:
+        try:
+            scene = agent.scene_store.add_scene(data["name"], data.get("config", {}))
+        except ValueError as exc:
+            return jsonify({"status": "error", "error": str(exc)}), 400
+        return jsonify({"status": "success", "name": data["name"], "scene": scene})
+    return jsonify({"error": "Agent 未初始化"}), 500
+
+
+@app.route("/api/scenes/from-nl", methods=["POST"])
+def create_scene_from_nl():
+    """自然语言创建场景接口"""
+    data = request.get_json(silent=True) or {}
+    if agent:
+        parsed = agent.nl_to_tap.parse_scene_creation(data.get("text", ""))
+        if not parsed:
+            return jsonify({"status": "error", "error": "无法从自然语言解析场景"}), 400
+        scene = agent.scene_store.add_scene(parsed["name"], parsed["config"])
+        return jsonify({"status": "success", "name": parsed["name"], "scene": scene})
+    return jsonify({"error": "Agent 未初始化"}), 500
+
+
+@app.route("/api/scenes/<scene_name>", methods=["GET"])
+def get_scene(scene_name):
+    """场景详情接口"""
+    if agent:
+        scene = agent.scene_store.get_scene(scene_name)
+        if scene is None:
+            return jsonify({"status": "error", "error": "场景不存在"}), 404
+        return jsonify({"status": "success", "name": scene_name, "scene": scene})
+    return jsonify({"error": "Agent 未初始化"}), 500
+
+
+@app.route("/api/scenes/<scene_name>", methods=["PUT"])
+def update_scene(scene_name):
+    """场景更新接口"""
+    data = request.get_json(silent=True) or {}
+    if agent:
+        scene = agent.scene_store.update_scene(scene_name, data.get("config", {}))
+        if scene is None:
+            return jsonify({"status": "error", "error": "场景不存在"}), 404
+        return jsonify({"status": "success", "name": scene_name, "scene": scene})
+    return jsonify({"error": "Agent 未初始化"}), 500
+
+
+@app.route("/api/scenes/<scene_name>", methods=["DELETE"])
+def delete_scene(scene_name):
+    """场景删除接口"""
+    if agent:
+        deleted = agent.scene_store.delete_scene(scene_name)
+        if not deleted:
+            return jsonify({"status": "error", "error": "场景不存在"}), 404
+        return jsonify({"status": "success"})
+    return jsonify({"error": "Agent 未初始化"}), 500
+
+
 @app.route("/api/scenes/<scene>/switch", methods=["POST"])
 def switch_scene(scene):
     """场景切换接口"""
     if agent:
         scene_name = agent.SCENE_ID_MAP.get(scene, scene)
-        agent.scene_switcher.execute(scene_name)
+        result = agent.scene_switcher.execute(scene_name)
         agent.context.current_scene = scene
+        agent.context.last_scene = SCENE_INDEX_MAP.get(scene_name, -1)
+        agent.session_store.update_scene(scene_name)
         return jsonify({
             "status": "success",
             "scene": scene,
+            "result": result,
             "devices": agent.get_all_states()["devices"]
         })
     
@@ -1172,22 +1299,15 @@ def dqn_recommend():
         action_idx, confidence = agent.dqn.recommend(agent.context)
         
         if action_idx != 5:
-            scene_map = {
-                0: "sleep",
-                1: "entertainment", 
-                2: "away",
-                3: "work",
-                4: "morning",
-                5: "evening"
-            }
-            recommended_scene = scene_map.get(action_idx, "sleep")
+            scene_name = SCENE_NAMES.get(action_idx, "")
+            recommended_scene = agent._scene_id_from_name(scene_name)
             
             return jsonify({
                 "status": "success",
                 "recommendation": {
                     "id": f"dqn_{action_idx}",
                     "scene": recommended_scene,
-                    "reason": f"基于当前环境状态推荐{recommended_scene}场景",
+                    "reason": f"基于当前环境状态推荐{scene_name}",
                     "confidence": confidence,
                 }
             })
@@ -1305,6 +1425,19 @@ def create_rule():
     data = request.get_json(silent=True) or {}
     if agent:
         rule = agent.tap_rule_store.add_rule(data)
+        return jsonify({"status": "success", "rule": rule})
+    return jsonify({"error": "Agent 未初始化"}), 500
+
+
+@app.route("/api/rules/from-nl", methods=["POST"])
+def create_rule_from_nl():
+    """自然语言创建 TAP 规则"""
+    data = request.get_json(silent=True) or {}
+    if agent:
+        rule_data = agent.nl_to_tap.parse(data.get("text", ""))
+        if not rule_data:
+            return jsonify({"status": "error", "error": "无法从自然语言解析 TAP 规则"}), 400
+        rule = agent.tap_rule_store.add_rule(rule_data)
         return jsonify({"status": "success", "rule": rule})
     return jsonify({"error": "Agent 未初始化"}), 500
 
@@ -1698,4 +1831,4 @@ if __name__ == "__main__":
     print("[启动] 控制面板: 打开 web/client/index.html")
     print("\n按 Ctrl+C 停止服务\n")
     
-    socketio.run(app, host="0.0.0.0", port=5000, debug=True, allow_unsafe_werkzeug=True)
+    socketio.run(app, host="127.0.0.1", port=5000, debug=True, allow_unsafe_werkzeug=True)

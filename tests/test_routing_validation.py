@@ -73,7 +73,7 @@ class CommandValidatorTests(unittest.TestCase):
     def test_invalid_scene_is_rejected(self):
         result = self.validator.validate({
             "action": "场景切换",
-            "scene": "工作模式",
+            "scene": "未知模式",
             "device_action": "scene",
             "params": {},
             "confidence": 0.9,

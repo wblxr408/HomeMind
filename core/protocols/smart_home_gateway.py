@@ -92,18 +92,22 @@ class MQTTProtocol(ProtocolInterface):
     """MQTT 协议支持"""
 
     def __init__(self, broker: str = "192.168.1.100", port: int = 1883,
-                 username: str = "", password: str = ""):
+                 username: str = "", password: str = "", use_tls: bool = False,
+                 cert_path: str = ""):
         self.broker = broker
-        self.port = port
+        self.use_tls = bool(use_tls)
+        self.port = 8883 if self.use_tls and port == 1883 else port
         self.username = username
         self.password = password
+        self.cert_path = cert_path
         self._connected = False
         self._devices: Dict[str, Dict] = {}
         self._client = None
 
     def connect(self) -> bool:
         try:
-            logger.info(f"[MQTT] 连接到 broker {self.broker}:{self.port}")
+            mode = "MQTTS" if self.use_tls else "MQTT"
+            logger.info(f"[{mode}] 连接到 broker {self.broker}:{self.port}")
             self._connected = True
             return True
         except Exception as e:
@@ -181,8 +185,13 @@ class XiaomiProtocol(ProtocolInterface):
 class HomeAssistantProtocol(ProtocolInterface):
     """Home Assistant API 支持"""
 
-    def __init__(self, url: str = "http://192.168.1.200:8123", token: str = ""):
+    def __init__(self, url: str = "https://192.168.1.200:8123", token: str = ""):
         self.url = url.rstrip("/")
+        if self.url.startswith("http://"):
+            logger.warning("[HomeAssistant] Forcing HTTPS")
+            self.url = self.url.replace("http://", "https://", 1)
+        if not self.url.startswith("https://"):
+            self.url = f"https://{self.url}"
         self.token = token
         self._connected = False
         self._devices: Dict[str, Dict] = {}
@@ -273,7 +282,9 @@ class SmartHomeGateway:
                                 broker=cfg.get("broker", "192.168.1.100"),
                                 port=cfg.get("port", 1883),
                                 username=cfg.get("username", ""),
-                                password=cfg.get("password", "")
+                                password=cfg.get("password", ""),
+                                use_tls=cfg.get("use_tls", False),
+                                cert_path=cfg.get("cert_path", "")
                             )
                         elif name == "xiaomi":
                             protocol = cls(
@@ -282,7 +293,7 @@ class SmartHomeGateway:
                             )
                         elif name == "home_assistant":
                             protocol = cls(
-                                url=cfg.get("url", "http://192.168.1.200:8123"),
+                                url=cfg.get("url", "https://192.168.1.200:8123"),
                                 token=cfg.get("token", "")
                             )
                         else:

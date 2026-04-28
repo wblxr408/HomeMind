@@ -51,6 +51,12 @@ class TAPEngine:
         if trigger_type == "scene":
             current_scene = getattr(context, "current_scene", "")
             return str(trigger.get("equals", "")).strip() == str(current_scene or "").strip()
+        if trigger_type == "day_of_week":
+            days = trigger.get("days", [])
+            return int(getattr(context, "day_of_week", now.weekday())) in {int(day) for day in days}
+        if trigger_type == "holiday":
+            # Local fallback: without a holiday calendar, treat configured holiday rules as non-firing.
+            return False
         return False
 
     def _conditions_match(self, conditions: List[Dict[str, Any]], context) -> bool:

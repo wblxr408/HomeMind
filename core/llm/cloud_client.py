@@ -21,6 +21,12 @@ class CloudClient:
         if not self.api_key:
             logger.info("CloudClient disabled: missing API key")
             return
+        if self.api_base and self.api_base.startswith("http://"):
+            logger.warning("CloudClient: forcing HTTPS for external API call")
+            self.api_base = self.api_base.replace("http://", "https://", 1)
+        if self.api_base and not self.api_base.startswith("https://"):
+            logger.warning("CloudClient disabled: api_base must use HTTPS")
+            return
         try:
             import openai
 

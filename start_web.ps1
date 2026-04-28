@@ -2,7 +2,7 @@
 param(
     [ValidateSet("simulated", "real")]
     [string]$Mode = "simulated",
-    [string]$Host = "0.0.0.0",
+    [string]$HostAddress = "127.0.0.1",
     [int]$Port = 5000,
     [switch]$Debug
 )
@@ -23,7 +23,7 @@ try {
 # Switch to script directory
 Set-Location $PSScriptRoot
 
-$DisplayHost = if ($Host -eq "0.0.0.0") { "localhost" } else { $Host }
+$DisplayHost = if ($HostAddress -eq "0.0.0.0") { "localhost" } else { $HostAddress }
 $BaseUrl = "http://${DisplayHost}:$Port"
 $DebugStatus = if ($Debug) { "ON" } else { "OFF" }
 
@@ -44,13 +44,25 @@ Write-Host "    - Entry Page:    $BaseUrl/" -ForegroundColor White
 Write-Host "    - Control Panel: $BaseUrl/web/client/index.html" -ForegroundColor White
 Write-Host "    - API Status:    $BaseUrl/api/status" -ForegroundColor White
 Write-Host ""
+Write-Host "  Runtime:" -ForegroundColor Green
+Write-Host "    - Mode:          $Mode" -ForegroundColor White
+Write-Host "    - Host:          $HostAddress" -ForegroundColor White
+Write-Host "    - Port:          $Port" -ForegroundColor White
+Write-Host ""
 Write-Host "  Press Ctrl+C to stop" -ForegroundColor Yellow
 Write-Host "========================================" -ForegroundColor Yellow
 Write-Host ""
 
 # Start server
+$argsList = @(
+    "main.py",
+    "--host", $HostAddress,
+    "--port", "$Port",
+    "--mode", $Mode
+)
+
 if ($Debug) {
-    python run_web.py --mode $Mode --host $Host --port $Port --debug
-} else {
-    python run_web.py --mode $Mode --host $Host --port $Port
+    $argsList += "--debug"
 }
+
+python @argsList

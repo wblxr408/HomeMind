@@ -192,10 +192,10 @@ class DQNProductTests(unittest.TestCase):
     def test_q_network_output_shape_matches_scene_action_space(self):
         q_net = QNetwork(seed=123)
 
-        q_values = q_net.forward(np.zeros(5, dtype=np.float32))
+        q_values = q_net.forward(np.zeros(7, dtype=np.float32))
 
-        self.assertEqual(q_values.shape, (6,))
-        self.assertEqual(q_net.num_params(), 390)
+        self.assertEqual(q_values.shape, (9,))
+        self.assertEqual(q_net.num_params(), 5257)
 
     def test_feedback_records_reward_and_preserves_valid_recommendation_range(self):
         policy = DQNPolicy.__new__(DQNPolicy)
@@ -216,7 +216,7 @@ class DQNProductTests(unittest.TestCase):
         self.assertTrue(ok)
         self.assertEqual(len(policy.replay), before + 1)
         self.assertGreaterEqual(action, 0)
-        self.assertLessEqual(action, 5)
+        self.assertLessEqual(action, 8)
         self.assertIsInstance(confidence, float)
 
 
