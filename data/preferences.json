@@ -9,6 +9,10 @@
     "观影模式": {
       "accept_count": 1,
       "preferred_hour": 18
+    },
+    "回家模式": {
+      "accept_count": 1,
+      "preferred_hour": 19
     }
   },
   "recommendation": {},
@@ -17,5 +21,5 @@
       "我要看电影了": "切换观影模式"
     }
   },
-  "updated_at": "2026-04-26T18:23:22.845291+08:00"
+  "updated_at": "2026-04-27T19:43:07.776942+08:00"
 }
