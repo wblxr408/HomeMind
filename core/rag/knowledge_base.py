@@ -212,6 +212,26 @@ class KnowledgeBase:
         except Exception as exc:
             logger.warning("ChromaDB add failed: %s", exc)
 
+    def get_status(self) -> Dict[str, Any]:
+        """Return runtime storage status for health checks and UI diagnostics."""
+        collection_count = 0
+        if self._collection is not None and hasattr(self._collection, "count"):
+            try:
+                collection_count = int(self._collection.count())
+            except Exception as exc:
+                logger.warning("ChromaDB count failed: %s", exc)
+
+        return {
+            "chromadb_importable": bool(CHROMA_AVAILABLE),
+            "chromadb_enabled": self._collection is not None,
+            "collection_name": "homemind_kb" if self._collection is not None else "",
+            "persist_dir": self.persist_dir,
+            "memory_store_count": len(self.memory_store),
+            "preset_knowledge_count": len(self.preset_knowledge),
+            "collection_count": collection_count,
+            "max_records": self.max_records,
+        }
+
     def _prune_memory_store(self) -> None:
         if len(self.memory_store) <= self.max_records:
             return
@@ -340,6 +360,8 @@ class KnowledgeBase:
         if data and "memory_store" in data:
             self.memory_store = data["memory_store"]
             self._prune_memory_store()
+            for record in self.memory_store:
+                self._upsert_collection_record(record)
             logger.info("Knowledge base restored, records=%s", len(self.memory_store))
             return True
         logger.warning("Knowledge base restore failed or backup missing: %s", path)

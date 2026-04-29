@@ -1,3 +1,5 @@
+import io
+import json
 import os
 import tempfile
 import unittest
@@ -14,6 +16,7 @@ DATA_FILES = [
     REPO_ROOT / "data" / "session_state.json",
     REPO_ROOT / "data" / "preferences.json",
     REPO_ROOT / "data" / "tap_rules.json",
+    REPO_ROOT / "data" / "device-registry.json",
 ]
 
 HOT = "\u70ed"
@@ -108,6 +111,21 @@ class HomeMindSystemRegressionTests(unittest.TestCase):
         self.assertEqual(rules[0]["trigger"]["at"], "19:00")
 
 
+class DefaultFloorPlanFixtureTests(unittest.TestCase):
+    def test_default_floor_plan_and_device_mapping_are_aligned(self):
+        floor_plan_path = REPO_ROOT / "data" / "floor-plans.json"
+        device_path = REPO_ROOT / "data" / "devices.json"
+        svg_path = REPO_ROOT / "uploads" / "floor-plans" / "floorPlan-sample.svg"
+
+        floor_plans = json.loads(floor_plan_path.read_text(encoding="utf-8"))
+        devices = json.loads(device_path.read_text(encoding="utf-8"))
+
+        self.assertTrue(svg_path.exists())
+        self.assertEqual(floor_plans[0]["id"], "floorPlan-sample.svg")
+        self.assertEqual(devices[0]["floorPlanId"], "floorPlan-sample.svg")
+        self.assertGreater(len(devices[0]["devices"]), 0)
+
+
 class WebApiSystemTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -125,6 +143,17 @@ class WebApiSystemTests(unittest.TestCase):
 
     def setUp(self):
         _cleanup()
+        self.original_floor_plan_upload_dir = self.web_server.FLOOR_PLAN_UPLOAD_DIR
+        self.original_floor_plan_store_path = self.web_server.FLOOR_PLAN_STORE_PATH
+        self.original_floor_plan_device_store_path = self.web_server.FLOOR_PLAN_DEVICE_STORE_PATH
+        self.original_device_registry_path = self.web_server.DEVICE_REGISTRY_PATH
+        self.floor_plan_tmp = tempfile.TemporaryDirectory()
+        floor_plan_root = Path(self.floor_plan_tmp.name)
+        self.web_server.FLOOR_PLAN_UPLOAD_DIR = floor_plan_root / "uploads" / "floor-plans"
+        self.web_server.FLOOR_PLAN_STORE_PATH = floor_plan_root / "data" / "floor-plans.json"
+        self.web_server.FLOOR_PLAN_DEVICE_STORE_PATH = floor_plan_root / "data" / "devices.json"
+        self.web_server.DEVICE_REGISTRY_PATH = floor_plan_root / "data" / "device-registry.json"
+        self.web_server.FLOOR_PLAN_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
         self.web_server.agent.tap_rule_store.rules = []
         self.web_server.agent.tap_rule_store.save()
         self.web_server.agent.last_cloud_context = {}
@@ -146,6 +175,11 @@ class WebApiSystemTests(unittest.TestCase):
         self.web_server.voice_feedback_store = self.original_voice_feedback_store
         self.web_server.language_normalizer = self.original_language_normalizer
         self.voice_feedback_path.unlink(missing_ok=True)
+        self.web_server.FLOOR_PLAN_UPLOAD_DIR = self.original_floor_plan_upload_dir
+        self.web_server.FLOOR_PLAN_STORE_PATH = self.original_floor_plan_store_path
+        self.web_server.FLOOR_PLAN_DEVICE_STORE_PATH = self.original_floor_plan_device_store_path
+        self.web_server.DEVICE_REGISTRY_PATH = self.original_device_registry_path
+        self.floor_plan_tmp.cleanup()
 
     def test_query_endpoint_rejects_empty_user_input(self):
         response = self.client.post("/api/query", json={"query": ""})
@@ -263,6 +297,51 @@ class WebApiSystemTests(unittest.TestCase):
         self.assertEqual(status_response.status_code, 500)
         self.assertEqual(preferences_response.status_code, 500)
 
+    def test_device_registry_crud_and_control(self):
+        listed = self.client.get("/api/devices")
+        self.assertEqual(listed.status_code, 200)
+        self.assertIn("light", [device["id"] for device in listed.get_json()["devices"]])
+
+        created = self.client.post(
+            "/api/devices",
+            json={"id": "desk_lamp", "name": "\u4e66\u684c\u706f", "type": "light"},
+        )
+        self.assertEqual(created.status_code, 200)
+        created_payload = created.get_json()
+        self.assertEqual(created_payload["status"], "success")
+        self.assertEqual(created_payload["device"]["id"], "desk_lamp")
+        self.assertFalse(created_payload["device"]["state"]["is_on"])
+
+        turned_on = self.client.post("/api/devices/desk_lamp/control", json={"action": "on"})
+        self.assertEqual(turned_on.status_code, 200)
+        self.assertTrue(turned_on.get_json()["state"]["is_on"])
+
+        updated = self.client.put(
+            "/api/devices/desk_lamp",
+            json={"name": "\u9605\u8bfb\u706f", "type": "switch"},
+        )
+        self.assertEqual(updated.status_code, 200)
+        self.assertEqual(updated.get_json()["device"]["name"], "\u9605\u8bfb\u706f")
+
+        status_payload = self.client.get("/api/status").get_json()
+        self.assertIn("desk_lamp", status_payload["devices"])
+        self.assertTrue(status_payload["devices"]["desk_lamp"]["is_on"])
+
+        deleted = self.client.delete("/api/devices/desk_lamp")
+        missing_control = self.client.post("/api/devices/desk_lamp/control", json={"action": "off"})
+        self.assertEqual(deleted.status_code, 200)
+        self.assertEqual(missing_control.status_code, 404)
+
+    def test_device_registry_rejects_duplicate_ids_and_id_rename(self):
+        created = self.client.post(
+            "/api/devices",
+            json={"id": "light", "name": "\u91cd\u590d\u706f", "type": "light"},
+        )
+        renamed = self.client.put("/api/devices/light", json={"id": "light_2", "name": "\u706f\u5149"})
+
+        self.assertEqual(created.status_code, 409)
+        self.assertEqual(renamed.status_code, 400)
+
     def test_voice_feedback_requires_source_text(self):
         response = self.client.post("/api/voice/feedback", json={"feedback": "accepted"})
 
@@ -292,6 +371,80 @@ class WebApiSystemTests(unittest.TestCase):
         normalized = self.web_server.language_normalizer.normalize("turn on the thing")
         self.assertEqual(normalized.matched_rule, "voice_feedback_history")
         self.assertTrue(normalized.normalized)
+
+    def test_svg_floor_plan_upload_is_validated_saved_and_listed(self):
+        svg = b'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="10" height="10"/></svg>'
+
+        upload = self.client.post(
+            "/api/floor-plans",
+            data={
+                "floorPlan": (io.BytesIO(svg), "home plan.svg"),
+                "name": "Home Plan",
+                "description": "Test plan",
+            },
+            content_type="multipart/form-data",
+        )
+        listed = self.client.get("/api/floor-plans")
+
+        self.assertEqual(upload.status_code, 200)
+        payload = upload.get_json()
+        self.assertEqual(payload["status"], "success")
+        plan = payload["floorPlan"]
+        self.assertEqual(plan["name"], "Home Plan")
+        self.assertEqual(plan["description"], "Test plan")
+        self.assertEqual(plan["width"], 10.0)
+        self.assertEqual(plan["height"], 10.0)
+        self.assertTrue((self.web_server.FLOOR_PLAN_UPLOAD_DIR / plan["id"]).exists())
+        self.assertEqual(listed.status_code, 200)
+        self.assertEqual(len(listed.get_json()["floorPlans"]), 1)
+
+        svg_response = self.client.get(f"/api/floor-plans/{plan['id']}/svg")
+        self.assertEqual(svg_response.status_code, 200)
+        self.assertIn(b"<svg", svg_response.data)
+
+    def test_svg_floor_plan_upload_rejects_script_content(self):
+        svg = b'<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>'
+
+        response = self.client.post(
+            "/api/floor-plans",
+            data={"floorPlan": (io.BytesIO(svg), "unsafe.svg")},
+            content_type="multipart/form-data",
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.get_json()["status"], "error")
+
+    def test_floor_plan_crud_and_device_mapping(self):
+        svg = b'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 660"><rect width="640" height="660"/></svg>'
+        upload = self.client.post(
+            "/api/floor-plans",
+            data={"floorPlan": (io.BytesIO(svg), "map.svg"), "name": "Map"},
+            content_type="multipart/form-data",
+        )
+        plan = upload.get_json()["floorPlan"]
+
+        update = self.client.put(
+            f"/api/floor-plans/{plan['id']}",
+            json={"name": "Updated Map", "description": "With devices"},
+        )
+        mapping = self.client.post(
+            f"/api/floor-plans/{plan['id']}/devices",
+            json={"devices": [["light.living_room", "living_room", "light"], ["sensor.motion", "living_room", "motion_sensor"]]},
+        )
+        loaded_mapping = self.client.get(f"/api/floor-plans/{plan['id']}/devices")
+        delete = self.client.delete(f"/api/floor-plans/{plan['id']}")
+        after_delete_mapping = self.client.get(f"/api/floor-plans/{plan['id']}/devices")
+
+        self.assertEqual(update.status_code, 200)
+        self.assertEqual(update.get_json()["floorPlan"]["name"], "Updated Map")
+        self.assertEqual(mapping.status_code, 200)
+        devices = mapping.get_json()["devices"]
+        self.assertEqual(len(devices), 2)
+        self.assertIn("x", devices[0])
+        self.assertIn("y", devices[0])
+        self.assertEqual(loaded_mapping.get_json()["deviceMapping"]["floorPlanId"], plan["id"])
+        self.assertEqual(delete.status_code, 200)
+        self.assertEqual(after_delete_mapping.get_json()["devices"], [])
 
 
     def test_query_greeting_returns_chat_response(self):

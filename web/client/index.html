@@ -642,7 +642,8 @@
         }
 
         .field input,
-        .field select {
+        .field select,
+        .field textarea {
             border: 0.5px solid var(--border-light);
             border-radius: var(--radius-md);
             background: var(--bg-primary);
@@ -653,8 +654,56 @@
         }
 
         .field input:focus,
-        .field select:focus {
+        .field select:focus,
+        .field textarea:focus {
             border-color: var(--border-mid);
+        }
+
+        .floorplan-preview {
+            position: relative;
+            min-height: 220px;
+            border: 0.5px solid var(--border-light);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            background: var(--bg-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .floorplan-preview img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .device-marker {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            min-width: 18px;
+            height: 18px;
+            border-radius: 999px;
+            padding: 0 5px;
+            background: #0F6E56;
+            color: #fff;
+            font-size: 10px;
+            line-height: 18px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+            white-space: nowrap;
+        }
+
+        .device-marker-label {
+            position: absolute;
+            transform: translate(-50%, 8px);
+            background: rgba(255, 255, 255, 0.92);
+            border: 0.5px solid var(--border-light);
+            border-radius: 999px;
+            padding: 2px 6px;
+            color: var(--text-primary);
+            font-size: 10px;
+            white-space: nowrap;
         }
 
         .empty-hint {
@@ -697,6 +746,37 @@
             background: var(--bg-primary);
         }
 
+        .device-main {
+            min-width: 0;
+            flex: 1;
+        }
+
+        .device-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        .device-inline-form {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 120px;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .device-inline-form input,
+        .device-inline-form select {
+            min-width: 0;
+            border: 0.5px solid var(--border-light);
+            border-radius: var(--radius-md);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 11px;
+            padding: 6px 8px;
+            outline: none;
+        }
+
         .device-name {
             font-size: 12px;
             color: var(--text-primary);
@@ -707,6 +787,13 @@
             font-size: 10px;
             color: var(--text-tertiary);
             margin-top: 2px;
+        }
+
+        .device-id {
+            font-size: 10px;
+            color: var(--text-tertiary);
+            margin-top: 2px;
+            word-break: break-word;
         }
 
         .toggle {
@@ -879,6 +966,13 @@
                         </div>
                         <span class="entry-card-arrow">›</span>
                     </button>
+                    <button class="entry-card" onclick="openModal('floorplan')">
+                        <div>
+                            <div class="entry-card-title">SVG 户型图</div>
+                            <div class="entry-card-sub">上传 · 元数据 · 设备映射</div>
+                        </div>
+                        <span class="entry-card-arrow">›</span>
+                    </button>
                     <button class="entry-card" onclick="openModal('memory')">
                         <div>
                             <div class="entry-card-title">记忆与偏好</div>
@@ -927,7 +1021,7 @@
             { id: "evening", name: "晚归模式", desc: "门廊亮起、室温预调、氛围灯光" }
         ];
 
-        const deviceList = [
+        let deviceList = [
             { id: "air_conditioner", name: "空调" },
             { id: "light", name: "灯光" },
             { id: "tv", name: "电视" },
@@ -935,6 +1029,17 @@
             { id: "fan", name: "风扇" },
             { id: "speaker", name: "音响" },
             { id: "window", name: "窗户" }
+        ];
+
+        const deviceTypes = [
+            { value: "switch", label: "开关" },
+            { value: "light", label: "灯光" },
+            { value: "climate", label: "空调" },
+            { value: "fan", label: "风扇" },
+            { value: "media_player", label: "媒体" },
+            { value: "speaker", label: "音响" },
+            { value: "water_heater", label: "热水器" },
+            { value: "cover", label: "窗户/窗帘" }
         ];
 
         const progressOrder = ["bsr", "lsr", "llm", "exec"];
@@ -953,6 +1058,9 @@
         let memorySnapshot = null;
         let privacySnapshot = null;
         let schedulerSnapshot = null;
+        let floorPlanUploads = [];
+        let selectedFloorPlan = null;
+        let floorPlanDevices = [];
 
         async function apiGet(url) {
             const response = await fetch(url);
@@ -991,6 +1099,17 @@
                 .replace(/</g, "&lt;")
                 .replace(/>/g, "&gt;")
                 .replace(/\n/g, "<br>");
+        }
+
+        function escapeAttr(text) {
+            return escapeHtml(text).replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+        }
+
+        function renderDeviceTypeOptions(selectedType) {
+            return deviceTypes.map((type) => {
+                const selected = type.value === selectedType ? "selected" : "";
+                return `<option value="${escapeAttr(type.value)}" ${selected}>${type.label}</option>`;
+            }).join("");
         }
 
         function buildFeedbackButtons(options = {}) {
@@ -1109,6 +1228,91 @@
             Object.entries(states || {}).forEach(([id, state]) => updateDeviceState(id, state));
         }
 
+        async function loadDevices(rerender = true) {
+            try {
+                const data = await apiGet("/api/devices");
+                if (data.status !== "success") {
+                    showToast(data.error || "设备加载失败");
+                    return;
+                }
+                deviceList = (data.devices || []).map((device) => ({
+                    id: device.id,
+                    name: device.name,
+                    type: device.type || "switch"
+                }));
+                (data.devices || []).forEach((device) => {
+                    devices[device.id] = device.state || {};
+                });
+                if (rerender && currentModal === "device") renderModal("device");
+            } catch (e) {
+                showToast("设备加载失败");
+            }
+        }
+
+        async function createDeviceFromForm() {
+            const payload = {
+                id: document.getElementById("new-device-id").value.trim(),
+                name: document.getElementById("new-device-name").value.trim(),
+                type: document.getElementById("new-device-type").value
+            };
+            if (!payload.name) {
+                showToast("请输入设备名称");
+                return;
+            }
+            try {
+                const data = await apiJson("/api/devices", "POST", payload);
+                if (data.status !== "success") {
+                    showToast(data.error || "设备保存失败");
+                    return;
+                }
+                showToast("设备已保存");
+                await loadDevices();
+            } catch (e) {
+                showToast("设备保存失败");
+            }
+        }
+
+        async function updateDeviceFromCard(deviceId) {
+            const nameInput = Array.from(document.querySelectorAll("[data-device-name]")).find((el) => el.dataset.deviceName === deviceId);
+            const typeInput = Array.from(document.querySelectorAll("[data-device-type]")).find((el) => el.dataset.deviceType === deviceId);
+            const payload = {
+                name: nameInput ? nameInput.value.trim() : "",
+                type: typeInput ? typeInput.value : "switch"
+            };
+            if (!payload.name) {
+                showToast("请输入设备名称");
+                return;
+            }
+            try {
+                const data = await apiJson(`/api/devices/${encodeURIComponent(deviceId)}`, "PUT", payload);
+                if (data.status !== "success") {
+                    showToast(data.error || "设备更新失败");
+                    return;
+                }
+                showToast("设备已更新");
+                await loadDevices();
+            } catch (e) {
+                showToast("设备更新失败");
+            }
+        }
+
+        async function deleteDeviceFromCard(deviceId) {
+            if (!deviceId || !confirm("删除这个设备？")) return;
+            try {
+                const response = await fetch(`/api/devices/${encodeURIComponent(deviceId)}`, { method: "DELETE" });
+                const data = await response.json();
+                if (!response.ok || data.status !== "success") {
+                    showToast(data.error || "设备删除失败");
+                    return;
+                }
+                delete devices[deviceId];
+                showToast("设备已删除");
+                await loadDevices();
+            } catch (e) {
+                showToast("设备删除失败");
+            }
+        }
+
         async function sendQuery(query) {
             if (socket && socket.connected) {
                 socket.emit("user_input", { text: query });
@@ -1169,13 +1373,15 @@
         function openModal(type) {
             currentModal = type;
             const modal = document.querySelector(".modal");
-            modal.classList.toggle("wide", ["rules", "memory", "privacy"].includes(type));
+            modal.classList.toggle("wide", ["device", "rules", "memory", "privacy", "floorplan"].includes(type));
             renderModal(type);
             document.getElementById("overlay").classList.add("open");
             if (type === "rules") loadRules();
             if (type === "rules") loadSchedulerStatus();
+            if (type === "device") loadDevices();
             if (type === "memory") loadMemorySummary();
             if (type === "privacy") loadPrivacyStatus();
+            if (type === "floorplan") loadFloorPlanUploads();
         }
 
         function renderModal(type) {
@@ -1200,26 +1406,70 @@
                 });
             } else if (type === "device") {
                 title.textContent = "设备控制";
-                body.innerHTML = `<div class="card-grid">${
-                    deviceList.map((device) => {
-                        const state = devices[device.id] || {};
-                        return `
-                            <div class="device-card">
-                                <div>
-                                    <div class="device-name">${device.name}</div>
-                                    <div class="device-status">${buildDeviceStatus(device.id, state)}</div>
-                                </div>
-                                <button class="toggle ${state.is_on ? "on" : ""}" data-device-id="${device.id}"></button>
+                body.innerHTML = `
+                    <div class="summary-card">
+                        <div class="summary-head">
+                            <div>
+                                <div class="summary-title">新增设备</div>
+                                <div class="summary-meta">设备保存到后端注册表，开关控制使用同一份状态。</div>
                             </div>
-                        `;
-                    }).join("")
-                }</div>`;
+                            <button class="mini-btn" id="refresh-devices-btn">刷新</button>
+                        </div>
+                        <div class="form-grid">
+                            <div class="field">
+                                <label>ID</label>
+                                <input id="new-device-id" placeholder="living_room_light">
+                            </div>
+                            <div class="field">
+                                <label>类型</label>
+                                <select id="new-device-type">${renderDeviceTypeOptions("switch")}</select>
+                            </div>
+                            <div class="field full">
+                                <label>名称</label>
+                                <input id="new-device-name" placeholder="客厅灯带">
+                            </div>
+                            <div class="field full">
+                                <button class="mini-btn" id="create-device-btn">保存设备</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-grid" style="margin-top: 10px;">${
+                        deviceList.map((device) => {
+                            const state = devices[device.id] || {};
+                            return `
+                                <div class="device-card">
+                                    <div class="device-main">
+                                        <div class="device-name">${escapeHtml(device.name)}</div>
+                                        <div class="device-status">${buildDeviceStatus(device.id, state)}</div>
+                                        <div class="device-id">${escapeHtml(device.id)}</div>
+                                        <div class="device-inline-form">
+                                            <input data-device-name="${escapeAttr(device.id)}" value="${escapeAttr(device.name)}">
+                                            <select data-device-type="${escapeAttr(device.id)}">${renderDeviceTypeOptions(device.type || "switch")}</select>
+                                        </div>
+                                    </div>
+                                    <div class="device-actions">
+                                        <button class="toggle ${state.is_on ? "on" : ""}" data-device-id="${escapeAttr(device.id)}"></button>
+                                        <button class="mini-btn" data-device-save="${escapeAttr(device.id)}">保存</button>
+                                        <button class="mini-btn" data-device-delete="${escapeAttr(device.id)}">删除</button>
+                                    </div>
+                                </div>
+                            `;
+                        }).join("")
+                    }</div>`;
+                document.getElementById("refresh-devices-btn").onclick = loadDevices;
+                document.getElementById("create-device-btn").onclick = createDeviceFromForm;
                 body.querySelectorAll(".toggle").forEach((toggle) => {
                     toggle.addEventListener("click", () => {
                         const id = toggle.dataset.deviceId;
                         const state = devices[id] || {};
                         controlDevice(id, state.is_on ? "off" : "on");
                     });
+                });
+                body.querySelectorAll("[data-device-save]").forEach((btn) => {
+                    btn.onclick = () => updateDeviceFromCard(btn.dataset.deviceSave);
+                });
+                body.querySelectorAll("[data-device-delete]").forEach((btn) => {
+                    btn.onclick = () => deleteDeviceFromCard(btn.dataset.deviceDelete);
                 });
             } else if (type === "rules") {
                 title.textContent = "自动化规则";
@@ -1320,6 +1570,83 @@
                 body.querySelectorAll("[data-rule-run]").forEach((btn) => {
                     btn.onclick = () => runSingleRule(btn.dataset.ruleRun);
                 });
+            } else if (type === "floorplan") {
+                title.textContent = "SVG 户型图";
+                const selected = selectedFloorPlan;
+                body.innerHTML = `
+                    <div class="summary-card">
+                        <div class="summary-head">
+                            <div>
+                                <div class="summary-title">上传户型图</div>
+                                <div class="summary-meta">保存 SVG 元数据，并支持绑定设备映射后在图上叠加设备位置。</div>
+                            </div>
+                            <button class="mini-btn" id="refresh-floorplans-btn">刷新</button>
+                        </div>
+                        <div class="form-grid">
+                            <div class="field">
+                                <label>名称</label>
+                                <input id="floorplan-name" placeholder="例如：一层户型">
+                            </div>
+                            <div class="field">
+                                <label>说明</label>
+                                <input id="floorplan-desc" placeholder="可选">
+                            </div>
+                            <div class="field full">
+                                <input id="floorplan-file" type="file" accept="image/svg+xml,.svg">
+                            </div>
+                            <div class="field full">
+                                <button class="mini-btn" id="upload-floorplan-btn">上传 SVG</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="summary-card" style="margin-top: 10px;">
+                        <div class="summary-title">当前预览</div>
+                        <div class="summary-meta">${selected ? `${escapeHtml(selected.name || selected.id)} · ${Math.round((selected.width || 0))} x ${Math.round((selected.height || 0))}` : "请选择或上传一个户型图"}</div>
+                        <div class="floorplan-preview">
+                            ${selected ? `<img src="/api/floor-plans/${encodeURIComponent(selected.id)}/svg" alt="${escapeHtml(selected.name || selected.id)}">${floorPlanDevices.map((device) => `<span class="device-marker" style="left:${device.x}%;top:${device.y}%" title="${escapeHtml(device.name)} (${escapeHtml(device.type)})">${escapeHtml((device.type || "D").slice(0, 2).toUpperCase())}</span><span class="device-marker-label" style="left:${device.x}%;top:${device.y}%">${escapeHtml(device.name)}</span>`).join("")}` : `<div class="empty-hint">暂无户型图</div>`}
+                        </div>
+                    </div>
+                    <div class="summary-card" style="margin-top: 10px;">
+                        <div class="summary-title">设备映射</div>
+                        <div class="summary-meta">格式支持 [["light.bedroom","bedroom","light"]] 或 {"devices":[{"entity_id":"light.bedroom","area":"bedroom","type":"light"}]}。</div>
+                        <div class="form-grid">
+                            <div class="field full">
+                                <textarea id="device-mapping-json" rows="5" placeholder='[["light.living_room","living_room","light"]]'></textarea>
+                            </div>
+                            <div class="field full">
+                                <button class="mini-btn" id="save-device-mapping-btn" ${selected ? "" : "disabled"}>保存设备映射</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stack" style="margin-top: 10px;">
+                        ${floorPlanUploads.length ? floorPlanUploads.map((plan) => `
+                            <div class="rule-card">
+                                <div class="rule-head">
+                                    <div>
+                                        <div class="rule-name">${escapeHtml(plan.name || plan.id)}</div>
+                                        <div class="rule-meta">${escapeHtml(plan.description || "无说明")} · ${Math.round(plan.width || 0)} x ${Math.round(plan.height || 0)}</div>
+                                    </div>
+                                    <span class="pill ${selected && selected.id === plan.id ? "on" : ""}">${selected && selected.id === plan.id ? "当前" : "已保存"}</span>
+                                </div>
+                                <div class="mini-actions">
+                                    <button class="mini-btn" data-floorplan-select="${escapeHtml(plan.id)}">选择</button>
+                                    <a class="mini-btn" href="/api/floor-plans/${encodeURIComponent(plan.id)}/svg" target="_blank" rel="noopener">预览</a>
+                                    <button class="mini-btn" data-floorplan-delete="${escapeHtml(plan.id)}">删除</button>
+                                </div>
+                            </div>
+                        `).join("") : `<div class="empty-hint">还没有上传的 SVG 户型图。</div>`}
+                    </div>
+                `;
+                document.getElementById("refresh-floorplans-btn").onclick = loadFloorPlanUploads;
+                document.getElementById("upload-floorplan-btn").onclick = uploadFloorPlanSvg;
+                const saveMappingBtn = document.getElementById("save-device-mapping-btn");
+                if (saveMappingBtn) saveMappingBtn.onclick = saveFloorPlanDeviceMapping;
+                body.querySelectorAll("[data-floorplan-select]").forEach((btn) => {
+                    btn.onclick = () => selectFloorPlan(btn.dataset.floorplanSelect);
+                });
+                body.querySelectorAll("[data-floorplan-delete]").forEach((btn) => {
+                    btn.onclick = () => deleteFloorPlan(btn.dataset.floorplanDelete);
+                });
             } else if (type === "memory") {
                 title.textContent = "记忆与偏好";
                 const snapshot = memorySnapshot || {};
@@ -1412,8 +1739,22 @@
             addLog("场景", getSceneName(scene));
         }
 
-        function controlDevice(deviceId, action) {
-            socket.emit("message", { type: "device_control", data: { device: deviceId, action, params: {} } });
+        async function controlDevice(deviceId, action) {
+            try {
+                const data = await apiJson(`/api/devices/${encodeURIComponent(deviceId)}/control`, "POST", { action, params: {} });
+                if (data.status !== "success") {
+                    showToast(data.error || "设备控制失败");
+                    return;
+                }
+                updateDeviceState(deviceId, data.state || {});
+                addLog(getDeviceName(deviceId), buildDeviceStatus(deviceId, data.state || {}));
+            } catch (e) {
+                if (socket && socket.connected) {
+                    socket.emit("message", { type: "device_control", data: { device: deviceId, action, params: {} } });
+                    return;
+                }
+                showToast("设备控制失败");
+            }
         }
 
         function closeModal(e) {
@@ -1511,6 +1852,113 @@
             }
         }
 
+        async function loadFloorPlanUploads() {
+            try {
+                const data = await apiGet("/api/floor-plans");
+                floorPlanUploads = data.floorPlans || data.files || [];
+                if (!selectedFloorPlan && floorPlanUploads.length) {
+                    selectedFloorPlan = floorPlanUploads[0];
+                    await loadFloorPlanDevices(selectedFloorPlan.id, false);
+                }
+                if (currentModal === "floorplan") renderModal("floorplan");
+            } catch (e) {
+                showToast("SVG 户型图加载失败");
+            }
+        }
+
+        async function selectFloorPlan(planId) {
+            const plan = floorPlanUploads.find((item) => item.id === planId);
+            if (!plan) return;
+            selectedFloorPlan = plan;
+            await loadFloorPlanDevices(plan.id, false);
+            if (currentModal === "floorplan") renderModal("floorplan");
+        }
+
+        async function loadFloorPlanDevices(planId, rerender = true) {
+            if (!planId) return;
+            try {
+                const data = await apiGet(`/api/floor-plans/${encodeURIComponent(planId)}/devices`);
+                floorPlanDevices = data.devices || [];
+                if (rerender && currentModal === "floorplan") renderModal("floorplan");
+            } catch (e) {
+                floorPlanDevices = [];
+            }
+        }
+
+        async function uploadFloorPlanSvg() {
+            const input = document.getElementById("floorplan-file");
+            const file = input && input.files ? input.files[0] : null;
+            if (!file) {
+                showToast("请先选择 SVG 文件");
+                return;
+            }
+            const form = new FormData();
+            form.append("floorPlan", file, file.name);
+            form.append("name", document.getElementById("floorplan-name").value.trim() || file.name.replace(/\.svg$/i, ""));
+            form.append("description", document.getElementById("floorplan-desc").value.trim());
+            try {
+                const response = await fetch("/api/floor-plans", {
+                    method: "POST",
+                    body: form
+                });
+                const data = await response.json();
+                if (!response.ok || data.status !== "success") {
+                    showToast(data.error || "SVG 上传失败");
+                    return;
+                }
+                selectedFloorPlan = data.floorPlan;
+                floorPlanDevices = [];
+                showToast("SVG 已上传");
+                await loadFloorPlanUploads();
+            } catch (e) {
+                showToast("SVG 上传失败");
+            }
+        }
+
+        async function saveFloorPlanDeviceMapping() {
+            if (!selectedFloorPlan) {
+                showToast("请先选择户型图");
+                return;
+            }
+            const raw = document.getElementById("device-mapping-json").value.trim();
+            if (!raw) {
+                showToast("请输入设备映射 JSON");
+                return;
+            }
+            try {
+                const parsed = JSON.parse(raw);
+                const data = await apiJson(`/api/floor-plans/${encodeURIComponent(selectedFloorPlan.id)}/devices`, "POST", { devices: parsed });
+                if (data.status !== "success") {
+                    showToast(data.error || "设备映射保存失败");
+                    return;
+                }
+                floorPlanDevices = data.devices || [];
+                showToast("设备映射已保存");
+                if (currentModal === "floorplan") renderModal("floorplan");
+            } catch (e) {
+                showToast("设备映射 JSON 无效");
+            }
+        }
+
+        async function deleteFloorPlan(planId) {
+            if (!planId || !confirm("删除这个户型图及其设备映射？")) return;
+            try {
+                const response = await fetch(`/api/floor-plans/${encodeURIComponent(planId)}`, { method: "DELETE" });
+                const data = await response.json();
+                if (!response.ok || data.status !== "success") {
+                    showToast(data.error || "删除失败");
+                    return;
+                }
+                if (selectedFloorPlan && selectedFloorPlan.id === planId) {
+                    selectedFloorPlan = null;
+                    floorPlanDevices = [];
+                }
+                await loadFloorPlanUploads();
+                showToast("户型图已删除");
+            } catch (e) {
+                showToast("删除失败");
+            }
+        }
         async function createRuleFromForm() {
             const triggerType = document.getElementById("rule-trigger-type").value;
             const triggerValue = document.getElementById("rule-trigger-value").value.trim();
@@ -1836,6 +2284,7 @@
                 case "connected":
                     updateContext(data.context || {});
                     updateDevices(data.devices || {});
+                    loadDevices(false);
                     loadRules();
                     loadMemorySummary();
                     loadPrivacyStatus();
@@ -1942,6 +2391,7 @@
                 case "connected":
                     updateContext(data.context || {});
                     updateDevices(data.devices || {});
+                    loadDevices(false);
                     loadRules();
                     loadMemorySummary();
                     loadPrivacyStatus();
@@ -1998,6 +2448,7 @@
             autoResize();
             initVoiceRecognition();
             initWebSocket();
+            loadDevices(false);
             loadStatus();
             loadRules();
             loadSchedulerStatus();

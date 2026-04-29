@@ -215,9 +215,26 @@ class DQNProductTests(unittest.TestCase):
 
         self.assertTrue(ok)
         self.assertEqual(len(policy.replay), before + 1)
+        self.assertEqual(policy.last_feedback_event["reward"], 1.0)
+        self.assertEqual(policy.last_feedback_event["buffer_size"], before + 1)
         self.assertGreaterEqual(action, 0)
         self.assertLessEqual(action, 8)
         self.assertIsInstance(confidence, float)
+
+    def test_daily_incremental_update_saves_dqn_policy_snapshot(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            policy = DQNPolicy(model_dir=tmp_dir, seed=123)
+            context = HomeContext(hour=22, temperature=25.0, humidity=50.0, members_home=2)
+            while len(policy.replay) < 10:
+                policy.record_feedback(context, 0, ACCEPTED)
+
+            summary = policy.daily_incremental_update()
+            saved = policy.save()
+
+            self.assertEqual(summary["status"], "updated")
+            self.assertEqual(summary["trigger"], "daily")
+            self.assertTrue(saved)
+            self.assertTrue((Path(tmp_dir) / "dqn_policy.pkl").exists())
 
 
 if __name__ == "__main__":

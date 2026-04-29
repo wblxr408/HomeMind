@@ -1,0 +1,131 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 660" width="640" height="660">
+  <defs>
+    <style>
+      .wall { fill: #f8f9fa; stroke: #343a40; stroke-width: 3; }
+      .room-bg { fill: #ffffff; stroke: #adb5bd; stroke-width: 1; }
+      .room-label { font-family: 'Segoe UI', Arial, sans-serif; font-size: 11px; fill: #495057; font-weight: 600; }
+      .room-sublabel { font-family: 'Segoe UI', Arial, sans-serif; font-size: 9px; fill: #868e96; }
+      .door { stroke: #868e96; stroke-width: 2; fill: none; }
+      .window { stroke: #a5d8ff; stroke-width: 4; fill: none; }
+    </style>
+  </defs>
+
+  <!-- Outer walls -->
+  <rect x="20" y="20" width="600" height="620" class="wall" rx="4"/>
+
+  <!-- ===== BALCONY ===== -->
+  <rect x="24" y="24" width="386" height="69" class="room-bg"/>
+  <text x="217" y="55" text-anchor="middle" class="room-label">Balcony</text>
+  <text x="217" y="70" text-anchor="middle" class="room-sublabel">Outdoor Area</text>
+  <!-- Balcony window (top wall) -->
+  <line x1="100" y1="24" x2="200" y2="24" class="window"/>
+  <line x1="280" y1="24" x2="380" y2="24" class="window"/>
+  <!-- Balcony door indicator -->
+  <line x1="40" y1="93" x2="60" y2="93" class="door"/>
+
+  <!-- ===== LIVING ROOM ===== -->
+  <rect x="23" y="108" width="172" height="190" class="room-bg"/>
+  <text x="109" y="195" text-anchor="middle" class="room-label">Living Room</text>
+  <text x="109" y="212" text-anchor="middle" class="room-sublabel">24.0 m²</text>
+  <!-- Living room window -->
+  <line x1="23" y1="180" x2="23" y2="240" class="window"/>
+  <!-- Door to entrance -->
+  <line x1="23" y1="321" x2="23" y2="340" class="door"/>
+
+  <!-- ===== BEDROOM ===== -->
+  <rect x="284" y="132" width="122" height="164" class="room-bg"/>
+  <text x="345" y="215" text-anchor="middle" class="room-label">Bedroom</text>
+  <text x="345" y="232" text-anchor="middle" class="room-sublabel">18.0 m²</text>
+  <!-- Bedroom window -->
+  <line x1="406" y1="180" x2="406" y2="240" class="window"/>
+
+  <!-- ===== BEDROOM 2 ===== -->
+  <rect x="422" y="104" width="194" height="200" class="room-bg"/>
+  <text x="519" y="195" text-anchor="middle" class="room-label">Bedroom 2</text>
+  <text x="519" y="212" text-anchor="middle" class="room-sublabel">22.0 m²</text>
+  <!-- Bedroom 2 windows -->
+  <line x1="422" y1="160" x2="422" y2="210" class="window"/>
+  <line x1="616" y1="180" x2="616" y2="230" class="window"/>
+
+  <!-- ===== ENTRANCE ===== -->
+  <rect x="23" y="321" width="154" height="42" class="room-bg"/>
+  <text x="100" y="346" text-anchor="middle" class="room-label">Entrance</text>
+  <!-- Front door -->
+  <line x1="177" y1="330" x2="177" y2="350" class="door"/>
+
+  <!-- ===== DINING ROOM ===== -->
+  <rect x="118" y="368" width="114" height="145" class="room-bg"/>
+  <text x="175" y="440" text-anchor="middle" class="room-label">Dining Room</text>
+  <text x="175" y="457" text-anchor="middle" class="room-sublabel">14.0 m²</text>
+
+  <!-- ===== KITCHEN ===== -->
+  <rect x="244" y="399" width="87" height="143" class="room-bg"/>
+  <text x="287" y="470" text-anchor="middle" class="room-label">Kitchen</text>
+  <text x="287" y="487" text-anchor="middle" class="room-sublabel">12.0 m²</text>
+  <!-- Kitchen counter hint -->
+  <rect x="250" y="405" width="75" height="8" fill="#e9ecef" rx="2"/>
+
+  <!-- ===== BATHROOM 1 ===== -->
+  <rect x="344" y="431" width="62" height="113" class="room-bg"/>
+  <text x="375" y="490" text-anchor="middle" class="room-label">Bathroom 1</text>
+  <text x="375" y="505" text-anchor="middle" class="room-sublabel">6.0 m²</text>
+
+  <!-- ===== BATHROOM 2 ===== -->
+  <rect x="495" y="335" width="96" height="89" class="room-bg"/>
+  <text x="543" y="380" text-anchor="middle" class="room-label">Bathroom 2</text>
+  <text x="543" y="395" text-anchor="middle" class="room-sublabel">8.0 m²</text>
+
+  <!-- ===== STUDY ===== -->
+  <rect x="420" y="478" width="164" height="163" class="room-bg"/>
+  <text x="502" y="555" text-anchor="middle" class="room-label">Study</text>
+  <text x="502" y="572" text-anchor="middle" class="room-sublabel">18.0 m²</text>
+  <!-- Study window -->
+  <line x1="584" y1="530" x2="584" y2="580" class="window"/>
+
+  <!-- ===== CORRIDOR / HALLWAY ===== -->
+  <rect x="232" y="268" width="180" height="115" fill="#f1f3f5" stroke="#dee2e6" stroke-width="1"/>
+  <text x="322" y="328" text-anchor="middle" class="room-sublabel">Hallway</text>
+
+  <!-- ===== CONNECTING WALLS (internal) ===== -->
+  <!-- Living room to Dining room -->
+  <line x1="195" y1="108" x2="195" y2="240" stroke="#343a40" stroke-width="2"/>
+  <!-- Dining room to Kitchen -->
+  <line x1="232" y1="368" x2="232" y2="430" stroke="#343a40" stroke-width="2"/>
+  <!-- Kitchen to Bathroom 1 -->
+  <line x1="331" y1="399" x2="331" y2="490" stroke="#343a40" stroke-width="2"/>
+  <!-- Bedroom to Bedroom 2 -->
+  <line x1="406" y1="132" x2="406" y2="220" stroke="#343a40" stroke-width="2"/>
+  <!-- Bedroom 2 to Bathroom 2 -->
+  <line x1="495" y1="335" x2="495" y2="424" stroke="#343a40" stroke-width="2"/>
+  <!-- Study to Bathroom 2 -->
+  <line x1="420" y1="478" x2="420" y2="550" stroke="#343a40" stroke-width="2"/>
+
+  <!-- ===== FURNITURE HINTS ===== -->
+  <!-- Living room sofa -->
+  <rect x="50" y="250" width="100" height="30" fill="#e9ecef" rx="6"/>
+  <text x="100" y="270" text-anchor="middle" class="room-sublabel">Sofa</text>
+  <!-- Living room TV -->
+  <rect x="140" y="120" width="5" height="40" fill="#adb5bd" rx="2"/>
+  <text x="155" y="140" class="room-sublabel">TV</text>
+
+  <!-- Bedroom bed -->
+  <rect x="300" y="250" width="90" height="40" fill="#e9ecef" rx="6"/>
+  <text x="345" y="274" text-anchor="middle" class="room-sublabel">Bed</text>
+
+  <!-- Bedroom 2 bed -->
+  <rect x="440" y="250" width="110" height="45" fill="#e9ecef" rx="6"/>
+  <text x="495" y="276" text-anchor="middle" class="room-sublabel">Bed</text>
+
+  <!-- Kitchen stove -->
+  <rect x="295" y="520" width="30" height="20" fill="#e9ecef" rx="3"/>
+  <text x="310" y="535" text-anchor="middle" class="room-sublabel">Stove</text>
+
+  <!-- Study desk -->
+  <rect x="450" y="540" width="80" height="35" fill="#e9ecef" rx="4"/>
+  <text x="490" y="562" text-anchor="middle" class="room-sublabel">Desk</text>
+
+  <!-- ===== FLOOR PLAN INFO ===== -->
+  <text x="320" y="650" text-anchor="middle" font-family="'Segoe UI',Arial" font-size="10" fill="#adb5bd">
+    HausRAGen Sample Floor Plan | Total: ~150 m² | 10 Rooms
+  </text>
+</svg>

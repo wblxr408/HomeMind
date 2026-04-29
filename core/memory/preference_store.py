@@ -30,6 +30,7 @@ class PreferenceStore:
             "devices": {},
             "scenes": {},
             "recommendation": {},
+            "dqn": {"recommendations": [], "feedback": [], "learning": []},
             "interaction_feedback": {},
             "language": {"dialect_terms": {}},
             "updated_at": "",
@@ -55,6 +56,11 @@ class PreferenceStore:
                 base["scenes"] = {}
             if not isinstance(base.get("recommendation"), dict):
                 base["recommendation"] = {}
+            if not isinstance(base.get("dqn"), dict):
+                base["dqn"] = {"recommendations": [], "feedback": [], "learning": []}
+            for key in ("recommendations", "feedback", "learning"):
+                if not isinstance(base["dqn"].get(key), list):
+                    base["dqn"][key] = []
             if not isinstance(base.get("interaction_feedback"), dict):
                 base["interaction_feedback"] = {}
             if not isinstance(base.get("language"), dict):
@@ -120,9 +126,76 @@ class PreferenceStore:
         metric = f"{scene}_accept_rate"
         entry = self.data.setdefault("recommendation", {}).setdefault(metric, {"accepted": 0, "total": 0})
         entry["total"] = int(entry.get("total", 0)) + 1
+        if feedback == "\u63a5\u53d7":
+            entry["accepted"] = int(entry.get("accepted", 0)) + 1
+        if feedback in ("接受", "accept"):
+            entry["accepted"] = int(entry.get("accepted", 0)) + 1
         if feedback in ("接受", "accepted"):
             entry["accepted"] = int(entry.get("accepted", 0)) + 1
+        entry["accepted"] = min(int(entry.get("accepted", 0)), int(entry.get("total", 0)))
         self.save()
+
+    def _append_dqn_event(self, event_type: str, payload: Dict[str, Any], limit: int = 100) -> None:
+        bucket = self.data.setdefault("dqn", {}).setdefault(event_type, [])
+        record = dict(payload or {})
+        record.setdefault("timestamp", datetime.now().astimezone().isoformat())
+        bucket.append(record)
+        if len(bucket) > limit:
+            del bucket[:-limit]
+        self.save()
+
+    def record_dqn_recommendation(
+        self,
+        scene: str,
+        action: int,
+        confidence: float,
+        reason: str = "",
+        source: str = "",
+        message_id: str = "",
+    ) -> None:
+        if not scene:
+            return
+        self._append_dqn_event(
+            "recommendations",
+            {
+                "scene": scene,
+                "action": int(action),
+                "confidence": float(confidence or 0.0),
+                "reason": str(reason or ""),
+                "source": str(source or ""),
+                "message_id": str(message_id or ""),
+            },
+        )
+
+    def record_dqn_feedback(
+        self,
+        scene: str,
+        action: int,
+        feedback: str,
+        reward: float,
+        updated: bool,
+        buffer_size: int,
+        source: str = "",
+    ) -> None:
+        self._append_dqn_event(
+            "feedback",
+            {
+                "scene": str(scene or ""),
+                "action": int(action),
+                "feedback": str(feedback or ""),
+                "reward": float(reward or 0.0),
+                "updated": bool(updated),
+                "buffer_size": int(buffer_size or 0),
+                "source": str(source or ""),
+            },
+        )
+
+    def record_dqn_learning(self, summary: Dict[str, Any], source: str = "scheduler") -> None:
+        if not isinstance(summary, dict):
+            return
+        payload = dict(summary)
+        payload["source"] = str(source or "")
+        self._append_dqn_event("learning", payload)
 
     def record_interaction_feedback(self, target_type: str, feedback_type: str) -> None:
         target = str(target_type or "decision").strip() or "decision"

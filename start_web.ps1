@@ -12,13 +12,16 @@ $ErrorActionPreference = "Stop"
 # Activate conda environment
 Write-Host ""
 Write-Host "Activating conda environment..." -ForegroundColor Cyan
-try {
-    conda activate homemind
-    $ActiveEnv = "homemind"
-} catch {
-    conda activate used_pytorch
-    $ActiveEnv = "used_pytorch"
+
+conda activate used_pytorch
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "Failed to activate conda environment: used_pytorch" -ForegroundColor Red
+    exit 1
 }
+
+$ActiveEnv = "used_pytorch"
+Write-Host "Activated conda environment: $ActiveEnv" -ForegroundColor Green
+
 
 # Switch to script directory
 Set-Location $PSScriptRoot
