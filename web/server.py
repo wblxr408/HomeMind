@@ -90,6 +90,17 @@ agent_queue = Queue()
 agent = None
 device_simulator = None
 protocol_gateway = None
+agent_init_lock = threading.Lock()
+agent_init_metrics = {
+    "call_count": 0,
+    "completed_count": 0,
+    "last_reason": "",
+    "last_mode": "",
+    "last_started_at": "",
+    "last_duration_ms": 0.0,
+    "last_instance_id": "",
+    "phases_ms": {},
+}
 voice_asr = VoskASR()
 voice_feedback_store = VoiceFeedbackStore()
 language_normalizer = LanguageNormalizer(feedback_store=voice_feedback_store)
@@ -100,26 +111,50 @@ class HomeMindWebAgent:
     
     def __init__(self, protocol_gateway=None):
         self._gateway = protocol_gateway
+        self.instance_id = f"web_agent_{int(time.time() * 1000)}"
         self.confidence_threshold = 0.75
         self._interaction_records = {}
         self._message_counter = 0
+        self._startup_metrics = {
+            "instance_id": self.instance_id,
+            "started_at": datetime.now().isoformat(timespec="seconds"),
+            "total_duration_ms": 0.0,
+            "phases_ms": {},
+        }
+        startup_begin = time.perf_counter()
         self._init_components()
         self._start_agent_loop()
         self._start_scheduler_loop()
+        self._startup_metrics["total_duration_ms"] = round((time.perf_counter() - startup_begin) * 1000, 2)
+        print(
+            f"[初始化] Web Agent 就绪 instance={self.instance_id} "
+            f"total={self._startup_metrics['total_duration_ms']:.2f}ms"
+        )
+
+    def _timed_phase(self, name: str, func):
+        phase_start = time.perf_counter()
+        result = func()
+        elapsed_ms = round((time.perf_counter() - phase_start) * 1000, 2)
+        self._startup_metrics["phases_ms"][name] = elapsed_ms
+        print(f"[初始化][{self.instance_id}] {name}: {elapsed_ms:.2f}ms")
+        return result
     
     def _init_components(self):
         """初始化所有组件"""
-        print("[初始化] HomeMind Web Agent 组件...")
+        print(f"[初始化] HomeMind Web Agent 组件 instance={self.instance_id} ...")
 
-        self.session_store = SessionStore()
-        self.preference_store = PreferenceStore()
-        self.privacy_redactor = PrivacyRedactor()
-        self.router = InferenceRouter()
-        self.tap_engine = TAPEngine()
-        self.tap_rule_store = TAPRuleStore()
-        self.scene_store = SceneStore()
-        self.nl_to_tap = NLToTAPConverter()
-        self.command_validator = CommandValidator(scene_store=self.scene_store)
+        def init_storage_and_routing():
+            self.session_store = SessionStore()
+            self.preference_store = PreferenceStore()
+            self.privacy_redactor = PrivacyRedactor()
+            self.router = InferenceRouter()
+            self.tap_engine = TAPEngine()
+            self.tap_rule_store = TAPRuleStore()
+            self.scene_store = SceneStore()
+            self.nl_to_tap = NLToTAPConverter()
+            self.command_validator = CommandValidator(scene_store=self.scene_store)
+
+        self._timed_phase("session_preference_and_router", init_storage_and_routing)
         self.last_cloud_context = {}
         self.last_route_info = {}
         self.scheduler_enabled = True
@@ -129,32 +164,44 @@ class HomeMindWebAgent:
         self._last_dqn_recommend_at = 0.0
         
         # 初始化上下文
-        self.context = HomeContext()
-        self.context.current_scene = "sleep"
-        self.context.temperature = 25.0
-        self.context.humidity = 60.0
-        self.context.members_home = 1
+        def init_context():
+            self.context = HomeContext()
+            self.context.current_scene = "sleep"
+            self.context.temperature = 25.0
+            self.context.humidity = 60.0
+            self.context.members_home = 1
+
+        self._timed_phase("context", init_context)
         
         # 初始化设备模拟器
-        self.device_simulator = DeviceSimulator()
-        self.simulator = self.device_simulator
+        def init_simulator():
+            self.device_simulator = DeviceSimulator()
+            self.simulator = self.device_simulator
+
+        self._timed_phase("device_simulator", init_simulator)
         
         # 初始化工具（传入协议网关）
-        self.device_control = device_ctrl.DeviceController(protocol_gateway=self._gateway)
-        self.info_query = info_query.InfoQuery()
-        self.scene_switcher = scene_switch.SceneSwitcher(self.device_control, scene_store=self.scene_store)
-        self.language_normalizer = language_normalizer
+        def init_tools():
+            self.device_control = device_ctrl.DeviceController(protocol_gateway=self._gateway)
+            self.info_query = info_query.InfoQuery()
+            self.scene_switcher = scene_switch.SceneSwitcher(self.device_control, scene_store=self.scene_store)
+            self.language_normalizer = language_normalizer
+
+        self._timed_phase("tools", init_tools)
         
         # 尝试初始化 Embedding 和知识库
         self.embedding_model = None
         self.kb = None
         self.kb_writer = None
         try:
-            self.embedding_model = get_embedding_model()
+            self.embedding_model = self._timed_phase("embedding_model", get_embedding_model)
             embedding_fn = self.embedding_model.encode if self.embedding_model else None
-            self.kb = KnowledgeBase(embedding_fn=embedding_fn)
-            self.kb.preference_store = self.preference_store
-            self.kb_writer = kb_writer.KBWriter(self.kb)
+            def init_knowledge_base():
+                self.kb = KnowledgeBase(embedding_fn=embedding_fn)
+                self.kb.preference_store = self.preference_store
+                self.kb_writer = kb_writer.KBWriter(self.kb)
+
+            self._timed_phase("knowledge_base", init_knowledge_base)
             print("[初始化] 知识库已加载")
         except Exception as e:
             print(f"[警告] 知识库初始化失败: {e}")
@@ -170,37 +217,40 @@ class HomeMindWebAgent:
         
         if self.kb:
             try:
-                self.bsr = BSRecall(kb=self.kb)
+                self.bsr = self._timed_phase("bsr", lambda: BSRecall(kb=self.kb))
                 print("[初始化] BSR 召回模块已加载")
             except Exception as e:
                 print(f"[警告] BSR 初始化失败: {e}")
         
         try:
-            self.lsr = PrecisionRanking()
+            self.lsr = self._timed_phase("lsr", PrecisionRanking)
             print("[初始化] LSR 精排模块已加载")
         except Exception as e:
             print(f"[警告] LSR 初始化失败: {e}")
         
         try:
-            self.llm = LLMWrapper(
-                backend=os.environ.get("LLM_BACKEND", "mock"),
-                model_path=os.environ.get("LLM_MODEL_PATH", ""),
-                api_base=os.environ.get("LLM_API_BASE", ""),
-                api_key=os.environ.get("LLM_API_KEY", ""),
-                cloud_model=os.environ.get("LLM_MODEL", ""),
+            self.llm = self._timed_phase(
+                "llm",
+                lambda: LLMWrapper(
+                    backend=os.environ.get("LLM_BACKEND", "mock"),
+                    model_path=os.environ.get("LLM_MODEL_PATH", ""),
+                    api_base=os.environ.get("LLM_API_BASE", ""),
+                    api_key=os.environ.get("LLM_API_KEY", ""),
+                    cloud_model=os.environ.get("LLM_MODEL", ""),
+                ),
             )
             print("[初始化] LLM 决策模块已加载")
         except Exception as e:
             print(f"[警告] LLM 初始化失败: {e}")
         
         try:
-            self.dqn = DQNPolicy()
+            self.dqn = self._timed_phase("dqn", DQNPolicy)
             self.dqn_fb = DQNFeedbackTool(self.dqn)
             print("[初始化] DQN 策略模块已加载")
         except Exception as e:
             print(f"[警告] DQN 初始化失败: {e}")
         
-        self._restore_persisted_state()
+        self._timed_phase("restore_state", self._restore_persisted_state)
         print("[初始化] 完成!")
 
     def _restore_persisted_state(self):
@@ -624,8 +674,11 @@ class HomeMindWebAgent:
                     print(f"[Scheduler Error] {e}")
                     time.sleep(2)
 
-        self.scheduler_thread = threading.Thread(target=scheduler_worker, daemon=True)
-        self.scheduler_thread.start()
+        def start_scheduler():
+            self.scheduler_thread = threading.Thread(target=scheduler_worker, daemon=True)
+            self.scheduler_thread.start()
+
+        self._timed_phase("scheduler_loop", start_scheduler)
 
     def get_scheduler_status(self) -> dict:
         return {
@@ -707,8 +760,11 @@ class HomeMindWebAgent:
                     print(f"[Agent Loop Error] {e}")
                     time.sleep(1)
         
-        self.agent_thread = threading.Thread(target=agent_worker, daemon=True)
-        self.agent_thread.start()
+        def start_agent_worker():
+            self.agent_thread = threading.Thread(target=agent_worker, daemon=True)
+            self.agent_thread.start()
+
+        self._timed_phase("agent_loop", start_agent_worker)
     
     def _handle_message(self, message: dict):
         """处理来自 Web 前端的消息"""
@@ -1263,6 +1319,8 @@ class HomeMindWebAgent:
             },
             "devices": devices,
             "storage_security": storage_status,
+            "agent_init_metrics": deepcopy(agent_init_metrics),
+            "startup_metrics": deepcopy(self._startup_metrics),
             "kb_status": self.kb.get_status() if self.kb else {
                 "chromadb_importable": False,
                 "chromadb_enabled": False,
@@ -2362,7 +2420,7 @@ def on_connect():
     """客户端连接"""
     print(f"[WebSocket] 客户端连接: {request.sid}")
     if not agent:
-        init_agent()
+        init_agent(init_reason="websocket_connect")
     if agent:
         emit("message", {
             "type": "connected",
@@ -2381,7 +2439,7 @@ def on_message(data):
     """处理前端消息"""
     print(f"[WebSocket] 收到消息: {data}")
     if not agent:
-        init_agent()
+        init_agent(init_reason="websocket_message")
     if agent:
         agent_queue.put(data)
         if data.get("type") == "device_control":
@@ -2399,27 +2457,53 @@ def on_message(data):
 def on_user_input(data):
     """处理用户自然语言输入"""
     if not agent:
-        init_agent()
+        init_agent(init_reason="websocket_user_input")
     if agent:
         agent_queue.put({"type": "user_input", "data": data})
 
 
 # ==================== 主程序 ====================
 
-def init_agent(mode: str = None, protocol_gateway=None):
+def init_agent(mode: str = None, protocol_gateway=None, force_reinit: bool = False, init_reason: str = ""):
     """初始化全局 Agent"""
     global agent, device_simulator
+    global agent_init_metrics
     globals()["protocol_gateway"] = protocol_gateway
 
     # 从环境变量读取模式（如果未指定）
     if mode is None:
         mode = os.environ.get("HOMEMIND_MODE", "simulated")
 
+    reason = init_reason or "unspecified"
+    with agent_init_lock:
+        agent_init_metrics["call_count"] += 1
+        agent_init_metrics["last_reason"] = reason
+        agent_init_metrics["last_mode"] = mode
+        agent_init_metrics["last_started_at"] = datetime.now().isoformat(timespec="seconds")
 
-    print(f"[初始化] Agent 模式: {mode}")
+        if agent is not None and not force_reinit:
+            print(
+                f"[初始化] 复用已有 Agent instance={getattr(agent, 'instance_id', 'unknown')} "
+                f"reason={reason} call={agent_init_metrics['call_count']}"
+            )
+            return agent
 
-    agent = HomeMindWebAgent(protocol_gateway=protocol_gateway)
-    device_simulator = agent.device_simulator
+        print(
+            f"[初始化] Agent 模式: {mode} reason={reason} "
+            f"force_reinit={force_reinit} call={agent_init_metrics['call_count']}"
+        )
+        init_begin = time.perf_counter()
+        agent = HomeMindWebAgent(protocol_gateway=protocol_gateway)
+        device_simulator = agent.device_simulator
+        agent_init_metrics["completed_count"] += 1
+        agent_init_metrics["last_duration_ms"] = round((time.perf_counter() - init_begin) * 1000, 2)
+        agent_init_metrics["last_instance_id"] = getattr(agent, "instance_id", "")
+        agent_init_metrics["phases_ms"] = dict(getattr(agent, "_startup_metrics", {}).get("phases_ms", {}))
+        print(
+            f"[初始化] Agent 初始化完成 instance={agent_init_metrics['last_instance_id']} "
+            f"total={agent_init_metrics['last_duration_ms']:.2f}ms"
+        )
+        return agent
 
 
 @app.route("/")

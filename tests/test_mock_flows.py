@@ -75,7 +75,23 @@ class HomeMindWebMockFlowTests(unittest.TestCase):
         self.assertIn("devices", payload)
         self.assertIn("kb_status", payload)
         self.assertIn("storage_security", payload)
+        self.assertIn("agent_init_metrics", payload)
+        self.assertIn("startup_metrics", payload)
         self.assertIn("air_conditioner", payload["devices"])
+
+    def test_init_agent_reuses_existing_instance_without_restarting_threads(self):
+        first_agent = self.web_server.agent
+        first_agent_thread = getattr(first_agent, "agent_thread", None)
+        first_scheduler_thread = getattr(first_agent, "scheduler_thread", None)
+        initial_completed = self.web_server.agent_init_metrics["completed_count"]
+
+        second_agent = self.web_server.init_agent(mode="simulated", init_reason="test_reuse")
+
+        self.assertIs(first_agent, second_agent)
+        self.assertIs(first_agent_thread, getattr(second_agent, "agent_thread", None))
+        self.assertIs(first_scheduler_thread, getattr(second_agent, "scheduler_thread", None))
+        self.assertEqual(self.web_server.agent_init_metrics["completed_count"], initial_completed)
+        self.assertEqual(self.web_server.agent_init_metrics["last_reason"], "test_reuse")
 
     def test_query_endpoint_handles_device_and_scene_commands_in_mock_mode(self):
         hot_response = self.client.post("/api/query", json={"query": "有点热"})
