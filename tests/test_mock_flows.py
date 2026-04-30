@@ -10,6 +10,9 @@ DATA_KEY_FILES = [
     REPO_ROOT / "data" / "session_state.json",
     REPO_ROOT / "data" / "preferences.json",
     REPO_ROOT / "data" / "tap_rules.json",
+    REPO_ROOT / "data" / "device-registry.json",
+    REPO_ROOT / "data" / "scenes.json",
+    REPO_ROOT / "data" / "demo_history.json",
     REPO_ROOT / "data" / "test_dqn_models" / "dqn_policy.pkl",
     REPO_ROOT / "data" / "kb_backup.enc",
 ]
@@ -18,7 +21,11 @@ DATA_KEY_FILES = [
 def _cleanup_generated_files():
     for path in DATA_KEY_FILES:
         if path.exists():
-            path.unlink()
+            try:
+                path.unlink()
+            except PermissionError:
+                if path.name != "kb_backup.enc":
+                    raise
 
 
 class HomeMindCliMockFlowTests(unittest.TestCase):
@@ -58,6 +65,7 @@ class HomeMindWebMockFlowTests(unittest.TestCase):
     def setUpClass(cls):
         os.environ["HOMEMIND_STORAGE_KEY"] = "test-storage-key"
         os.environ["HOMEMIND_DQN_MODEL_DIR"] = str(REPO_ROOT / "data" / "test_dqn_models")
+        _cleanup_generated_files()
         from web import server as web_server
 
         cls.web_server = web_server

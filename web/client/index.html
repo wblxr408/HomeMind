@@ -777,6 +777,94 @@
             background: var(--bg-primary);
         }
 
+        .device-area-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(116px, 1fr));
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .device-area-chip {
+            border: 0.5px solid var(--border-light);
+            border-radius: var(--radius-md);
+            background: var(--bg-primary);
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 8px 10px;
+            text-align: left;
+            min-height: 52px;
+        }
+
+        .device-area-chip:hover {
+            border-color: rgba(29, 158, 117, 0.35);
+            color: #0F6E56;
+        }
+
+        .device-area-chip.active {
+            border-color: rgba(29, 158, 117, 0.45);
+            background: var(--accent-bg);
+            color: #0F6E56;
+        }
+
+        .device-area-name {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-primary);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .device-area-count {
+            display: block;
+            font-size: 10px;
+            color: var(--text-tertiary);
+            margin-top: 3px;
+        }
+
+        .compact-device-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(178px, 1fr));
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .device-card.compact {
+            align-items: stretch;
+            flex-direction: column;
+            justify-content: flex-start;
+            padding: 8px;
+            gap: 6px;
+        }
+
+        .device-card.compact .device-actions {
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        .device-card.compact .device-inline-form {
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            margin-top: 6px;
+        }
+
+        .device-card.compact .mini-btn {
+            padding: 4px 8px;
+            font-size: 10px;
+        }
+
+        .device-edit-toggle summary {
+            cursor: pointer;
+            color: var(--text-tertiary);
+            font-size: 10px;
+            margin-top: 4px;
+            list-style: none;
+        }
+
+        .device-edit-toggle summary::-webkit-details-marker {
+            display: none;
+        }
+
         .device-main {
             min-width: 0;
             flex: 1;
@@ -932,6 +1020,8 @@
                 max-height: 240px;
             }
             .card-grid { grid-template-columns: 1fr; }
+            .device-area-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .compact-device-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -1150,6 +1240,7 @@
         let floorPlanUploads = [];
         let selectedFloorPlan = null;
         let floorPlanDevices = [];
+        let selectedDeviceArea = "";
 
         async function apiGet(url) {
             const response = await fetch(url);
@@ -1214,6 +1305,66 @@
             return match ? match.label : (area || "未指定");
         }
 
+        function deviceAreaKey(device = {}) {
+            return device.area || "__unassigned__";
+        }
+
+        function deviceAreaLabel(areaKey, devicesInArea = []) {
+            if (areaKey === "__unassigned__") return areaLabel("");
+            const sample = devicesInArea.find((device) => device.areaName) || {};
+            return areaLabel(areaKey, sample.areaName || "");
+        }
+
+        function groupDevicesByArea() {
+            const areaRank = new Map(areaOptions.map((area, index) => [area.value || "__unassigned__", index]));
+            const groups = new Map();
+            deviceList.forEach((device) => {
+                const key = deviceAreaKey(device);
+                if (!groups.has(key)) groups.set(key, []);
+                groups.get(key).push(device);
+            });
+            return Array.from(groups.entries())
+                .map(([area, devicesInArea]) => ({
+                    area,
+                    name: deviceAreaLabel(area, devicesInArea),
+                    devices: devicesInArea.slice().sort((a, b) => String(a.name).localeCompare(String(b.name), "zh-Hans-CN"))
+                }))
+                .sort((a, b) => {
+                    const rankA = areaRank.has(a.area) ? areaRank.get(a.area) : 999;
+                    const rankB = areaRank.has(b.area) ? areaRank.get(b.area) : 999;
+                    if (rankA !== rankB) return rankA - rankB;
+                    return String(a.name).localeCompare(String(b.name), "zh-Hans-CN");
+                });
+        }
+
+        function renderCompactDeviceCard(device) {
+            const state = devices[device.id] || {};
+            return `
+                <div class="device-card compact">
+                    <div class="device-main">
+                        <div class="device-name">${escapeHtml(device.name)}</div>
+                        <div class="device-status">${buildDeviceStatus(device.id, state)}</div>
+                        <div class="device-meta">${escapeHtml(device.protocol || "simulated")} · ${escapeHtml(areaLabel(device.area || "", device.areaName || ""))}</div>
+                        <div class="device-id">${escapeHtml(device.id)}</div>
+                        <details class="device-edit-toggle">
+                            <summary>编辑设备</summary>
+                            <div class="device-inline-form">
+                                <input data-device-name="${escapeAttr(device.id)}" value="${escapeAttr(device.name)}">
+                                <select data-device-type="${escapeAttr(device.id)}">${renderDeviceTypeOptions(device.type || "switch")}</select>
+                                <select data-device-area="${escapeAttr(device.id)}">${renderAreaOptions(device.area || "")}</select>
+                                <input data-device-area-name="${escapeAttr(device.id)}" value="${escapeAttr(device.areaName || "")}" placeholder="空间名">
+                            </div>
+                        </details>
+                    </div>
+                    <div class="device-actions">
+                        <button class="toggle ${state.is_on ? "on" : ""}" data-device-id="${escapeAttr(device.id)}" title="切换设备"></button>
+                        <button class="mini-btn" data-device-save="${escapeAttr(device.id)}">保存</button>
+                        <button class="mini-btn" data-device-delete="${escapeAttr(device.id)}">删除</button>
+                    </div>
+                </div>
+            `;
+        }
+
         function deviceSceneLabel(device) {
             const room = areaLabel(device.area || "", device.areaName || "");
             return device.area || device.areaName ? `${room} · ${device.name}` : device.name;
@@ -1268,6 +1419,18 @@
             if (!list) return;
             list.insertAdjacentHTML("beforeend", renderSceneActionRow(action));
             wireSceneActionRemoveButtons();
+        }
+
+        function setSceneActionRowsFromConfig(config = {}) {
+            const list = document.getElementById("new-scene-actions");
+            if (!list) return;
+            list.innerHTML = "";
+            const actions = sceneConfigToActions(config);
+            if (!actions.length) {
+                addSceneActionRow({ action: "off" });
+                return;
+            }
+            actions.forEach((action) => addSceneActionRow(action));
         }
 
         function wireSceneActionRemoveButtons() {
@@ -1603,6 +1766,35 @@
             }
         }
 
+        async function generateSceneDraftFromNl() {
+            const input = document.getElementById("new-scene-nl");
+            const text = input ? input.value.trim() : "";
+            if (!text) {
+                showToast("请输入场景描述");
+                return;
+            }
+            try {
+                const data = await apiJson("/api/scenes/from-nl", "POST", { text });
+                if (data.status !== "success") {
+                    showToast(data.error || "场景草案生成失败");
+                    return;
+                }
+                const nameInput = document.getElementById("new-scene-name");
+                if (nameInput && data.name) nameInput.value = data.name;
+                setSceneActionRowsFromConfig(data.config || {});
+                const advanced = document.getElementById("new-scene-config");
+                if (advanced) advanced.value = sceneConfigText(data.config || {});
+                const status = document.getElementById("new-scene-draft-status");
+                if (status) {
+                    const warnings = (data.validation && data.validation.warnings || []).join("；");
+                    status.textContent = warnings || `草案已生成，来源：${data.source || "local"}`;
+                }
+                showToast("场景草案已生成");
+            } catch (e) {
+                showToast("场景草案生成失败");
+            }
+        }
+
         async function updateSceneFromCard(sceneName) {
             try {
                 const input = Array.from(document.querySelectorAll("[data-scene-config]")).find((el) => el.dataset.sceneConfig === sceneName);
@@ -1726,6 +1918,14 @@
                         </div>
                         <div class="form-grid">
                             <div class="field full">
+                                <label>自然语言描述</label>
+                                <textarea id="new-scene-nl" rows="3" placeholder="例如：创建阅读模式，打开客厅灯到 60%，关闭电视"></textarea>
+                                <div class="mini-actions" style="margin-top: 6px;">
+                                    <button class="mini-btn" type="button" id="generate-scene-draft-btn">生成草案</button>
+                                </div>
+                                <div class="summary-meta" id="new-scene-draft-status"></div>
+                            </div>
+                            <div class="field full">
                                 <label>场景名称</label>
                                 <input id="new-scene-name" placeholder="阅读模式">
                             </div>
@@ -1764,6 +1964,7 @@
                     }</div>`;
                 document.getElementById("refresh-scenes-btn").onclick = loadScenes;
                 document.getElementById("create-scene-btn").onclick = createSceneFromForm;
+                document.getElementById("generate-scene-draft-btn").onclick = generateSceneDraftFromNl;
                 document.getElementById("add-scene-action-btn").onclick = () => addSceneActionRow({ action: "off" });
                 wireSceneActionRemoveButtons();
                 body.querySelectorAll(".scene-card").forEach((card) => {
@@ -1784,6 +1985,12 @@
                 return;
             }
             if (type === "device") {
+                const deviceGroups = groupDevicesByArea();
+                if (!deviceGroups.some((group) => group.area === selectedDeviceArea)) {
+                    selectedDeviceArea = deviceGroups[0] ? deviceGroups[0].area : "";
+                }
+                const selectedGroup = deviceGroups.find((group) => group.area === selectedDeviceArea);
+                const selectedDevices = selectedGroup ? selectedGroup.devices : [];
                 title.textContent = "设备控制";
                 body.innerHTML = `
                     <div class="summary-card">
@@ -1820,22 +2027,49 @@
                             </div>
                         </div>
                     </div>
-                    <div class="card-grid" style="margin-top: 10px;">${
-                        deviceList.map((device) => {
+                    <div class="summary-card" style="margin-top: 10px;">
+                        <div class="summary-head">
+                            <div>
+                                <div class="summary-title">先选择空间</div>
+                                <div class="summary-meta">只显示当前空间内的设备，减少长列表滚动。</div>
+                            </div>
+                            <span class="pill">${deviceList.length} 个设备</span>
+                        </div>
+                        <div class="device-area-grid">
+                            ${deviceGroups.map((group) => `
+                                <button class="device-area-chip ${group.area === selectedDeviceArea ? "active" : ""}" type="button" data-device-area-filter="${escapeAttr(group.area)}">
+                                    <span class="device-area-name">${escapeHtml(group.name)}</span>
+                                    <span class="device-area-count">${group.devices.length} 个设备</span>
+                                </button>
+                            `).join("") || `<div class="empty-hint">暂无设备</div>`}
+                        </div>
+                    </div>
+                    <div class="summary-card" style="margin-top: 10px;">
+                        <div class="summary-head">
+                            <div>
+                                <div class="summary-title">${selectedGroup ? escapeHtml(selectedGroup.name) : "暂无空间"}</div>
+                                <div class="summary-meta">${selectedGroup ? `当前显示 ${selectedDevices.length} 个设备` : "请先新增设备并标注空间"}</div>
+                            </div>
+                        </div>
+                        <div class="compact-device-grid"> ${
+                        selectedDevices.map((device) => {
                             const state = devices[device.id] || {};
                             return `
-                                <div class="device-card">
+                                <div class="device-card compact">
                                     <div class="device-main">
                                         <div class="device-name">${escapeHtml(device.name)}</div>
                                         <div class="device-status">${buildDeviceStatus(device.id, state)}</div>
                                         <div class="device-meta">模拟设备 · ${escapeHtml(areaLabel(device.area || "", device.areaName || ""))}</div>
                                         <div class="device-id">${escapeHtml(device.id)}</div>
-                                        <div class="device-inline-form">
+                                        <details class="device-edit-toggle">
+                                            <summary>编辑设备</summary>
+                                            <div class="device-inline-form">
                                             <input data-device-name="${escapeAttr(device.id)}" value="${escapeAttr(device.name)}">
                                             <select data-device-type="${escapeAttr(device.id)}">${renderDeviceTypeOptions(device.type || "switch")}</select>
                                             <select data-device-area="${escapeAttr(device.id)}">${renderAreaOptions(device.area || "")}</select>
                                             <input data-device-area-name="${escapeAttr(device.id)}" value="${escapeAttr(device.areaName || "")}" placeholder="空间名">
-                                        </div>
+                                            </div>
+                                        </details>
                                     </div>
                                     <div class="device-actions">
                                         <button class="toggle ${state.is_on ? "on" : ""}" data-device-id="${escapeAttr(device.id)}"></button>
@@ -1844,10 +2078,16 @@
                                     </div>
                                 </div>
                             `;
-                        }).join("")
-                    }</div>`;
+                        }).join("") || `<div class="empty-hint">该空间暂无设备</div>`
+                    }</div></div>`;
                 document.getElementById("refresh-devices-btn").onclick = loadDevices;
                 document.getElementById("create-device-btn").onclick = createDeviceFromForm;
+                body.querySelectorAll("[data-device-area-filter]").forEach((btn) => {
+                    btn.onclick = () => {
+                        selectedDeviceArea = btn.dataset.deviceAreaFilter;
+                        renderModal("device");
+                    };
+                });
                 body.querySelectorAll(".toggle").forEach((toggle) => {
                     toggle.addEventListener("click", () => {
                         const id = toggle.dataset.deviceId;

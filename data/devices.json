@@ -2,182 +2,1954 @@
   {
     "floorPlanId": "floorPlan-sample.svg",
     "areaNames": {
-      "living_room": "\u5ba2\u5385",
-      "bedroom": "\u4e3b\u5367",
-      "bedroom2": "\u6b21\u5367",
-      "bathroom1": "\u4e3b\u536b",
-      "bathroom2": "\u6b21\u536b",
-      "dining_room": "\u9910\u5385",
-      "kitchen": "\u53a8\u623f",
-      "study": "\u4e66\u623f",
-      "balcony": "\u9633\u53f0",
-      "entrance": "\u7384\u5173"
+      "living_room": "客厅",
+      "dining_room": "餐厅",
+      "kitchen": "厨房",
+      "entrance": "玄关",
+      "bedroom": "主卧",
+      "bedroom2": "次卧",
+      "study": "书房",
+      "bathroom1": "主卫",
+      "bathroom2": "次卫",
+      "balcony": "阳台"
     },
     "devices": [
       {
-        "id": "light.living_room_main",
-        "name": "\u5ba2\u5385\u4e3b\u706f",
+        "id": "light.living_room_01",
+        "name": "客厅主灯",
         "type": "light",
+        "protocol": "zigbee",
         "area": "living_room",
-        "areaName": "\u5ba2\u5385",
-        "x": 12.33,
-        "y": 27.4
+        "areaName": "客厅",
+        "x": 15.8,
+        "y": 24.0,
+        "icon": "light"
       },
       {
-        "id": "light.living_room_accent",
-        "name": "\u5ba2\u5385\u6c1b\u56f4\u706f",
+        "id": "light.living_room_02",
+        "name": "客厅筒灯",
         "type": "light",
+        "protocol": "zigbee",
         "area": "living_room",
-        "areaName": "\u5ba2\u5385",
-        "x": 17.03,
-        "y": 27.4
+        "areaName": "客厅",
+        "x": 19.6,
+        "y": 24.0,
+        "icon": "light"
       },
       {
-        "id": "climate.living_room_ac",
-        "name": "\u5ba2\u5385\u7a7a\u8c03",
+        "id": "light.living_room_03",
+        "name": "客厅灯带",
+        "type": "light",
+        "protocol": "zigbee",
+        "area": "living_room",
+        "areaName": "客厅",
+        "x": 23.4,
+        "y": 24.0,
+        "icon": "light"
+      },
+      {
+        "id": "light.living_room_04",
+        "name": "客厅落地灯",
+        "type": "light",
+        "protocol": "matter",
+        "area": "living_room",
+        "areaName": "客厅",
+        "x": 27.2,
+        "y": 24.0,
+        "icon": "light"
+      },
+      {
+        "id": "climate.living_room_05",
+        "name": "客厅空调",
         "type": "air_conditioner",
+        "protocol": "mqtt",
         "area": "living_room",
-        "areaName": "\u5ba2\u5385",
-        "x": 20.0,
-        "y": 31.0
+        "areaName": "客厅",
+        "x": 15.8,
+        "y": 30.0,
+        "icon": "air_conditioner"
       },
       {
-        "id": "media.living_room_tv",
-        "name": "\u5ba2\u5385\u7535\u89c6",
+        "id": "media.living_room_06",
+        "name": "客厅电视",
         "type": "tv",
+        "protocol": "infrared",
         "area": "living_room",
-        "areaName": "\u5ba2\u5385",
-        "x": 21.73,
-        "y": 27.4
+        "areaName": "客厅",
+        "x": 19.6,
+        "y": 30.0,
+        "icon": "tv"
       },
       {
-        "id": "speaker.living_room",
-        "name": "\u5ba2\u5385\u97f3\u54cd",
+        "id": "speaker.living_room_07",
+        "name": "客厅音响",
         "type": "speaker",
+        "protocol": "wifi",
         "area": "living_room",
-        "areaName": "\u5ba2\u5385",
-        "x": 24.0,
-        "y": 31.0
+        "areaName": "客厅",
+        "x": 23.4,
+        "y": 30.0,
+        "icon": "speaker"
       },
       {
-        "id": "light.bedroom_main",
-        "name": "\u4e3b\u5367\u4e3b\u706f",
-        "type": "light",
-        "area": "bedroom",
-        "areaName": "\u4e3b\u5367",
-        "x": 50.57,
-        "y": 29.53
-      },
-      {
-        "id": "fan.bedroom",
-        "name": "\u4e3b\u5367\u98ce\u6247",
+        "id": "fan.living_room_08",
+        "name": "客厅循环扇",
         "type": "fan",
-        "area": "bedroom",
-        "areaName": "\u4e3b\u5367",
-        "x": 57.24,
-        "y": 29.53
+        "protocol": "mqtt",
+        "area": "living_room",
+        "areaName": "客厅",
+        "x": 27.2,
+        "y": 30.0,
+        "icon": "fan"
       },
       {
-        "id": "cover.bedroom_window",
-        "name": "\u4e3b\u5367\u7a97\u6237",
-        "type": "window",
-        "area": "bedroom",
-        "areaName": "\u4e3b\u5367",
-        "x": 55.0,
-        "y": 35.0
+        "id": "cover.living_room_09",
+        "name": "客厅窗帘",
+        "type": "curtain",
+        "protocol": "zigbee",
+        "area": "living_room",
+        "areaName": "客厅",
+        "x": 15.8,
+        "y": 36.0,
+        "icon": "curtain"
       },
       {
-        "id": "climate.bedroom_ac",
-        "name": "\u4e3b\u5367\u7a7a\u8c03",
-        "type": "air_conditioner",
-        "area": "bedroom",
-        "areaName": "\u4e3b\u5367",
-        "x": 50.57,
-        "y": 35.32
+        "id": "motion_sensor.living_room_10",
+        "name": "客厅人体传感器",
+        "type": "motion_sensor",
+        "protocol": "zigbee",
+        "area": "living_room",
+        "areaName": "客厅",
+        "x": 19.6,
+        "y": 36.0,
+        "icon": "motion_sensor"
       },
       {
-        "id": "light.bedroom2_main",
-        "name": "\u6b21\u5367\u4e3b\u706f",
+        "id": "temperature_sensor.living_room_11",
+        "name": "客厅温湿度传感器",
+        "type": "temperature_sensor",
+        "protocol": "zigbee",
+        "area": "living_room",
+        "areaName": "客厅",
+        "x": 23.4,
+        "y": 36.0,
+        "icon": "temperature_sensor"
+      },
+      {
+        "id": "switch.living_room_12",
+        "name": "客厅电视墙插座",
+        "type": "switch",
+        "protocol": "matter",
+        "area": "living_room",
+        "areaName": "客厅",
+        "x": 27.2,
+        "y": 36.0,
+        "icon": "switch"
+      },
+      {
+        "id": "light.dining_room_01",
+        "name": "餐厅吊灯",
         "type": "light",
-        "area": "bedroom2",
-        "areaName": "\u6b21\u5367",
-        "x": 77.56,
-        "y": 27.37
+        "protocol": "zigbee",
+        "area": "dining_room",
+        "areaName": "餐厅",
+        "x": 22.5,
+        "y": 61.0,
+        "icon": "light"
       },
       {
-        "id": "fan.bedroom2",
-        "name": "\u6b21\u5367\u98ce\u6247",
-        "type": "fan",
-        "area": "bedroom2",
-        "areaName": "\u6b21\u5367",
-        "x": 77.56,
-        "y": 34.44
-      },
-      {
-        "id": "light.bathroom1",
-        "name": "\u4e3b\u536b\u706f",
+        "id": "light.dining_room_02",
+        "name": "餐厅餐边柜灯",
         "type": "light",
-        "area": "bathroom1",
-        "areaName": "\u4e3b\u536b",
-        "x": 57.46,
-        "y": 71.87
+        "protocol": "zigbee",
+        "area": "dining_room",
+        "areaName": "餐厅",
+        "x": 27.0,
+        "y": 61.0,
+        "icon": "light"
       },
       {
-        "id": "water_heater.bathroom",
-        "name": "\u4e3b\u536b\u70ed\u6c34\u5668",
-        "type": "water_heater",
-        "area": "bathroom1",
-        "areaName": "\u4e3b\u536b",
-        "x": 59.72,
-        "y": 71.87
+        "id": "switch.dining_room_03",
+        "name": "餐厅咖啡机插座",
+        "type": "switch",
+        "protocol": "matter",
+        "area": "dining_room",
+        "areaName": "餐厅",
+        "x": 31.5,
+        "y": 61.0,
+        "icon": "switch"
       },
       {
-        "id": "light.kitchen_main",
-        "name": "\u53a8\u623f\u4e3b\u706f",
+        "id": "speaker.dining_room_04",
+        "name": "餐厅餐厅音响",
+        "type": "speaker",
+        "protocol": "wifi",
+        "area": "dining_room",
+        "areaName": "餐厅",
+        "x": 22.5,
+        "y": 66.0,
+        "icon": "speaker"
+      },
+      {
+        "id": "motion_sensor.dining_room_05",
+        "name": "餐厅人体传感器",
+        "type": "motion_sensor",
+        "protocol": "zigbee",
+        "area": "dining_room",
+        "areaName": "餐厅",
+        "x": 27.0,
+        "y": 66.0,
+        "icon": "motion_sensor"
+      },
+      {
+        "id": "temperature_sensor.dining_room_06",
+        "name": "餐厅温湿度传感器",
+        "type": "temperature_sensor",
+        "protocol": "zigbee",
+        "area": "dining_room",
+        "areaName": "餐厅",
+        "x": 31.5,
+        "y": 66.0,
+        "icon": "temperature_sensor"
+      },
+      {
+        "id": "air_quality_sensor.dining_room_07",
+        "name": "餐厅空气质量传感器",
+        "type": "air_quality_sensor",
+        "protocol": "mqtt",
+        "area": "dining_room",
+        "areaName": "餐厅",
+        "x": 22.5,
+        "y": 71.0,
+        "icon": "air_quality_sensor"
+      },
+      {
+        "id": "switch.dining_room_08",
+        "name": "餐厅净水器插座",
+        "type": "switch",
+        "protocol": "matter",
+        "area": "dining_room",
+        "areaName": "餐厅",
+        "x": 27.0,
+        "y": 71.0,
+        "icon": "switch"
+      },
+      {
+        "id": "light.kitchen_01",
+        "name": "厨房主灯",
         "type": "light",
+        "protocol": "zigbee",
         "area": "kitchen",
-        "areaName": "\u53a8\u623f",
-        "x": 42.54,
-        "y": 68.76
+        "areaName": "厨房",
+        "x": 41.8,
+        "y": 61.75,
+        "icon": "light"
       },
       {
-        "id": "light.study_desk",
-        "name": "\u4e66\u623f\u53f0\u706f",
+        "id": "light.kitchen_02",
+        "name": "厨房操作台灯",
         "type": "light",
-        "area": "study",
-        "areaName": "\u4e66\u623f",
-        "x": 73.95,
-        "y": 81.89
+        "protocol": "zigbee",
+        "area": "kitchen",
+        "areaName": "厨房",
+        "x": 44.6,
+        "y": 61.75,
+        "icon": "light"
       },
       {
-        "id": "light.entrance",
-        "name": "\u7384\u5173\u706f",
+        "id": "switch.kitchen_03",
+        "name": "厨房油烟机插座",
+        "type": "switch",
+        "protocol": "matter",
+        "area": "kitchen",
+        "areaName": "厨房",
+        "x": 47.4,
+        "y": 61.75,
+        "icon": "switch"
+      },
+      {
+        "id": "switch.kitchen_04",
+        "name": "厨房蒸烤箱插座",
+        "type": "switch",
+        "protocol": "matter",
+        "area": "kitchen",
+        "areaName": "厨房",
+        "x": 50.2,
+        "y": 61.75,
+        "icon": "switch"
+      },
+      {
+        "id": "gas_sensor.kitchen_05",
+        "name": "厨房燃气传感器",
+        "type": "gas_sensor",
+        "protocol": "zigbee",
+        "area": "kitchen",
+        "areaName": "厨房",
+        "x": 41.8,
+        "y": 67.5,
+        "icon": "gas_sensor"
+      },
+      {
+        "id": "smoke_sensor.kitchen_06",
+        "name": "厨房烟雾传感器",
+        "type": "smoke_sensor",
+        "protocol": "zigbee",
+        "area": "kitchen",
+        "areaName": "厨房",
+        "x": 44.6,
+        "y": 67.5,
+        "icon": "smoke_sensor"
+      },
+      {
+        "id": "water_leak_sensor.kitchen_07",
+        "name": "厨房漏水传感器",
+        "type": "water_leak_sensor",
+        "protocol": "zigbee",
+        "area": "kitchen",
+        "areaName": "厨房",
+        "x": 47.4,
+        "y": 67.5,
+        "icon": "water_leak_sensor"
+      },
+      {
+        "id": "temperature_sensor.kitchen_08",
+        "name": "厨房温湿度传感器",
+        "type": "temperature_sensor",
+        "protocol": "zigbee",
+        "area": "kitchen",
+        "areaName": "厨房",
+        "x": 50.2,
+        "y": 67.5,
+        "icon": "temperature_sensor"
+      },
+      {
+        "id": "switch.kitchen_09",
+        "name": "厨房洗碗机插座",
+        "type": "switch",
+        "protocol": "matter",
+        "area": "kitchen",
+        "areaName": "厨房",
+        "x": 41.8,
+        "y": 73.25,
+        "icon": "switch"
+      },
+      {
+        "id": "switch.kitchen_10",
+        "name": "厨房冰箱监测插座",
+        "type": "switch",
+        "protocol": "matter",
+        "area": "kitchen",
+        "areaName": "厨房",
+        "x": 44.6,
+        "y": 73.25,
+        "icon": "switch"
+      },
+      {
+        "id": "light.entrance_01",
+        "name": "玄关玄关灯",
         "type": "light",
+        "protocol": "zigbee",
         "area": "entrance",
-        "areaName": "\u7384\u5173",
-        "x": 12.82,
-        "y": 51.08
+        "areaName": "玄关",
+        "x": 11.5,
+        "y": 48.5,
+        "icon": "light"
+      },
+      {
+        "id": "door_sensor.entrance_02",
+        "name": "玄关入户门磁",
+        "type": "door_sensor",
+        "protocol": "zigbee",
+        "area": "entrance",
+        "areaName": "玄关",
+        "x": 15.0,
+        "y": 48.5,
+        "icon": "door_sensor"
+      },
+      {
+        "id": "camera.entrance_03",
+        "name": "玄关门口摄像头",
+        "type": "camera",
+        "protocol": "onvif",
+        "area": "entrance",
+        "areaName": "玄关",
+        "x": 18.5,
+        "y": 48.5,
+        "icon": "camera"
+      },
+      {
+        "id": "lock.entrance_04",
+        "name": "玄关智能门锁",
+        "type": "lock",
+        "protocol": "ble",
+        "area": "entrance",
+        "areaName": "玄关",
+        "x": 11.5,
+        "y": 52.0,
+        "icon": "lock"
+      },
+      {
+        "id": "motion_sensor.entrance_05",
+        "name": "玄关人体传感器",
+        "type": "motion_sensor",
+        "protocol": "zigbee",
+        "area": "entrance",
+        "areaName": "玄关",
+        "x": 15.0,
+        "y": 52.0,
+        "icon": "motion_sensor"
+      },
+      {
+        "id": "switch.entrance_06",
+        "name": "玄关鞋柜除味插座",
+        "type": "switch",
+        "protocol": "matter",
+        "area": "entrance",
+        "areaName": "玄关",
+        "x": 18.5,
+        "y": 52.0,
+        "icon": "switch"
+      },
+      {
+        "id": "light.entrance_07",
+        "name": "玄关鞋柜灯",
+        "type": "light",
+        "protocol": "zigbee",
+        "area": "entrance",
+        "areaName": "玄关",
+        "x": 11.5,
+        "y": 55.5,
+        "icon": "light"
+      },
+      {
+        "id": "alarm.entrance_08",
+        "name": "玄关安防报警器",
+        "type": "alarm",
+        "protocol": "zigbee",
+        "area": "entrance",
+        "areaName": "玄关",
+        "x": 15.0,
+        "y": 55.5,
+        "icon": "alarm"
+      },
+      {
+        "id": "light.bedroom_01",
+        "name": "主卧主灯",
+        "type": "light",
+        "protocol": "zigbee",
+        "area": "bedroom",
+        "areaName": "主卧",
+        "x": 49.2,
+        "y": 26.25,
+        "icon": "light"
+      },
+      {
+        "id": "light.bedroom_02",
+        "name": "主卧床头灯左",
+        "type": "light",
+        "protocol": "matter",
+        "area": "bedroom",
+        "areaName": "主卧",
+        "x": 53.4,
+        "y": 26.25,
+        "icon": "light"
+      },
+      {
+        "id": "light.bedroom_03",
+        "name": "主卧床头灯右",
+        "type": "light",
+        "protocol": "matter",
+        "area": "bedroom",
+        "areaName": "主卧",
+        "x": 57.6,
+        "y": 26.25,
+        "icon": "light"
+      },
+      {
+        "id": "light.bedroom_04",
+        "name": "主卧衣柜灯",
+        "type": "light",
+        "protocol": "zigbee",
+        "area": "bedroom",
+        "areaName": "主卧",
+        "x": 61.8,
+        "y": 26.25,
+        "icon": "light"
+      },
+      {
+        "id": "climate.bedroom_05",
+        "name": "主卧空调",
+        "type": "air_conditioner",
+        "protocol": "mqtt",
+        "area": "bedroom",
+        "areaName": "主卧",
+        "x": 49.2,
+        "y": 32.5,
+        "icon": "air_conditioner"
+      },
+      {
+        "id": "fan.bedroom_06",
+        "name": "主卧风扇",
+        "type": "fan",
+        "protocol": "mqtt",
+        "area": "bedroom",
+        "areaName": "主卧",
+        "x": 53.4,
+        "y": 32.5,
+        "icon": "fan"
+      },
+      {
+        "id": "cover.bedroom_07",
+        "name": "主卧窗帘",
+        "type": "curtain",
+        "protocol": "zigbee",
+        "area": "bedroom",
+        "areaName": "主卧",
+        "x": 57.6,
+        "y": 32.5,
+        "icon": "curtain"
+      },
+      {
+        "id": "speaker.bedroom_08",
+        "name": "主卧白噪声音响",
+        "type": "speaker",
+        "protocol": "wifi",
+        "area": "bedroom",
+        "areaName": "主卧",
+        "x": 61.8,
+        "y": 32.5,
+        "icon": "speaker"
+      },
+      {
+        "id": "temperature_sensor.bedroom_09",
+        "name": "主卧温湿度传感器",
+        "type": "temperature_sensor",
+        "protocol": "zigbee",
+        "area": "bedroom",
+        "areaName": "主卧",
+        "x": 49.2,
+        "y": 38.75,
+        "icon": "temperature_sensor"
+      },
+      {
+        "id": "motion_sensor.bedroom_10",
+        "name": "主卧人体传感器",
+        "type": "motion_sensor",
+        "protocol": "zigbee",
+        "area": "bedroom",
+        "areaName": "主卧",
+        "x": 53.4,
+        "y": 38.75,
+        "icon": "motion_sensor"
+      },
+      {
+        "id": "switch.bedroom_11",
+        "name": "主卧电热毯插座",
+        "type": "switch",
+        "protocol": "matter",
+        "area": "bedroom",
+        "areaName": "主卧",
+        "x": 57.6,
+        "y": 38.75,
+        "icon": "switch"
+      },
+      {
+        "id": "cover.bedroom_12",
+        "name": "主卧窗户",
+        "type": "window",
+        "protocol": "zigbee",
+        "area": "bedroom",
+        "areaName": "主卧",
+        "x": 61.8,
+        "y": 38.75,
+        "icon": "window"
+      },
+      {
+        "id": "light.bedroom2_01",
+        "name": "次卧主灯",
+        "type": "light",
+        "protocol": "zigbee",
+        "area": "bedroom2",
+        "areaName": "次卧",
+        "x": 74.4,
+        "y": 24.25,
+        "icon": "light"
+      },
+      {
+        "id": "light.bedroom2_02",
+        "name": "次卧床头灯",
+        "type": "light",
+        "protocol": "matter",
+        "area": "bedroom2",
+        "areaName": "次卧",
+        "x": 78.8,
+        "y": 24.25,
+        "icon": "light"
+      },
+      {
+        "id": "light.bedroom2_03",
+        "name": "次卧书桌灯",
+        "type": "light",
+        "protocol": "matter",
+        "area": "bedroom2",
+        "areaName": "次卧",
+        "x": 83.2,
+        "y": 24.25,
+        "icon": "light"
+      },
+      {
+        "id": "climate.bedroom2_04",
+        "name": "次卧空调",
+        "type": "air_conditioner",
+        "protocol": "mqtt",
+        "area": "bedroom2",
+        "areaName": "次卧",
+        "x": 87.6,
+        "y": 24.25,
+        "icon": "air_conditioner"
+      },
+      {
+        "id": "fan.bedroom2_05",
+        "name": "次卧风扇",
+        "type": "fan",
+        "protocol": "mqtt",
+        "area": "bedroom2",
+        "areaName": "次卧",
+        "x": 74.4,
+        "y": 30.5,
+        "icon": "fan"
+      },
+      {
+        "id": "cover.bedroom2_06",
+        "name": "次卧窗帘",
+        "type": "curtain",
+        "protocol": "zigbee",
+        "area": "bedroom2",
+        "areaName": "次卧",
+        "x": 78.8,
+        "y": 30.5,
+        "icon": "curtain"
+      },
+      {
+        "id": "temperature_sensor.bedroom2_07",
+        "name": "次卧温湿度传感器",
+        "type": "temperature_sensor",
+        "protocol": "zigbee",
+        "area": "bedroom2",
+        "areaName": "次卧",
+        "x": 83.2,
+        "y": 30.5,
+        "icon": "temperature_sensor"
+      },
+      {
+        "id": "motion_sensor.bedroom2_08",
+        "name": "次卧人体传感器",
+        "type": "motion_sensor",
+        "protocol": "zigbee",
+        "area": "bedroom2",
+        "areaName": "次卧",
+        "x": 87.6,
+        "y": 30.5,
+        "icon": "motion_sensor"
+      },
+      {
+        "id": "switch.bedroom2_09",
+        "name": "次卧加湿器插座",
+        "type": "switch",
+        "protocol": "matter",
+        "area": "bedroom2",
+        "areaName": "次卧",
+        "x": 74.4,
+        "y": 36.75,
+        "icon": "switch"
+      },
+      {
+        "id": "cover.bedroom2_10",
+        "name": "次卧窗户",
+        "type": "window",
+        "protocol": "zigbee",
+        "area": "bedroom2",
+        "areaName": "次卧",
+        "x": 78.8,
+        "y": 36.75,
+        "icon": "window"
+      },
+      {
+        "id": "light.study_01",
+        "name": "书房主灯",
+        "type": "light",
+        "protocol": "zigbee",
+        "area": "study",
+        "areaName": "书房",
+        "x": 73.4,
+        "y": 68.0,
+        "icon": "light"
+      },
+      {
+        "id": "light.study_02",
+        "name": "书房台灯",
+        "type": "light",
+        "protocol": "matter",
+        "area": "study",
+        "areaName": "书房",
+        "x": 77.8,
+        "y": 68.0,
+        "icon": "light"
+      },
+      {
+        "id": "light.study_03",
+        "name": "书房书柜灯",
+        "type": "light",
+        "protocol": "zigbee",
+        "area": "study",
+        "areaName": "书房",
+        "x": 82.2,
+        "y": 68.0,
+        "icon": "light"
+      },
+      {
+        "id": "climate.study_04",
+        "name": "书房空调",
+        "type": "air_conditioner",
+        "protocol": "mqtt",
+        "area": "study",
+        "areaName": "书房",
+        "x": 86.6,
+        "y": 68.0,
+        "icon": "air_conditioner"
+      },
+      {
+        "id": "speaker.study_05",
+        "name": "书房书房音响",
+        "type": "speaker",
+        "protocol": "wifi",
+        "area": "study",
+        "areaName": "书房",
+        "x": 73.4,
+        "y": 74.0,
+        "icon": "speaker"
+      },
+      {
+        "id": "cover.study_06",
+        "name": "书房窗帘",
+        "type": "curtain",
+        "protocol": "zigbee",
+        "area": "study",
+        "areaName": "书房",
+        "x": 77.8,
+        "y": 74.0,
+        "icon": "curtain"
+      },
+      {
+        "id": "temperature_sensor.study_07",
+        "name": "书房温湿度传感器",
+        "type": "temperature_sensor",
+        "protocol": "zigbee",
+        "area": "study",
+        "areaName": "书房",
+        "x": 82.2,
+        "y": 74.0,
+        "icon": "temperature_sensor"
+      },
+      {
+        "id": "motion_sensor.study_08",
+        "name": "书房人体传感器",
+        "type": "motion_sensor",
+        "protocol": "zigbee",
+        "area": "study",
+        "areaName": "书房",
+        "x": 86.6,
+        "y": 74.0,
+        "icon": "motion_sensor"
+      },
+      {
+        "id": "switch.study_09",
+        "name": "书房电脑插座",
+        "type": "switch",
+        "protocol": "matter",
+        "area": "study",
+        "areaName": "书房",
+        "x": 73.4,
+        "y": 80.0,
+        "icon": "switch"
+      },
+      {
+        "id": "switch.study_10",
+        "name": "书房打印机插座",
+        "type": "switch",
+        "protocol": "matter",
+        "area": "study",
+        "areaName": "书房",
+        "x": 77.8,
+        "y": 80.0,
+        "icon": "switch"
+      },
+      {
+        "id": "camera.study_11",
+        "name": "书房桌面摄像头",
+        "type": "camera",
+        "protocol": "onvif",
+        "area": "study",
+        "areaName": "书房",
+        "x": 82.2,
+        "y": 80.0,
+        "icon": "camera"
+      },
+      {
+        "id": "air_quality_sensor.study_12",
+        "name": "书房空气质量传感器",
+        "type": "air_quality_sensor",
+        "protocol": "mqtt",
+        "area": "study",
+        "areaName": "书房",
+        "x": 86.6,
+        "y": 80.0,
+        "icon": "air_quality_sensor"
+      },
+      {
+        "id": "light.bathroom1_01",
+        "name": "主卫主灯",
+        "type": "light",
+        "protocol": "zigbee",
+        "area": "bathroom1",
+        "areaName": "主卫",
+        "x": 55.5,
+        "y": 69.75,
+        "icon": "light"
+      },
+      {
+        "id": "light.bathroom1_02",
+        "name": "主卫镜前灯",
+        "type": "light",
+        "protocol": "zigbee",
+        "area": "bathroom1",
+        "areaName": "主卫",
+        "x": 59.0,
+        "y": 69.75,
+        "icon": "light"
+      },
+      {
+        "id": "water_heater.bathroom1_03",
+        "name": "主卫热水器",
+        "type": "water_heater",
+        "protocol": "modbus_tcp",
+        "area": "bathroom1",
+        "areaName": "主卫",
+        "x": 62.5,
+        "y": 69.75,
+        "icon": "water_heater"
+      },
+      {
+        "id": "fan.bathroom1_04",
+        "name": "主卫排风扇",
+        "type": "fan",
+        "protocol": "mqtt",
+        "area": "bathroom1",
+        "areaName": "主卫",
+        "x": 55.5,
+        "y": 74.5,
+        "icon": "fan"
+      },
+      {
+        "id": "water_leak_sensor.bathroom1_05",
+        "name": "主卫漏水传感器",
+        "type": "water_leak_sensor",
+        "protocol": "zigbee",
+        "area": "bathroom1",
+        "areaName": "主卫",
+        "x": 59.0,
+        "y": 74.5,
+        "icon": "water_leak_sensor"
+      },
+      {
+        "id": "humidity_sensor.bathroom1_06",
+        "name": "主卫湿度传感器",
+        "type": "humidity_sensor",
+        "protocol": "zigbee",
+        "area": "bathroom1",
+        "areaName": "主卫",
+        "x": 62.5,
+        "y": 74.5,
+        "icon": "humidity_sensor"
+      },
+      {
+        "id": "motion_sensor.bathroom1_07",
+        "name": "主卫人体传感器",
+        "type": "motion_sensor",
+        "protocol": "zigbee",
+        "area": "bathroom1",
+        "areaName": "主卫",
+        "x": 55.5,
+        "y": 79.25,
+        "icon": "motion_sensor"
+      },
+      {
+        "id": "switch.bathroom1_08",
+        "name": "主卫智能马桶插座",
+        "type": "switch",
+        "protocol": "matter",
+        "area": "bathroom1",
+        "areaName": "主卫",
+        "x": 59.0,
+        "y": 79.25,
+        "icon": "switch"
+      },
+      {
+        "id": "light.bathroom2_01",
+        "name": "次卫主灯",
+        "type": "light",
+        "protocol": "zigbee",
+        "area": "bathroom2",
+        "areaName": "次卫",
+        "x": 79.75,
+        "y": 52.25,
+        "icon": "light"
+      },
+      {
+        "id": "light.bathroom2_02",
+        "name": "次卫镜前灯",
+        "type": "light",
+        "protocol": "zigbee",
+        "area": "bathroom2",
+        "areaName": "次卫",
+        "x": 83.5,
+        "y": 52.25,
+        "icon": "light"
+      },
+      {
+        "id": "fan.bathroom2_03",
+        "name": "次卫排风扇",
+        "type": "fan",
+        "protocol": "mqtt",
+        "area": "bathroom2",
+        "areaName": "次卫",
+        "x": 87.25,
+        "y": 52.25,
+        "icon": "fan"
+      },
+      {
+        "id": "water_leak_sensor.bathroom2_04",
+        "name": "次卫漏水传感器",
+        "type": "water_leak_sensor",
+        "protocol": "zigbee",
+        "area": "bathroom2",
+        "areaName": "次卫",
+        "x": 79.75,
+        "y": 55.5,
+        "icon": "water_leak_sensor"
+      },
+      {
+        "id": "humidity_sensor.bathroom2_05",
+        "name": "次卫湿度传感器",
+        "type": "humidity_sensor",
+        "protocol": "zigbee",
+        "area": "bathroom2",
+        "areaName": "次卫",
+        "x": 83.5,
+        "y": 55.5,
+        "icon": "humidity_sensor"
+      },
+      {
+        "id": "motion_sensor.bathroom2_06",
+        "name": "次卫人体传感器",
+        "type": "motion_sensor",
+        "protocol": "zigbee",
+        "area": "bathroom2",
+        "areaName": "次卫",
+        "x": 87.25,
+        "y": 55.5,
+        "icon": "motion_sensor"
+      },
+      {
+        "id": "switch.bathroom2_07",
+        "name": "次卫洗衣机插座",
+        "type": "switch",
+        "protocol": "matter",
+        "area": "bathroom2",
+        "areaName": "次卫",
+        "x": 79.75,
+        "y": 58.75,
+        "icon": "switch"
+      },
+      {
+        "id": "switch.bathroom2_08",
+        "name": "次卫烘干机插座",
+        "type": "switch",
+        "protocol": "matter",
+        "area": "bathroom2",
+        "areaName": "次卫",
+        "x": 83.5,
+        "y": 58.75,
+        "icon": "switch"
+      },
+      {
+        "id": "light.balcony_01",
+        "name": "阳台阳台灯",
+        "type": "light",
+        "protocol": "zigbee",
+        "area": "balcony",
+        "areaName": "阳台",
+        "x": 12.2,
+        "y": 81.5,
+        "icon": "light"
+      },
+      {
+        "id": "cover.balcony_02",
+        "name": "阳台窗户",
+        "type": "window",
+        "protocol": "zigbee",
+        "area": "balcony",
+        "areaName": "阳台",
+        "x": 17.4,
+        "y": 81.5,
+        "icon": "window"
+      },
+      {
+        "id": "cover.balcony_03",
+        "name": "阳台纱帘",
+        "type": "curtain",
+        "protocol": "zigbee",
+        "area": "balcony",
+        "areaName": "阳台",
+        "x": 22.6,
+        "y": 81.5,
+        "icon": "curtain"
+      },
+      {
+        "id": "switch.balcony_04",
+        "name": "阳台洗衣机插座",
+        "type": "switch",
+        "protocol": "matter",
+        "area": "balcony",
+        "areaName": "阳台",
+        "x": 27.8,
+        "y": 81.5,
+        "icon": "switch"
+      },
+      {
+        "id": "water_leak_sensor.balcony_05",
+        "name": "阳台漏水传感器",
+        "type": "water_leak_sensor",
+        "protocol": "zigbee",
+        "area": "balcony",
+        "areaName": "阳台",
+        "x": 12.2,
+        "y": 85.0,
+        "icon": "water_leak_sensor"
+      },
+      {
+        "id": "temperature_sensor.balcony_06",
+        "name": "阳台温湿度传感器",
+        "type": "temperature_sensor",
+        "protocol": "zigbee",
+        "area": "balcony",
+        "areaName": "阳台",
+        "x": 17.4,
+        "y": 85.0,
+        "icon": "temperature_sensor"
+      },
+      {
+        "id": "light.balcony_07",
+        "name": "阳台晾衣架灯",
+        "type": "light",
+        "protocol": "zigbee",
+        "area": "balcony",
+        "areaName": "阳台",
+        "x": 22.6,
+        "y": 85.0,
+        "icon": "light"
+      },
+      {
+        "id": "switch.balcony_08",
+        "name": "阳台电动晾衣架",
+        "type": "switch",
+        "protocol": "mqtt",
+        "area": "balcony",
+        "areaName": "阳台",
+        "x": 27.8,
+        "y": 85.0,
+        "icon": "switch"
+      },
+      {
+        "id": "weather_sensor.balcony_09",
+        "name": "阳台户外天气传感器",
+        "type": "weather_sensor",
+        "protocol": "mqtt",
+        "area": "balcony",
+        "areaName": "阳台",
+        "x": 12.2,
+        "y": 88.5,
+        "icon": "weather_sensor"
+      },
+      {
+        "id": "camera.balcony_10",
+        "name": "阳台阳台摄像头",
+        "type": "camera",
+        "protocol": "onvif",
+        "area": "balcony",
+        "areaName": "阳台",
+        "x": 17.4,
+        "y": 88.5,
+        "icon": "camera"
+      },
+      {
+        "id": "plant_sensor.balcony_11",
+        "name": "阳台绿植传感器",
+        "type": "plant_sensor",
+        "protocol": "ble",
+        "area": "balcony",
+        "areaName": "阳台",
+        "x": 22.6,
+        "y": 88.5,
+        "icon": "plant_sensor"
+      },
+      {
+        "id": "switch.balcony_12",
+        "name": "阳台扫地机器人充电座",
+        "type": "switch",
+        "protocol": "matter",
+        "area": "balcony",
+        "areaName": "阳台",
+        "x": 27.8,
+        "y": 88.5,
+        "icon": "switch"
       }
     ],
     "rawDevices": [
-      ["light.living_room_main", "living_room", "light", "\u5ba2\u5385\u4e3b\u706f", "\u5ba2\u5385"],
-      ["light.living_room_accent", "living_room", "light", "\u5ba2\u5385\u6c1b\u56f4\u706f", "\u5ba2\u5385"],
-      ["climate.living_room_ac", "living_room", "air_conditioner", "\u5ba2\u5385\u7a7a\u8c03", "\u5ba2\u5385"],
-      ["media.living_room_tv", "living_room", "tv", "\u5ba2\u5385\u7535\u89c6", "\u5ba2\u5385"],
-      ["speaker.living_room", "living_room", "speaker", "\u5ba2\u5385\u97f3\u54cd", "\u5ba2\u5385"],
-      ["light.bedroom_main", "bedroom", "light", "\u4e3b\u5367\u4e3b\u706f", "\u4e3b\u5367"],
-      ["fan.bedroom", "bedroom", "fan", "\u4e3b\u5367\u98ce\u6247", "\u4e3b\u5367"],
-      ["cover.bedroom_window", "bedroom", "window", "\u4e3b\u5367\u7a97\u6237", "\u4e3b\u5367"],
-      ["climate.bedroom_ac", "bedroom", "air_conditioner", "\u4e3b\u5367\u7a7a\u8c03", "\u4e3b\u5367"],
-      ["light.bedroom2_main", "bedroom2", "light", "\u6b21\u5367\u4e3b\u706f", "\u6b21\u5367"],
-      ["fan.bedroom2", "bedroom2", "fan", "\u6b21\u5367\u98ce\u6247", "\u6b21\u5367"],
-      ["light.bathroom1", "bathroom1", "light", "\u4e3b\u536b\u706f", "\u4e3b\u536b"],
-      ["water_heater.bathroom", "bathroom1", "water_heater", "\u4e3b\u536b\u70ed\u6c34\u5668", "\u4e3b\u536b"],
-      ["light.kitchen_main", "kitchen", "light", "\u53a8\u623f\u4e3b\u706f", "\u53a8\u623f"],
-      ["light.study_desk", "study", "light", "\u4e66\u623f\u53f0\u706f", "\u4e66\u623f"],
-      ["light.entrance", "entrance", "light", "\u7384\u5173\u706f", "\u7384\u5173"]
+      [
+        "light.living_room_01",
+        "living_room",
+        "light",
+        "客厅主灯",
+        "客厅"
+      ],
+      [
+        "light.living_room_02",
+        "living_room",
+        "light",
+        "客厅筒灯",
+        "客厅"
+      ],
+      [
+        "light.living_room_03",
+        "living_room",
+        "light",
+        "客厅灯带",
+        "客厅"
+      ],
+      [
+        "light.living_room_04",
+        "living_room",
+        "light",
+        "客厅落地灯",
+        "客厅"
+      ],
+      [
+        "climate.living_room_05",
+        "living_room",
+        "air_conditioner",
+        "客厅空调",
+        "客厅"
+      ],
+      [
+        "media.living_room_06",
+        "living_room",
+        "tv",
+        "客厅电视",
+        "客厅"
+      ],
+      [
+        "speaker.living_room_07",
+        "living_room",
+        "speaker",
+        "客厅音响",
+        "客厅"
+      ],
+      [
+        "fan.living_room_08",
+        "living_room",
+        "fan",
+        "客厅循环扇",
+        "客厅"
+      ],
+      [
+        "cover.living_room_09",
+        "living_room",
+        "curtain",
+        "客厅窗帘",
+        "客厅"
+      ],
+      [
+        "motion_sensor.living_room_10",
+        "living_room",
+        "motion_sensor",
+        "客厅人体传感器",
+        "客厅"
+      ],
+      [
+        "temperature_sensor.living_room_11",
+        "living_room",
+        "temperature_sensor",
+        "客厅温湿度传感器",
+        "客厅"
+      ],
+      [
+        "switch.living_room_12",
+        "living_room",
+        "switch",
+        "客厅电视墙插座",
+        "客厅"
+      ],
+      [
+        "light.dining_room_01",
+        "dining_room",
+        "light",
+        "餐厅吊灯",
+        "餐厅"
+      ],
+      [
+        "light.dining_room_02",
+        "dining_room",
+        "light",
+        "餐厅餐边柜灯",
+        "餐厅"
+      ],
+      [
+        "switch.dining_room_03",
+        "dining_room",
+        "switch",
+        "餐厅咖啡机插座",
+        "餐厅"
+      ],
+      [
+        "speaker.dining_room_04",
+        "dining_room",
+        "speaker",
+        "餐厅餐厅音响",
+        "餐厅"
+      ],
+      [
+        "motion_sensor.dining_room_05",
+        "dining_room",
+        "motion_sensor",
+        "餐厅人体传感器",
+        "餐厅"
+      ],
+      [
+        "temperature_sensor.dining_room_06",
+        "dining_room",
+        "temperature_sensor",
+        "餐厅温湿度传感器",
+        "餐厅"
+      ],
+      [
+        "air_quality_sensor.dining_room_07",
+        "dining_room",
+        "air_quality_sensor",
+        "餐厅空气质量传感器",
+        "餐厅"
+      ],
+      [
+        "switch.dining_room_08",
+        "dining_room",
+        "switch",
+        "餐厅净水器插座",
+        "餐厅"
+      ],
+      [
+        "light.kitchen_01",
+        "kitchen",
+        "light",
+        "厨房主灯",
+        "厨房"
+      ],
+      [
+        "light.kitchen_02",
+        "kitchen",
+        "light",
+        "厨房操作台灯",
+        "厨房"
+      ],
+      [
+        "switch.kitchen_03",
+        "kitchen",
+        "switch",
+        "厨房油烟机插座",
+        "厨房"
+      ],
+      [
+        "switch.kitchen_04",
+        "kitchen",
+        "switch",
+        "厨房蒸烤箱插座",
+        "厨房"
+      ],
+      [
+        "gas_sensor.kitchen_05",
+        "kitchen",
+        "gas_sensor",
+        "厨房燃气传感器",
+        "厨房"
+      ],
+      [
+        "smoke_sensor.kitchen_06",
+        "kitchen",
+        "smoke_sensor",
+        "厨房烟雾传感器",
+        "厨房"
+      ],
+      [
+        "water_leak_sensor.kitchen_07",
+        "kitchen",
+        "water_leak_sensor",
+        "厨房漏水传感器",
+        "厨房"
+      ],
+      [
+        "temperature_sensor.kitchen_08",
+        "kitchen",
+        "temperature_sensor",
+        "厨房温湿度传感器",
+        "厨房"
+      ],
+      [
+        "switch.kitchen_09",
+        "kitchen",
+        "switch",
+        "厨房洗碗机插座",
+        "厨房"
+      ],
+      [
+        "switch.kitchen_10",
+        "kitchen",
+        "switch",
+        "厨房冰箱监测插座",
+        "厨房"
+      ],
+      [
+        "light.entrance_01",
+        "entrance",
+        "light",
+        "玄关玄关灯",
+        "玄关"
+      ],
+      [
+        "door_sensor.entrance_02",
+        "entrance",
+        "door_sensor",
+        "玄关入户门磁",
+        "玄关"
+      ],
+      [
+        "camera.entrance_03",
+        "entrance",
+        "camera",
+        "玄关门口摄像头",
+        "玄关"
+      ],
+      [
+        "lock.entrance_04",
+        "entrance",
+        "lock",
+        "玄关智能门锁",
+        "玄关"
+      ],
+      [
+        "motion_sensor.entrance_05",
+        "entrance",
+        "motion_sensor",
+        "玄关人体传感器",
+        "玄关"
+      ],
+      [
+        "switch.entrance_06",
+        "entrance",
+        "switch",
+        "玄关鞋柜除味插座",
+        "玄关"
+      ],
+      [
+        "light.entrance_07",
+        "entrance",
+        "light",
+        "玄关鞋柜灯",
+        "玄关"
+      ],
+      [
+        "alarm.entrance_08",
+        "entrance",
+        "alarm",
+        "玄关安防报警器",
+        "玄关"
+      ],
+      [
+        "light.bedroom_01",
+        "bedroom",
+        "light",
+        "主卧主灯",
+        "主卧"
+      ],
+      [
+        "light.bedroom_02",
+        "bedroom",
+        "light",
+        "主卧床头灯左",
+        "主卧"
+      ],
+      [
+        "light.bedroom_03",
+        "bedroom",
+        "light",
+        "主卧床头灯右",
+        "主卧"
+      ],
+      [
+        "light.bedroom_04",
+        "bedroom",
+        "light",
+        "主卧衣柜灯",
+        "主卧"
+      ],
+      [
+        "climate.bedroom_05",
+        "bedroom",
+        "air_conditioner",
+        "主卧空调",
+        "主卧"
+      ],
+      [
+        "fan.bedroom_06",
+        "bedroom",
+        "fan",
+        "主卧风扇",
+        "主卧"
+      ],
+      [
+        "cover.bedroom_07",
+        "bedroom",
+        "curtain",
+        "主卧窗帘",
+        "主卧"
+      ],
+      [
+        "speaker.bedroom_08",
+        "bedroom",
+        "speaker",
+        "主卧白噪声音响",
+        "主卧"
+      ],
+      [
+        "temperature_sensor.bedroom_09",
+        "bedroom",
+        "temperature_sensor",
+        "主卧温湿度传感器",
+        "主卧"
+      ],
+      [
+        "motion_sensor.bedroom_10",
+        "bedroom",
+        "motion_sensor",
+        "主卧人体传感器",
+        "主卧"
+      ],
+      [
+        "switch.bedroom_11",
+        "bedroom",
+        "switch",
+        "主卧电热毯插座",
+        "主卧"
+      ],
+      [
+        "cover.bedroom_12",
+        "bedroom",
+        "window",
+        "主卧窗户",
+        "主卧"
+      ],
+      [
+        "light.bedroom2_01",
+        "bedroom2",
+        "light",
+        "次卧主灯",
+        "次卧"
+      ],
+      [
+        "light.bedroom2_02",
+        "bedroom2",
+        "light",
+        "次卧床头灯",
+        "次卧"
+      ],
+      [
+        "light.bedroom2_03",
+        "bedroom2",
+        "light",
+        "次卧书桌灯",
+        "次卧"
+      ],
+      [
+        "climate.bedroom2_04",
+        "bedroom2",
+        "air_conditioner",
+        "次卧空调",
+        "次卧"
+      ],
+      [
+        "fan.bedroom2_05",
+        "bedroom2",
+        "fan",
+        "次卧风扇",
+        "次卧"
+      ],
+      [
+        "cover.bedroom2_06",
+        "bedroom2",
+        "curtain",
+        "次卧窗帘",
+        "次卧"
+      ],
+      [
+        "temperature_sensor.bedroom2_07",
+        "bedroom2",
+        "temperature_sensor",
+        "次卧温湿度传感器",
+        "次卧"
+      ],
+      [
+        "motion_sensor.bedroom2_08",
+        "bedroom2",
+        "motion_sensor",
+        "次卧人体传感器",
+        "次卧"
+      ],
+      [
+        "switch.bedroom2_09",
+        "bedroom2",
+        "switch",
+        "次卧加湿器插座",
+        "次卧"
+      ],
+      [
+        "cover.bedroom2_10",
+        "bedroom2",
+        "window",
+        "次卧窗户",
+        "次卧"
+      ],
+      [
+        "light.study_01",
+        "study",
+        "light",
+        "书房主灯",
+        "书房"
+      ],
+      [
+        "light.study_02",
+        "study",
+        "light",
+        "书房台灯",
+        "书房"
+      ],
+      [
+        "light.study_03",
+        "study",
+        "light",
+        "书房书柜灯",
+        "书房"
+      ],
+      [
+        "climate.study_04",
+        "study",
+        "air_conditioner",
+        "书房空调",
+        "书房"
+      ],
+      [
+        "speaker.study_05",
+        "study",
+        "speaker",
+        "书房书房音响",
+        "书房"
+      ],
+      [
+        "cover.study_06",
+        "study",
+        "curtain",
+        "书房窗帘",
+        "书房"
+      ],
+      [
+        "temperature_sensor.study_07",
+        "study",
+        "temperature_sensor",
+        "书房温湿度传感器",
+        "书房"
+      ],
+      [
+        "motion_sensor.study_08",
+        "study",
+        "motion_sensor",
+        "书房人体传感器",
+        "书房"
+      ],
+      [
+        "switch.study_09",
+        "study",
+        "switch",
+        "书房电脑插座",
+        "书房"
+      ],
+      [
+        "switch.study_10",
+        "study",
+        "switch",
+        "书房打印机插座",
+        "书房"
+      ],
+      [
+        "camera.study_11",
+        "study",
+        "camera",
+        "书房桌面摄像头",
+        "书房"
+      ],
+      [
+        "air_quality_sensor.study_12",
+        "study",
+        "air_quality_sensor",
+        "书房空气质量传感器",
+        "书房"
+      ],
+      [
+        "light.bathroom1_01",
+        "bathroom1",
+        "light",
+        "主卫主灯",
+        "主卫"
+      ],
+      [
+        "light.bathroom1_02",
+        "bathroom1",
+        "light",
+        "主卫镜前灯",
+        "主卫"
+      ],
+      [
+        "water_heater.bathroom1_03",
+        "bathroom1",
+        "water_heater",
+        "主卫热水器",
+        "主卫"
+      ],
+      [
+        "fan.bathroom1_04",
+        "bathroom1",
+        "fan",
+        "主卫排风扇",
+        "主卫"
+      ],
+      [
+        "water_leak_sensor.bathroom1_05",
+        "bathroom1",
+        "water_leak_sensor",
+        "主卫漏水传感器",
+        "主卫"
+      ],
+      [
+        "humidity_sensor.bathroom1_06",
+        "bathroom1",
+        "humidity_sensor",
+        "主卫湿度传感器",
+        "主卫"
+      ],
+      [
+        "motion_sensor.bathroom1_07",
+        "bathroom1",
+        "motion_sensor",
+        "主卫人体传感器",
+        "主卫"
+      ],
+      [
+        "switch.bathroom1_08",
+        "bathroom1",
+        "switch",
+        "主卫智能马桶插座",
+        "主卫"
+      ],
+      [
+        "light.bathroom2_01",
+        "bathroom2",
+        "light",
+        "次卫主灯",
+        "次卫"
+      ],
+      [
+        "light.bathroom2_02",
+        "bathroom2",
+        "light",
+        "次卫镜前灯",
+        "次卫"
+      ],
+      [
+        "fan.bathroom2_03",
+        "bathroom2",
+        "fan",
+        "次卫排风扇",
+        "次卫"
+      ],
+      [
+        "water_leak_sensor.bathroom2_04",
+        "bathroom2",
+        "water_leak_sensor",
+        "次卫漏水传感器",
+        "次卫"
+      ],
+      [
+        "humidity_sensor.bathroom2_05",
+        "bathroom2",
+        "humidity_sensor",
+        "次卫湿度传感器",
+        "次卫"
+      ],
+      [
+        "motion_sensor.bathroom2_06",
+        "bathroom2",
+        "motion_sensor",
+        "次卫人体传感器",
+        "次卫"
+      ],
+      [
+        "switch.bathroom2_07",
+        "bathroom2",
+        "switch",
+        "次卫洗衣机插座",
+        "次卫"
+      ],
+      [
+        "switch.bathroom2_08",
+        "bathroom2",
+        "switch",
+        "次卫烘干机插座",
+        "次卫"
+      ],
+      [
+        "light.balcony_01",
+        "balcony",
+        "light",
+        "阳台阳台灯",
+        "阳台"
+      ],
+      [
+        "cover.balcony_02",
+        "balcony",
+        "window",
+        "阳台窗户",
+        "阳台"
+      ],
+      [
+        "cover.balcony_03",
+        "balcony",
+        "curtain",
+        "阳台纱帘",
+        "阳台"
+      ],
+      [
+        "switch.balcony_04",
+        "balcony",
+        "switch",
+        "阳台洗衣机插座",
+        "阳台"
+      ],
+      [
+        "water_leak_sensor.balcony_05",
+        "balcony",
+        "water_leak_sensor",
+        "阳台漏水传感器",
+        "阳台"
+      ],
+      [
+        "temperature_sensor.balcony_06",
+        "balcony",
+        "temperature_sensor",
+        "阳台温湿度传感器",
+        "阳台"
+      ],
+      [
+        "light.balcony_07",
+        "balcony",
+        "light",
+        "阳台晾衣架灯",
+        "阳台"
+      ],
+      [
+        "switch.balcony_08",
+        "balcony",
+        "switch",
+        "阳台电动晾衣架",
+        "阳台"
+      ],
+      [
+        "weather_sensor.balcony_09",
+        "balcony",
+        "weather_sensor",
+        "阳台户外天气传感器",
+        "阳台"
+      ],
+      [
+        "camera.balcony_10",
+        "balcony",
+        "camera",
+        "阳台阳台摄像头",
+        "阳台"
+      ],
+      [
+        "plant_sensor.balcony_11",
+        "balcony",
+        "plant_sensor",
+        "阳台绿植传感器",
+        "阳台"
+      ],
+      [
+        "switch.balcony_12",
+        "balcony",
+        "switch",
+        "阳台扫地机器人充电座",
+        "阳台"
+      ]
     ],
-    "updatedAt": "2026-04-30T11:20:00+08:00",
+    "customRooms": {
+      "living_room": {
+        "name": "客厅",
+        "coordinates": [
+          {
+            "x": 76.80000000000001,
+            "y": 118.8
+          },
+          {
+            "x": 198.4,
+            "y": 277.2
+          }
+        ]
+      },
+      "dining_room": {
+        "name": "餐厅",
+        "coordinates": [
+          {
+            "x": 115.2,
+            "y": 369.59999999999997
+          },
+          {
+            "x": 230.4,
+            "y": 501.59999999999997
+          }
+        ]
+      },
+      "kitchen": {
+        "name": "厨房",
+        "coordinates": [
+          {
+            "x": 249.60000000000002,
+            "y": 369.59999999999997
+          },
+          {
+            "x": 339.20000000000005,
+            "y": 521.4
+          }
+        ]
+      },
+      "entrance": {
+        "name": "玄关",
+        "coordinates": [
+          {
+            "x": 51.2,
+            "y": 297.0
+          },
+          {
+            "x": 140.8,
+            "y": 389.4
+          }
+        ]
+      },
+      "bedroom": {
+        "name": "主卧",
+        "coordinates": [
+          {
+            "x": 288.0,
+            "y": 132.0
+          },
+          {
+            "x": 422.40000000000003,
+            "y": 297.0
+          }
+        ]
+      },
+      "bedroom2": {
+        "name": "次卧",
+        "coordinates": [
+          {
+            "x": 448.0,
+            "y": 118.8
+          },
+          {
+            "x": 588.8000000000001,
+            "y": 283.8
+          }
+        ]
+      },
+      "study": {
+        "name": "书房",
+        "coordinates": [
+          {
+            "x": 441.6,
+            "y": 409.2
+          },
+          {
+            "x": 582.4,
+            "y": 567.6
+          }
+        ]
+      },
+      "bathroom1": {
+        "name": "主卫",
+        "coordinates": [
+          {
+            "x": 332.8,
+            "y": 429.0
+          },
+          {
+            "x": 422.40000000000003,
+            "y": 554.4
+          }
+        ]
+      },
+      "bathroom2": {
+        "name": "次卫",
+        "coordinates": [
+          {
+            "x": 486.40000000000003,
+            "y": 323.4
+          },
+          {
+            "x": 582.4,
+            "y": 409.2
+          }
+        ]
+      },
+      "balcony": {
+        "name": "阳台",
+        "coordinates": [
+          {
+            "x": 44.800000000000004,
+            "y": 514.8
+          },
+          {
+            "x": 211.20000000000002,
+            "y": 607.1999999999999
+          }
+        ]
+      }
+    },
+    "updatedAt": "2026-04-30T16:13:32+08:00",
     "createdAt": "2026-03-29T03:10:45+08:00"
   }
 ]

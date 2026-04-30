@@ -1,0 +1,1010 @@
+[
+  {
+    "id": "hist_001",
+    "timestamp": "2026-04-30T16:13:32+08:00",
+    "type": "device_control",
+    "device": "客厅空调",
+    "device_action": "adjust",
+    "params": {
+      "temperature": 26
+    },
+    "accepted": false,
+    "source": "seed_demo_history",
+    "note": "早晨自动调温"
+  },
+  {
+    "id": "hist_002",
+    "timestamp": "2026-04-30T13:13:32+08:00",
+    "type": "scene_switch",
+    "device": "",
+    "device_action": "",
+    "params": {
+      "scene": "工作模式"
+    },
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "工作日进入办公状态"
+  },
+  {
+    "id": "hist_003",
+    "timestamp": "2026-04-30T10:13:32+08:00",
+    "type": "device_control",
+    "device": "书房台灯",
+    "device_action": "adjust",
+    "params": {
+      "brightness": 70
+    },
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "夜间阅读"
+  },
+  {
+    "id": "hist_004",
+    "timestamp": "2026-04-30T07:13:32+08:00",
+    "type": "device_control",
+    "device": "客厅电视",
+    "device_action": "off",
+    "params": {},
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "睡前关闭影音设备"
+  },
+  {
+    "id": "hist_005",
+    "timestamp": "2026-04-30T04:13:32+08:00",
+    "type": "scene_switch",
+    "device": "",
+    "device_action": "",
+    "params": {
+      "scene": "睡眠模式"
+    },
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "睡前例行动作"
+  },
+  {
+    "id": "hist_006",
+    "timestamp": "2026-04-30T01:13:32+08:00",
+    "type": "device_control",
+    "device": "厨房操作台灯",
+    "device_action": "on",
+    "params": {},
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "晚餐备餐"
+  },
+  {
+    "id": "hist_007",
+    "timestamp": "2026-04-29T22:13:32+08:00",
+    "type": "device_control",
+    "device": "主卧空调",
+    "device_action": "adjust",
+    "params": {
+      "temperature": 25
+    },
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "卧室睡眠温度"
+  },
+  {
+    "id": "hist_008",
+    "timestamp": "2026-04-29T19:13:32+08:00",
+    "type": "scene_switch",
+    "device": "",
+    "device_action": "",
+    "params": {
+      "scene": "离家模式"
+    },
+    "accepted": false,
+    "source": "seed_demo_history",
+    "note": "离家节能"
+  },
+  {
+    "id": "hist_009",
+    "timestamp": "2026-04-29T16:13:32+08:00",
+    "type": "device_control",
+    "device": "客厅空调",
+    "device_action": "adjust",
+    "params": {
+      "temperature": 26
+    },
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "早晨自动调温"
+  },
+  {
+    "id": "hist_010",
+    "timestamp": "2026-04-29T13:13:32+08:00",
+    "type": "scene_switch",
+    "device": "",
+    "device_action": "",
+    "params": {
+      "scene": "工作模式"
+    },
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "工作日进入办公状态"
+  },
+  {
+    "id": "hist_011",
+    "timestamp": "2026-04-29T10:13:32+08:00",
+    "type": "device_control",
+    "device": "书房台灯",
+    "device_action": "adjust",
+    "params": {
+      "brightness": 70
+    },
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "夜间阅读"
+  },
+  {
+    "id": "hist_012",
+    "timestamp": "2026-04-29T07:13:32+08:00",
+    "type": "device_control",
+    "device": "客厅电视",
+    "device_action": "off",
+    "params": {},
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "睡前关闭影音设备"
+  },
+  {
+    "id": "hist_013",
+    "timestamp": "2026-04-29T04:13:32+08:00",
+    "type": "scene_switch",
+    "device": "",
+    "device_action": "",
+    "params": {
+      "scene": "睡眠模式"
+    },
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "睡前例行动作"
+  },
+  {
+    "id": "hist_014",
+    "timestamp": "2026-04-29T01:13:32+08:00",
+    "type": "device_control",
+    "device": "厨房操作台灯",
+    "device_action": "on",
+    "params": {},
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "晚餐备餐"
+  },
+  {
+    "id": "hist_015",
+    "timestamp": "2026-04-28T22:13:32+08:00",
+    "type": "device_control",
+    "device": "主卧空调",
+    "device_action": "adjust",
+    "params": {
+      "temperature": 25
+    },
+    "accepted": false,
+    "source": "seed_demo_history",
+    "note": "卧室睡眠温度"
+  },
+  {
+    "id": "hist_016",
+    "timestamp": "2026-04-28T19:13:32+08:00",
+    "type": "scene_switch",
+    "device": "",
+    "device_action": "",
+    "params": {
+      "scene": "离家模式"
+    },
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "离家节能"
+  },
+  {
+    "id": "hist_017",
+    "timestamp": "2026-04-28T16:13:32+08:00",
+    "type": "device_control",
+    "device": "客厅空调",
+    "device_action": "adjust",
+    "params": {
+      "temperature": 26
+    },
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "早晨自动调温"
+  },
+  {
+    "id": "hist_018",
+    "timestamp": "2026-04-28T13:13:32+08:00",
+    "type": "scene_switch",
+    "device": "",
+    "device_action": "",
+    "params": {
+      "scene": "工作模式"
+    },
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "工作日进入办公状态"
+  },
+  {
+    "id": "hist_019",
+    "timestamp": "2026-04-28T10:13:32+08:00",
+    "type": "device_control",
+    "device": "书房台灯",
+    "device_action": "adjust",
+    "params": {
+      "brightness": 70
+    },
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "夜间阅读"
+  },
+  {
+    "id": "hist_020",
+    "timestamp": "2026-04-28T07:13:32+08:00",
+    "type": "device_control",
+    "device": "客厅电视",
+    "device_action": "off",
+    "params": {},
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "睡前关闭影音设备"
+  },
+  {
+    "id": "hist_021",
+    "timestamp": "2026-04-28T04:13:32+08:00",
+    "type": "scene_switch",
+    "device": "",
+    "device_action": "",
+    "params": {
+      "scene": "睡眠模式"
+    },
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "睡前例行动作"
+  },
+  {
+    "id": "hist_022",
+    "timestamp": "2026-04-28T01:13:32+08:00",
+    "type": "device_control",
+    "device": "厨房操作台灯",
+    "device_action": "on",
+    "params": {},
+    "accepted": false,
+    "source": "seed_demo_history",
+    "note": "晚餐备餐"
+  },
+  {
+    "id": "hist_023",
+    "timestamp": "2026-04-27T22:13:32+08:00",
+    "type": "device_control",
+    "device": "主卧空调",
+    "device_action": "adjust",
+    "params": {
+      "temperature": 25
+    },
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "卧室睡眠温度"
+  },
+  {
+    "id": "hist_024",
+    "timestamp": "2026-04-27T19:13:32+08:00",
+    "type": "scene_switch",
+    "device": "",
+    "device_action": "",
+    "params": {
+      "scene": "离家模式"
+    },
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "离家节能"
+  },
+  {
+    "id": "hist_025",
+    "timestamp": "2026-04-27T16:13:32+08:00",
+    "type": "device_control",
+    "device": "客厅空调",
+    "device_action": "adjust",
+    "params": {
+      "temperature": 26
+    },
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "早晨自动调温"
+  },
+  {
+    "id": "hist_026",
+    "timestamp": "2026-04-27T13:13:32+08:00",
+    "type": "scene_switch",
+    "device": "",
+    "device_action": "",
+    "params": {
+      "scene": "工作模式"
+    },
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "工作日进入办公状态"
+  },
+  {
+    "id": "hist_027",
+    "timestamp": "2026-04-27T10:13:32+08:00",
+    "type": "device_control",
+    "device": "书房台灯",
+    "device_action": "adjust",
+    "params": {
+      "brightness": 70
+    },
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "夜间阅读"
+  },
+  {
+    "id": "hist_028",
+    "timestamp": "2026-04-27T07:13:32+08:00",
+    "type": "device_control",
+    "device": "客厅电视",
+    "device_action": "off",
+    "params": {},
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "睡前关闭影音设备"
+  },
+  {
+    "id": "hist_029",
+    "timestamp": "2026-04-27T04:13:32+08:00",
+    "type": "scene_switch",
+    "device": "",
+    "device_action": "",
+    "params": {
+      "scene": "睡眠模式"
+    },
+    "accepted": false,
+    "source": "seed_demo_history",
+    "note": "睡前例行动作"
+  },
+  {
+    "id": "hist_030",
+    "timestamp": "2026-04-27T01:13:32+08:00",
+    "type": "device_control",
+    "device": "厨房操作台灯",
+    "device_action": "on",
+    "params": {},
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "晚餐备餐"
+  },
+  {
+    "id": "hist_031",
+    "timestamp": "2026-04-26T22:13:32+08:00",
+    "type": "device_control",
+    "device": "主卧空调",
+    "device_action": "adjust",
+    "params": {
+      "temperature": 25
+    },
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "卧室睡眠温度"
+  },
+  {
+    "id": "hist_032",
+    "timestamp": "2026-04-26T19:13:32+08:00",
+    "type": "scene_switch",
+    "device": "",
+    "device_action": "",
+    "params": {
+      "scene": "离家模式"
+    },
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "离家节能"
+  },
+  {
+    "id": "hist_033",
+    "timestamp": "2026-04-26T16:13:32+08:00",
+    "type": "device_control",
+    "device": "客厅空调",
+    "device_action": "adjust",
+    "params": {
+      "temperature": 26
+    },
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "早晨自动调温"
+  },
+  {
+    "id": "hist_034",
+    "timestamp": "2026-04-26T13:13:32+08:00",
+    "type": "scene_switch",
+    "device": "",
+    "device_action": "",
+    "params": {
+      "scene": "工作模式"
+    },
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "工作日进入办公状态"
+  },
+  {
+    "id": "hist_035",
+    "timestamp": "2026-04-26T10:13:32+08:00",
+    "type": "device_control",
+    "device": "书房台灯",
+    "device_action": "adjust",
+    "params": {
+      "brightness": 70
+    },
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "夜间阅读"
+  },
+  {
+    "id": "hist_036",
+    "timestamp": "2026-04-26T07:13:32+08:00",
+    "type": "device_control",
+    "device": "客厅电视",
+    "device_action": "off",
+    "params": {},
+    "accepted": false,
+    "source": "seed_demo_history",
+    "note": "睡前关闭影音设备"
+  },
+  {
+    "id": "hist_037",
+    "timestamp": "2026-04-26T04:13:32+08:00",
+    "type": "scene_switch",
+    "device": "",
+    "device_action": "",
+    "params": {
+      "scene": "睡眠模式"
+    },
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "睡前例行动作"
+  },
+  {
+    "id": "hist_038",
+    "timestamp": "2026-04-26T01:13:32+08:00",
+    "type": "device_control",
+    "device": "厨房操作台灯",
+    "device_action": "on",
+    "params": {},
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "晚餐备餐"
+  },
+  {
+    "id": "hist_039",
+    "timestamp": "2026-04-25T22:13:32+08:00",
+    "type": "device_control",
+    "device": "主卧空调",
+    "device_action": "adjust",
+    "params": {
+      "temperature": 25
+    },
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "卧室睡眠温度"
+  },
+  {
+    "id": "hist_040",
+    "timestamp": "2026-04-25T19:13:32+08:00",
+    "type": "scene_switch",
+    "device": "",
+    "device_action": "",
+    "params": {
+      "scene": "离家模式"
+    },
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "离家节能"
+  },
+  {
+    "id": "hist_041",
+    "timestamp": "2026-04-25T16:13:32+08:00",
+    "type": "device_control",
+    "device": "客厅空调",
+    "device_action": "adjust",
+    "params": {
+      "temperature": 26
+    },
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "早晨自动调温"
+  },
+  {
+    "id": "hist_042",
+    "timestamp": "2026-04-25T13:13:32+08:00",
+    "type": "scene_switch",
+    "device": "",
+    "device_action": "",
+    "params": {
+      "scene": "工作模式"
+    },
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "工作日进入办公状态"
+  },
+  {
+    "id": "hist_043",
+    "timestamp": "2026-04-25T10:13:32+08:00",
+    "type": "device_control",
+    "device": "书房台灯",
+    "device_action": "adjust",
+    "params": {
+      "brightness": 70
+    },
+    "accepted": false,
+    "source": "seed_demo_history",
+    "note": "夜间阅读"
+  },
+  {
+    "id": "hist_044",
+    "timestamp": "2026-04-25T07:13:32+08:00",
+    "type": "device_control",
+    "device": "客厅电视",
+    "device_action": "off",
+    "params": {},
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "睡前关闭影音设备"
+  },
+  {
+    "id": "hist_045",
+    "timestamp": "2026-04-25T04:13:32+08:00",
+    "type": "scene_switch",
+    "device": "",
+    "device_action": "",
+    "params": {
+      "scene": "睡眠模式"
+    },
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "睡前例行动作"
+  },
+  {
+    "id": "hist_046",
+    "timestamp": "2026-04-25T01:13:32+08:00",
+    "type": "device_control",
+    "device": "厨房操作台灯",
+    "device_action": "on",
+    "params": {},
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "晚餐备餐"
+  },
+  {
+    "id": "hist_047",
+    "timestamp": "2026-04-24T22:13:32+08:00",
+    "type": "device_control",
+    "device": "主卧空调",
+    "device_action": "adjust",
+    "params": {
+      "temperature": 25
+    },
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "卧室睡眠温度"
+  },
+  {
+    "id": "hist_048",
+    "timestamp": "2026-04-24T19:13:32+08:00",
+    "type": "scene_switch",
+    "device": "",
+    "device_action": "",
+    "params": {
+      "scene": "离家模式"
+    },
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "离家节能"
+  },
+  {
+    "id": "hist_049",
+    "timestamp": "2026-04-24T16:13:32+08:00",
+    "type": "device_control",
+    "device": "客厅空调",
+    "device_action": "adjust",
+    "params": {
+      "temperature": 26
+    },
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "早晨自动调温"
+  },
+  {
+    "id": "hist_050",
+    "timestamp": "2026-04-24T13:13:32+08:00",
+    "type": "scene_switch",
+    "device": "",
+    "device_action": "",
+    "params": {
+      "scene": "工作模式"
+    },
+    "accepted": false,
+    "source": "seed_demo_history",
+    "note": "工作日进入办公状态"
+  },
+  {
+    "id": "hist_051",
+    "timestamp": "2026-04-24T10:13:32+08:00",
+    "type": "device_control",
+    "device": "书房台灯",
+    "device_action": "adjust",
+    "params": {
+      "brightness": 70
+    },
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "夜间阅读"
+  },
+  {
+    "id": "hist_052",
+    "timestamp": "2026-04-24T07:13:32+08:00",
+    "type": "device_control",
+    "device": "客厅电视",
+    "device_action": "off",
+    "params": {},
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "睡前关闭影音设备"
+  },
+  {
+    "id": "hist_053",
+    "timestamp": "2026-04-24T04:13:32+08:00",
+    "type": "scene_switch",
+    "device": "",
+    "device_action": "",
+    "params": {
+      "scene": "睡眠模式"
+    },
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "睡前例行动作"
+  },
+  {
+    "id": "hist_054",
+    "timestamp": "2026-04-24T01:13:32+08:00",
+    "type": "device_control",
+    "device": "厨房操作台灯",
+    "device_action": "on",
+    "params": {},
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "晚餐备餐"
+  },
+  {
+    "id": "hist_055",
+    "timestamp": "2026-04-23T22:13:32+08:00",
+    "type": "device_control",
+    "device": "主卧空调",
+    "device_action": "adjust",
+    "params": {
+      "temperature": 25
+    },
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "卧室睡眠温度"
+  },
+  {
+    "id": "hist_056",
+    "timestamp": "2026-04-23T19:13:32+08:00",
+    "type": "scene_switch",
+    "device": "",
+    "device_action": "",
+    "params": {
+      "scene": "离家模式"
+    },
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "离家节能"
+  },
+  {
+    "id": "hist_057",
+    "timestamp": "2026-04-23T16:13:32+08:00",
+    "type": "device_control",
+    "device": "客厅空调",
+    "device_action": "adjust",
+    "params": {
+      "temperature": 26
+    },
+    "accepted": false,
+    "source": "seed_demo_history",
+    "note": "早晨自动调温"
+  },
+  {
+    "id": "hist_058",
+    "timestamp": "2026-04-23T13:13:32+08:00",
+    "type": "scene_switch",
+    "device": "",
+    "device_action": "",
+    "params": {
+      "scene": "工作模式"
+    },
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "工作日进入办公状态"
+  },
+  {
+    "id": "hist_059",
+    "timestamp": "2026-04-23T10:13:32+08:00",
+    "type": "device_control",
+    "device": "书房台灯",
+    "device_action": "adjust",
+    "params": {
+      "brightness": 70
+    },
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "夜间阅读"
+  },
+  {
+    "id": "hist_060",
+    "timestamp": "2026-04-23T07:13:32+08:00",
+    "type": "device_control",
+    "device": "客厅电视",
+    "device_action": "off",
+    "params": {},
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "睡前关闭影音设备"
+  },
+  {
+    "id": "hist_061",
+    "timestamp": "2026-04-23T04:13:32+08:00",
+    "type": "scene_switch",
+    "device": "",
+    "device_action": "",
+    "params": {
+      "scene": "睡眠模式"
+    },
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "睡前例行动作"
+  },
+  {
+    "id": "hist_062",
+    "timestamp": "2026-04-23T01:13:32+08:00",
+    "type": "device_control",
+    "device": "厨房操作台灯",
+    "device_action": "on",
+    "params": {},
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "晚餐备餐"
+  },
+  {
+    "id": "hist_063",
+    "timestamp": "2026-04-22T22:13:32+08:00",
+    "type": "device_control",
+    "device": "主卧空调",
+    "device_action": "adjust",
+    "params": {
+      "temperature": 25
+    },
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "卧室睡眠温度"
+  },
+  {
+    "id": "hist_064",
+    "timestamp": "2026-04-22T19:13:32+08:00",
+    "type": "scene_switch",
+    "device": "",
+    "device_action": "",
+    "params": {
+      "scene": "离家模式"
+    },
+    "accepted": false,
+    "source": "seed_demo_history",
+    "note": "离家节能"
+  },
+  {
+    "id": "hist_065",
+    "timestamp": "2026-04-22T16:13:32+08:00",
+    "type": "device_control",
+    "device": "客厅空调",
+    "device_action": "adjust",
+    "params": {
+      "temperature": 26
+    },
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "早晨自动调温"
+  },
+  {
+    "id": "hist_066",
+    "timestamp": "2026-04-22T13:13:32+08:00",
+    "type": "scene_switch",
+    "device": "",
+    "device_action": "",
+    "params": {
+      "scene": "工作模式"
+    },
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "工作日进入办公状态"
+  },
+  {
+    "id": "hist_067",
+    "timestamp": "2026-04-22T10:13:32+08:00",
+    "type": "device_control",
+    "device": "书房台灯",
+    "device_action": "adjust",
+    "params": {
+      "brightness": 70
+    },
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "夜间阅读"
+  },
+  {
+    "id": "hist_068",
+    "timestamp": "2026-04-22T07:13:32+08:00",
+    "type": "device_control",
+    "device": "客厅电视",
+    "device_action": "off",
+    "params": {},
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "睡前关闭影音设备"
+  },
+  {
+    "id": "hist_069",
+    "timestamp": "2026-04-22T04:13:32+08:00",
+    "type": "scene_switch",
+    "device": "",
+    "device_action": "",
+    "params": {
+      "scene": "睡眠模式"
+    },
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "睡前例行动作"
+  },
+  {
+    "id": "hist_070",
+    "timestamp": "2026-04-22T01:13:32+08:00",
+    "type": "device_control",
+    "device": "厨房操作台灯",
+    "device_action": "on",
+    "params": {},
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "晚餐备餐"
+  },
+  {
+    "id": "hist_071",
+    "timestamp": "2026-04-21T22:13:32+08:00",
+    "type": "device_control",
+    "device": "主卧空调",
+    "device_action": "adjust",
+    "params": {
+      "temperature": 25
+    },
+    "accepted": false,
+    "source": "seed_demo_history",
+    "note": "卧室睡眠温度"
+  },
+  {
+    "id": "hist_072",
+    "timestamp": "2026-04-21T19:13:32+08:00",
+    "type": "scene_switch",
+    "device": "",
+    "device_action": "",
+    "params": {
+      "scene": "离家模式"
+    },
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "离家节能"
+  },
+  {
+    "id": "hist_073",
+    "timestamp": "2026-04-21T16:13:32+08:00",
+    "type": "device_control",
+    "device": "客厅空调",
+    "device_action": "adjust",
+    "params": {
+      "temperature": 26
+    },
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "早晨自动调温"
+  },
+  {
+    "id": "hist_074",
+    "timestamp": "2026-04-21T13:13:32+08:00",
+    "type": "scene_switch",
+    "device": "",
+    "device_action": "",
+    "params": {
+      "scene": "工作模式"
+    },
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "工作日进入办公状态"
+  },
+  {
+    "id": "hist_075",
+    "timestamp": "2026-04-21T10:13:32+08:00",
+    "type": "device_control",
+    "device": "书房台灯",
+    "device_action": "adjust",
+    "params": {
+      "brightness": 70
+    },
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "夜间阅读"
+  },
+  {
+    "id": "hist_076",
+    "timestamp": "2026-04-21T07:13:32+08:00",
+    "type": "device_control",
+    "device": "客厅电视",
+    "device_action": "off",
+    "params": {},
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "睡前关闭影音设备"
+  },
+  {
+    "id": "hist_077",
+    "timestamp": "2026-04-21T04:13:32+08:00",
+    "type": "scene_switch",
+    "device": "",
+    "device_action": "",
+    "params": {
+      "scene": "睡眠模式"
+    },
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "睡前例行动作"
+  },
+  {
+    "id": "hist_078",
+    "timestamp": "2026-04-21T01:13:32+08:00",
+    "type": "device_control",
+    "device": "厨房操作台灯",
+    "device_action": "on",
+    "params": {},
+    "accepted": false,
+    "source": "seed_demo_history",
+    "note": "晚餐备餐"
+  },
+  {
+    "id": "hist_079",
+    "timestamp": "2026-04-20T22:13:32+08:00",
+    "type": "device_control",
+    "device": "主卧空调",
+    "device_action": "adjust",
+    "params": {
+      "temperature": 25
+    },
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "卧室睡眠温度"
+  },
+  {
+    "id": "hist_080",
+    "timestamp": "2026-04-20T19:13:32+08:00",
+    "type": "scene_switch",
+    "device": "",
+    "device_action": "",
+    "params": {
+      "scene": "离家模式"
+    },
+    "accepted": true,
+    "source": "seed_demo_history",
+    "note": "离家节能"
+  },
+  {
+    "id": "inventory_snapshot",
+    "timestamp": "2026-04-30T16:13:32+08:00",
+    "type": "inventory",
+    "device_count": 100,
+    "area_count": 10,
+    "source": "seed_demo_history"
+  }
+]

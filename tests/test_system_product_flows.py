@@ -16,6 +16,7 @@ DATA_FILES = [
     REPO_ROOT / "data" / "session_state.json",
     REPO_ROOT / "data" / "preferences.json",
     REPO_ROOT / "data" / "tap_rules.json",
+    REPO_ROOT / "data" / "scenes.json",
     REPO_ROOT / "data" / "device-registry.json",
 ]
 
@@ -135,6 +136,7 @@ class WebApiSystemTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         os.environ["HOMEMIND_STORAGE_KEY"] = "test-storage-key"
+        os.environ["LLM_BACKEND"] = "mock"
         from web import server as web_server
 
         cls.web_server = web_server
@@ -162,6 +164,7 @@ class WebApiSystemTests(unittest.TestCase):
         self._seed_floor_plan_mapping()
         self.web_server.agent.tap_rule_store.rules = []
         self.web_server.agent.tap_rule_store.save()
+        self.web_server.agent.scene_store.load()
         self.web_server.agent.last_cloud_context = {}
         self.web_server.agent.last_route_info = {}
         self.web_server.agent.session_store.data = self.web_server.agent.session_store._default_data()
@@ -346,6 +349,31 @@ class WebApiSystemTests(unittest.TestCase):
                 payload = response.get_json()
                 self.assertEqual(payload["status"], "unsupported")
                 self.assertEqual(payload["target"], expected_target)
+
+    def test_query_security_sensitive_door_lock_always_clarifies(self):
+        for query in ["\u6253\u5f00\u95e8\u9501", "\u9501\u95e8"]:
+            with self.subTest(query=query):
+                response = self.client.post("/api/query", json={"query": query})
+
+                self.assertEqual(response.status_code, 200)
+                payload = response.get_json()
+                self.assertEqual(payload["status"], "clarification")
+                self.assertEqual(payload["response_type"], "clarification")
+                self.assertIn("\u5bb6\u5ead\u5b89\u5168", payload.get("response") or payload.get("question", ""))
+                self.assertIn(payload["route_reason"], {"safety_sensitive_target", "safety_sensitive_door_action"})
+
+    def test_query_security_clarification_preempts_pending_generic_clarification(self):
+        first = self.client.post("/api/query", json={"query": "\u6253\u5f00"})
+        second = self.client.post("/api/query", json={"query": "\u6253\u5f00\u5927\u95e8\u95e8\u9501"})
+
+        self.assertEqual(first.status_code, 200)
+        self.assertEqual(second.status_code, 200)
+        payload = second.get_json()
+        self.assertEqual(payload["status"], "clarification")
+        self.assertEqual(payload["route_reason"], "safety_sensitive_target")
+        self.assertIn("\u95e8\u9501", payload.get("response") or payload.get("question", ""))
+        self.assertNotIn("\u7a97\u6237", payload.get("response") or payload.get("question", ""))
+        self.assertNotIn("\u97f3\u54cd", payload.get("response") or payload.get("question", ""))
 
     def test_query_requires_device_in_active_floor_plan_mapping(self):
         mapping = json.loads(self.web_server.FLOOR_PLAN_DEVICE_STORE_PATH.read_text(encoding="utf-8"))
@@ -588,6 +616,42 @@ class WebApiSystemTests(unittest.TestCase):
         self.assertEqual(created.status_code, 400)
         self.assertEqual(updated.status_code, 400)
 
+    def test_scene_from_nl_returns_editable_draft_before_save(self):
+        text = "\u65b0\u5efa\u6df1\u591c\u9605\u8bfb\u6a21\u5f0f\uff0c\u706f\u8c03\u523060%\uff0c\u5173\u95ed\u7535\u89c6"
+
+        draft_response = self.client.post("/api/scenes/from-nl", json={"text": text})
+        listed_before = self.client.get("/api/scenes").get_json()["scenes"]
+        save_response = self.client.post("/api/scenes/from-nl", json={"text": text, "save": True})
+
+        self.assertEqual(draft_response.status_code, 200)
+        draft = draft_response.get_json()
+        self.assertEqual(draft["response_type"], "scene_draft")
+        self.assertEqual(draft["name"], "\u6df1\u591c\u9605\u8bfb\u6a21\u5f0f")
+        self.assertTrue(draft["validation"]["valid"])
+        self.assertIn("\u706f\u5149", draft["config"])
+        self.assertNotIn("\u6df1\u591c\u9605\u8bfb\u6a21\u5f0f", listed_before)
+        self.assertEqual(save_response.status_code, 200)
+        self.assertEqual(save_response.get_json()["response_type"], "scene_saved")
+        self.assertIn("\u6df1\u591c\u9605\u8bfb\u6a21\u5f0f", self.client.get("/api/scenes").get_json()["scenes"])
+
+    def test_rule_from_nl_returns_draft_and_saves_only_when_requested(self):
+        text = "\u4e94\u4e00\u5173\u95ed\u7a7a\u8c03"
+
+        draft_response = self.client.post("/api/rules/from-nl", json={"text": text})
+        rules_before = self.web_server.agent.tap_rule_store.list_rules()
+        save_response = self.client.post("/api/rules/from-nl", json={"text": text, "save": True})
+
+        self.assertEqual(draft_response.status_code, 200)
+        draft = draft_response.get_json()
+        self.assertEqual(draft["response_type"], "tap_rule_draft")
+        self.assertTrue(draft["validation"]["valid"])
+        self.assertEqual(draft["rule"]["trigger"], {"type": "holiday", "name": "\u4e94\u4e00", "month": 5, "day": 1})
+        self.assertEqual(draft["rule"]["action"]["device_action"], "off")
+        self.assertEqual(rules_before, [])
+        self.assertEqual(save_response.status_code, 200)
+        self.assertEqual(save_response.get_json()["response_type"], "tap_rule_saved")
+        self.assertEqual(len(self.web_server.agent.tap_rule_store.list_rules()), 1)
+
     def test_voice_feedback_requires_source_text(self):
         response = self.client.post("/api/voice/feedback", json={"feedback": "accepted"})
 
@@ -753,6 +817,27 @@ class WebApiSystemTests(unittest.TestCase):
         rules = self.web_server.agent.tap_rule_store.list_rules()
         self.assertEqual(len(rules), 1)
         self.assertEqual(rules[0]["trigger"]["at"], "19:00")
+
+    def test_change_feedback_revises_automation_proposal_for_next_round(self):
+        proposal = self.client.post("/api/query", json={"query": "\u665a\u4e0a7:00\u6253\u5f00\u7a7a\u8c03"}).get_json()
+
+        response = self.client.post(
+            "/api/interaction/feedback",
+            json={
+                "message_id": proposal["message_id"],
+                "target_type": "automation_proposal",
+                "feedback_type": "change",
+                "correction": "\u6539\u6210\u4e94\u4e00\u5173\u95ed\u7a7a\u8c03",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.get_json()
+        self.assertEqual(payload["response_type"], "automation_proposal")
+        revised = payload["proposal"]["rule_preview"]
+        self.assertEqual(revised["trigger"], {"type": "holiday", "name": "\u4e94\u4e00", "month": 5, "day": 1})
+        self.assertEqual(revised["action"]["device_action"], "off")
+        self.assertEqual(payload["proposal"]["feedback_target"]["target_type"], "automation_proposal")
 
     def test_change_feedback_records_correction_mapping(self):
         response = self.client.post(

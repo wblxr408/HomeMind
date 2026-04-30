@@ -15,6 +15,8 @@ import logging
 import re
 from typing import Any, Dict, List, Optional
 
+from core.safety import detect_safety_sensitive_request
+
 from .cloud_client import CloudClient
 
 logger = logging.getLogger(__name__)
@@ -77,6 +79,7 @@ AMBIGUOUS_PATTERNS = (
 AUTOMATION_TIME_PATTERNS = (
     r"\d{1,2}:\d{2}",
     r"(早上|上午|中午|下午|晚上|今晚|明早|明天早上)?\s*\d{1,2}点(?:半|\d{1,2}分)?",
+    r"(节假日|元旦|春节|清明|五一|劳动节|端午|中秋|国庆|圣诞)",
 )
 
 ACTION_HINTS = (
@@ -175,6 +178,24 @@ class LLMDecider:
 
     def is_cloud_available(self) -> bool:
         return self.backend == "openai" and self._cloud_client is not None and self._cloud_client.is_available()
+
+    def complete_json(self, prompt: str, max_tokens: int = 512) -> Dict[str, Any]:
+        if not self.is_cloud_available():
+            return {}
+        try:
+            text = self._cloud_client.complete(prompt, max_tokens=max_tokens)
+        except Exception as exc:
+            logger.warning("Cloud JSON completion failed: %s", exc)
+            return {}
+        try:
+            start = text.find("{")
+            end = text.rfind("}") + 1
+            if start != -1 and end > start:
+                parsed = json.loads(text[start:end])
+                return parsed if isinstance(parsed, dict) else {}
+        except json.JSONDecodeError:
+            logger.warning("Cloud JSON parse failed: %s", text[:160])
+        return {}
 
     def plan_intent(
         self,
@@ -316,6 +337,19 @@ class LLMDecider:
         route_text = str(normalized_query or raw_text).strip()
         combined_text = " ".join(part for part in [raw_text, route_text] if part).strip()
         lowered = combined_text.lower()
+
+        safety = detect_safety_sensitive_request(raw_text, normalized_query=route_text)
+        if safety:
+            return {
+                "intent_type": "clarification_needed",
+                "route": "clarify",
+                "reply_message": safety["message"],
+                "normalized_goal": route_text,
+                "requires_candidates": False,
+                "requires_automation": False,
+                "decision_confidence": 1.0,
+                "reasoning": safety["reason"],
+            }
 
         chat_reply = self._match_chat_reply(combined_text, lowered)
         if chat_reply:

@@ -5,6 +5,8 @@ from __future__ import annotations
 import re
 from typing import Any, Dict, List, Optional
 
+from core.safety import detect_safety_sensitive_request
+
 
 class InferenceRouter:
     """Route requests based on intent type, score, and cloud availability."""
@@ -33,6 +35,7 @@ class InferenceRouter:
         r"\d{1,2}:\d{2}",
         r"\d{1,2}点(?:半|\d{1,2}分)?",
         r"(早上|上午|中午|下午|晚上|今晚|明早|明天早上)",
+        r"(节假日|元旦|春节|清明|五一|劳动节|端午|中秋|国庆|圣诞)",
     ]
     SCENE_SHORTCUTS = {
         "早安": "早安模式",
@@ -102,6 +105,8 @@ class InferenceRouter:
         haystack = f"{raw_text} {route_text}".strip()
         if not haystack:
             return None
+        if detect_safety_sensitive_request(raw_text, normalized_query=route_text):
+            return None
 
         for target in sorted(self.UNSUPPORTED_TARGETS, key=len, reverse=True):
             if target not in haystack:
@@ -125,9 +130,31 @@ class InferenceRouter:
             }
         return None
 
+    def detect_safety_sensitive_request(self, query: str, normalized_query: str = "") -> Optional[Dict[str, Any]]:
+        detected = detect_safety_sensitive_request(query, normalized_query=normalized_query)
+        if not detected:
+            return None
+        message = detected["message"]
+        return {
+            "intent_type": "clarification_needed",
+            "route": "clarify",
+            "reason": detected["reason"],
+            "target": detected["target"],
+            "message": message,
+            "reply_message": message,
+            "top_candidates": [],
+            "top_score": 0.0,
+            "requires_execution": False,
+            "requires_clarification": True,
+            "requires_automation": False,
+        }
+
     def classify_intent(self, query: str, normalized_query: str = "") -> Dict[str, Any]:
         raw_text = str(query or "").strip()
         route_text = self.normalize_intent_text(" ".join(part for part in [raw_text, normalized_query] if part).strip())
+        safety = self.detect_safety_sensitive_request(raw_text, normalized_query=route_text)
+        if safety:
+            return safety
         unsupported = self.detect_unsupported_request(raw_text, normalized_query=route_text)
         if unsupported:
             return unsupported
@@ -192,7 +219,7 @@ class InferenceRouter:
     ) -> Dict[str, Any]:
         route_query = self.normalize_intent_text(" ".join(part for part in [str(query or "").strip(), str(normalized_query or "").strip()] if part).strip())
         base_intent = self.classify_intent(query, normalized_query=route_query)
-        if base_intent["route"] in {"reply", "automation", "unsupported"}:
+        if base_intent["route"] in {"reply", "automation", "unsupported", "clarify"}:
             return base_intent
 
         if not ranked_candidates:

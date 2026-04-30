@@ -40,6 +40,14 @@ class LLMIntentPlanningTests(unittest.TestCase):
         self.assertTrue(result["requires_automation"])
 
 
+    def test_door_lock_is_always_planned_as_clarification(self):
+        result = self.llm.plan_intent("\u6253\u5f00\u95e8\u9501")
+
+        self.assertEqual(result["intent_type"], "clarification_needed")
+        self.assertFalse(result["requires_candidates"])
+        self.assertIn("\u5bb6\u5ead\u5b89\u5168", result["reply_message"])
+
+
 class RouterHelperTests(unittest.TestCase):
     def setUp(self):
         self.router = InferenceRouter()
@@ -49,6 +57,25 @@ class RouterHelperTests(unittest.TestCase):
         self.assertIsNotNone(result)
         self.assertEqual(result["route"], "unsupported")
         self.assertEqual(result["target"], "扫地机器人")
+
+    def test_security_sensitive_target_routes_to_clarification_not_unsupported(self):
+        unsupported = self.router.detect_unsupported_request("\u6253\u5f00\u95e8\u9501")
+        result = self.router.classify_intent("\u6253\u5f00\u95e8\u9501")
+
+        self.assertIsNone(unsupported)
+        self.assertEqual(result["route"], "clarify")
+        self.assertEqual(result["intent_type"], "clarification_needed")
+        self.assertEqual(result["target"], "\u95e8\u9501")
+
+    def test_lock_the_door_phrase_routes_to_clarification(self):
+        result = self.router.decide_route(
+            "\u9501\u95e8",
+            [{"action": "\u5173\u95ed\u706f\u5149", "final_score": 0.99}],
+            cloud_available=True,
+        )
+
+        self.assertEqual(result["route"], "clarify")
+        self.assertEqual(result["reason"], "safety_sensitive_door_action")
 
     def test_mid_score_routes_cloud_when_query_is_not_explicit(self):
         ranked = [{"action": "打开空调", "final_score": 0.70}]

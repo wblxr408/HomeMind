@@ -766,12 +766,195 @@ class HomeMindWebAgent:
             record.update(extra)
         return self._register_interaction(record)
 
-    def _build_automation_proposal(self, raw_text: str, normalized_text: str) -> dict | None:
-        rule = self.nl_to_tap.parse(raw_text) or self.nl_to_tap.parse(normalized_text or raw_text)
+    def _cloud_json_draft(self, prompt: str, max_tokens: int = 512) -> dict:
+        if not self.llm or not getattr(self.llm, "is_cloud_available", lambda: False)():
+            return {}
+        return self.llm.complete_json(prompt, max_tokens=max_tokens)
+
+    def _available_device_prompt(self) -> str:
+        floor_devices = [
+            {
+                "id": item.get("id") or item.get("entity_id", ""),
+                "name": item.get("name", ""),
+                "type": item.get("type", ""),
+                "area": item.get("area", ""),
+                "areaName": item.get("areaName", ""),
+            }
+            for item in self._floor_plan_devices()
+        ]
+        registry = [
+            {
+                "id": item.get("id", ""),
+                "name": item.get("name", ""),
+                "type": item.get("type", ""),
+                "area": item.get("area", ""),
+                "areaName": item.get("areaName", ""),
+            }
+            for item in self._device_registry()
+        ]
+        return json.dumps({"floor_plan_devices": floor_devices, "registered_devices": registry}, ensure_ascii=False)
+
+    def _normalize_scene_config(self, config: dict) -> dict:
+        normalized = {}
+        if not isinstance(config, dict):
+            return normalized
+        for device, command in config.items():
+            device_name = str(device or "").strip()
+            if not device_name or not isinstance(command, dict):
+                continue
+            action = str(command.get("action") or command.get("device_action") or "").strip()
+            if action not in {"on", "off", "adjust", "open", "close"}:
+                continue
+            params = command.get("params", {})
+            normalized[device_name] = {"action": action, "params": dict(params or {}) if isinstance(params, dict) else {}}
+        return normalized
+
+    def _validate_scene_config(self, config: dict) -> dict:
+        errors = []
+        warnings = []
+        valid_actions = {}
+        for device, command in self._normalize_scene_config(config).items():
+            device_action = command.get("action", "")
+            validation = self._validate_spatial_device_command(
+                {
+                    "action": "\u8bbe\u5907\u63a7\u5236",
+                    "device": device,
+                    "device_action": device_action,
+                    "params": command.get("params", {}),
+                },
+                text=device,
+            )
+            if validation.get("valid"):
+                valid_actions[device] = command
+            else:
+                warnings.append(validation.get("message") or f"{device} 未通过空间设备校验")
+        if not valid_actions:
+            errors.append("没有可执行的场景动作")
+        return {"valid": not errors, "errors": errors, "warnings": warnings, "config": valid_actions}
+
+    def _validate_tap_rule_draft(self, rule: dict) -> dict:
+        errors = []
+        if not isinstance(rule, dict):
+            return {"valid": False, "errors": ["rule must be an object"], "warnings": []}
+        trigger = rule.get("trigger", {})
+        action = rule.get("action", {})
+        if not isinstance(trigger, dict) or not trigger.get("type"):
+            errors.append("缺少触发条件")
+        if not isinstance(action, dict) or not action.get("type"):
+            errors.append("缺少执行动作")
+        warnings = []
+        action_type = str(action.get("type") or "")
+        if action_type not in {"device_control", "scene_switch"}:
+            errors.append("unsupported action type")
+        if action_type == "device_control":
+            if not action.get("device") or not action.get("device_action"):
+                errors.append("device_control requires device and device_action")
+            command = {
+                "action": "\u8bbe\u5907\u63a7\u5236",
+                "device": action.get("device", ""),
+                "device_action": action.get("device_action", ""),
+                "params": action.get("params", {}),
+            }
+            spatial = self._validate_spatial_device_command(command, text=str(action.get("device", "")))
+            if not spatial.get("valid"):
+                warnings.append(spatial.get("message") or "设备空间校验未通过")
+        elif action_type == "scene_switch":
+            scene = str(action.get("scene") or "").strip()
+            if not scene:
+                errors.append("scene_switch requires scene")
+            elif self.scene_store.get_scene(scene) is None:
+                warnings.append(f"scene {scene} has not been created")
+        return {"valid": not errors, "errors": errors, "warnings": warnings}
+
+    def _cloud_scene_draft(self, text: str) -> dict:
+        prompt = (
+            "你是智能家居低代码场景配置器。根据用户描述生成 JSON，且只能引用可用设备名称或语义设备名。\n"
+            f"可用设备: {self._available_device_prompt()}\n"
+            f"用户描述: {text}\n"
+            "只输出 JSON：{\"name\":\"场景名\",\"config\":{\"设备名\":{\"action\":\"on/off/adjust/open/close\",\"params\":{}}}}"
+        )
+        parsed = self._cloud_json_draft(prompt, max_tokens=700)
+        if not parsed:
+            return {}
+        return {
+            "name": str(parsed.get("name") or "").strip(),
+            "config": self._normalize_scene_config(parsed.get("config", {}) or {}),
+            "source": "cloud",
+        }
+
+    def _build_scene_draft(self, text: str) -> dict | None:
+        draft = self._cloud_scene_draft(text)
+        if not draft or not draft.get("config"):
+            parsed = self.nl_to_tap.parse_scene_creation(text)
+            if parsed:
+                draft = {
+                    "name": parsed.get("name", ""),
+                    "config": self._normalize_scene_config(parsed.get("config", {}) or {}),
+                    "source": "local",
+                }
+        if not draft or not draft.get("config"):
+            return None
+        validation = self._validate_scene_config(draft["config"])
+        draft["config"] = validation["config"] or draft["config"]
+        draft["validation"] = validation
+        if not draft.get("name"):
+            draft["name"] = str(text or "未命名场景")[:20]
+        return draft
+
+    def _cloud_tap_rule_draft(self, text: str, previous_rule: dict | None = None) -> dict:
+        prompt = (
+            "你是智能家居 TAP 自动化规则生成器。根据用户描述生成可校验规则，必要时结合上一轮规则修正。\n"
+            f"可用设备: {self._available_device_prompt()}\n"
+            f"上一轮规则: {json.dumps(previous_rule or {}, ensure_ascii=False)}\n"
+            f"用户描述: {text}\n"
+            "只输出 JSON：{\"name\":\"规则名\",\"trigger\":{\"type\":\"time|holiday|day_of_week|temperature|humidity|occupancy\",\"at\":\"HH:MM\",\"name\":\"\",\"month\":1,\"day\":1},\"conditions\":[],\"action\":{\"type\":\"device_control|scene_switch\",\"device\":\"\",\"device_action\":\"on/off/adjust/open/close\",\"params\":{},\"scene\":\"\"},\"priority\":50}"
+        )
+        parsed = self._cloud_json_draft(prompt, max_tokens=700)
+        if parsed:
+            parsed["_source"] = "cloud"
+        return parsed if isinstance(parsed, dict) else {}
+
+    def _draft_tap_rule(self, raw_text: str, normalized_text: str = "", previous_rule: dict | None = None) -> dict | None:
+        text = " ".join(part for part in [raw_text, normalized_text] if part).strip()
+        rule = self._cloud_tap_rule_draft(text, previous_rule=previous_rule)
+        if not rule:
+            if previous_rule and normalized_text:
+                rule = self.nl_to_tap.parse(normalized_text)
+            if not rule:
+                rule = self.nl_to_tap.parse(raw_text) or self.nl_to_tap.parse(normalized_text or raw_text)
+            if rule:
+                rule["_source"] = "local"
+        if not rule and previous_rule:
+            trigger = self.nl_to_tap.extract_trigger(text)
+            if trigger:
+                rule = {
+                    "name": previous_rule.get("name", raw_text[:40]),
+                    "trigger": trigger,
+                    "conditions": [],
+                    "action": dict(previous_rule.get("action", {}) or {}),
+                    "priority": previous_rule.get("priority", 50),
+                    "_source": "local",
+                }
+        if not isinstance(rule, dict):
+            return None
+        return {
+            "name": rule.get("name", raw_text[:40]),
+            "trigger": dict(rule.get("trigger", {}) or {}),
+            "conditions": list(rule.get("conditions", []) or []),
+            "action": dict(rule.get("action", {}) or {}),
+            "priority": int(rule.get("priority", 50) or 50),
+            "source": rule.get("_source", "cloud" if self.llm and self.llm.is_cloud_available() else "local"),
+        }
+
+    def _build_automation_proposal(self, raw_text: str, normalized_text: str, previous_rule: dict | None = None) -> dict | None:
+        rule = self._draft_tap_rule(raw_text, normalized_text, previous_rule=previous_rule)
         if not rule:
             return None
         trigger = dict(rule.get("trigger", {}) or {})
         action = dict(rule.get("action", {}) or {})
+        validation = self._validate_tap_rule_draft(rule)
+        if not validation["valid"]:
+            return None
         summary = self._summarize_automation_rule(trigger, action)
         proposal_id = self._next_message_id("proposal")
         rule_preview = {
@@ -779,6 +962,7 @@ class HomeMindWebAgent:
             "trigger": trigger,
             "action": action,
             "priority": rule.get("priority", 50),
+            "validation": validation,
         }
         message_id = self._next_message_id("automation")
         interaction = self._build_message_metadata(
@@ -795,6 +979,7 @@ class HomeMindWebAgent:
             "summary": summary,
             "rule_preview": rule_preview,
             "confirm_actions": ["accept", "change", "reject"],
+            "feedback_target": {"message_id": interaction["message_id"], "target_type": "automation_proposal"},
         }
         self.session_store.set_pending_confirmation(
             "automation_proposal",
@@ -922,6 +1107,75 @@ class HomeMindWebAgent:
         if not corrected:
             return None
 
+        cloud_command = self._cloud_json_draft(
+            (
+                "你是智能家居多轮纠正解析器。结合上一轮命令和用户纠正，输出修正后的结构化命令。\n"
+                f"可用设备: {self._available_device_prompt()}\n"
+                f"上一轮命令: {json.dumps(decision_snapshot or {}, ensure_ascii=False)}\n"
+                f"用户纠正: {corrected}\n"
+                "只输出 JSON：{\"action\":\"设备控制|场景切换\",\"device\":\"\",\"scene\":\"\",\"device_action\":\"on/off/adjust/open/close\",\"params\":{},\"confidence\":0.0,\"reasoning\":\"\"}"
+            ),
+            max_tokens=500,
+        )
+        cloud_action = str(cloud_command.get("action") or "").strip()
+        if cloud_action == "device_control":
+            cloud_command["action"] = "\u8bbe\u5907\u63a7\u5236"
+        if cloud_command.get("action") in {"\u8bbe\u5907\u63a7\u5236", "设备控制"}:
+            device = str(cloud_command.get("device") or "").strip()
+            device_action = str(cloud_command.get("device_action") or "").strip()
+            if device and device_action:
+                command = {
+                    "action": "\u8bbe\u5907\u63a7\u5236",
+                    "device": device,
+                    "scene": "",
+                    "device_action": device_action,
+                    "params": dict(cloud_command.get("params", {}) or {}),
+                    "confidence": float(cloud_command.get("confidence", 0.95) or 0.95),
+                    "reasoning": str(cloud_command.get("reasoning") or "cloud corrected interaction feedback"),
+                }
+                executed = self._execute_device_with_spatial_gate(command, text=corrected, route="feedback_change_cloud")
+                if executed.get("status") == "success":
+                    interaction = self._build_message_metadata("execution", corrected, corrected, decision_snapshot=command)
+                    return {
+                        "status": "success",
+                        "response_type": "execution_result",
+                        "message_id": interaction["message_id"],
+                        "action": executed.get("action", f"{device}_{device_action}"),
+                        "response": executed.get("response", ""),
+                        "confidence": command["confidence"],
+                        "route": "feedback_change_cloud",
+                        "route_reason": "cloud_corrected_previous_execution",
+                        "feedback_target": {"message_id": interaction["message_id"], "target_type": "execution"},
+                    }
+
+        if cloud_action in {"\u573a\u666f\u5207\u6362", "scene_switch"}:
+            scene = str(cloud_command.get("scene") or "").strip()
+            if scene:
+                executed = self._execute_scene_with_spatial_gate(scene, route="feedback_change_cloud")
+                if executed.get("status") == "success":
+                    command = {
+                        "action": "\u573a\u666f\u5207\u6362",
+                        "device": "",
+                        "scene": scene,
+                        "device_action": "",
+                        "params": {},
+                        "confidence": float(cloud_command.get("confidence", 0.95) or 0.95),
+                        "reasoning": str(cloud_command.get("reasoning") or "cloud corrected scene feedback"),
+                    }
+                    interaction = self._build_message_metadata("execution", corrected, corrected, decision_snapshot=command)
+                    return {
+                        "status": "success",
+                        "response_type": "execution_result",
+                        "message_id": interaction["message_id"],
+                        "action": "scene_switch",
+                        "scene": scene,
+                        "response": executed.get("response", ""),
+                        "confidence": command["confidence"],
+                        "route": "feedback_change_cloud",
+                        "route_reason": "cloud_corrected_previous_scene",
+                        "feedback_target": {"message_id": interaction["message_id"], "target_type": "execution"},
+                    }
+
         previous_action_type = str(decision_snapshot.get("action") or "").strip()
         previous_device = str(decision_snapshot.get("device") or "").strip()
         previous_device_action = str(decision_snapshot.get("device_action") or "").strip()
@@ -1044,7 +1298,8 @@ class HomeMindWebAgent:
                     target_type=target_type,
                 )
             if target_type == "automation_proposal" and corrected:
-                proposal = self._build_automation_proposal(original_input or corrected, corrected)
+                previous_rule = dict(interaction.get("rule_preview", {}) or decision_snapshot.get("rule", {}) or {})
+                proposal = self._build_automation_proposal(original_input or corrected, corrected, previous_rule=previous_rule)
                 if proposal:
                     return {
                         "status": "success",
@@ -1597,6 +1852,26 @@ class HomeMindWebAgent:
                 }})
                 socketio.emit("message", {"type": "agent_response", "data": payload})
                 return
+
+        if intent_info["route"] == "clarify":
+            message = intent_info.get("reply_message") or intent_info.get("message") or "请问你想执行哪个具体操作？"
+            self.session_store.update_clarification(message)
+            payload = {
+                "action": "clarification",
+                "result": message,
+                "status": "clarification",
+                "response_type": "clarification",
+                "query_id": query_id,
+                "route": intent_info["route"],
+                "route_reason": intent_info["reason"],
+                "target": intent_info.get("target", ""),
+            }
+            pipeline["steps"]["exec"] = {"status": "done", "result": payload}
+            socketio.emit("pipeline_update", {"type": "pipeline_step", "data": {
+                "query_id": query_id, "step": "exec", "data": pipeline["steps"]["exec"]
+            }})
+            socketio.emit("message", {"type": "agent_response", "data": payload})
+            return
 
         if intent_info["route"] == "unsupported":
             result = {
@@ -2496,6 +2771,20 @@ class HomeMindWebAgent:
                     "feedback_target": {"message_id": proposal["message_id"], "target_type": "automation_proposal"},
                 }
 
+        if intent_info["route"] == "clarify":
+            message = intent_info.get("reply_message") or intent_info.get("message") or "请问你想执行哪个具体操作？"
+            self.session_store.update_clarification(message)
+            return {
+                "status": "clarification",
+                "response_type": "clarification",
+                "question": message,
+                "response": message,
+                "route": intent_info["route"],
+                "route_reason": intent_info["reason"],
+                "target": intent_info.get("target", ""),
+                "normalized_query": normalized.to_dict(),
+            }
+
         if intent_info["route"] == "unsupported":
             return {
                 "status": "unsupported",
@@ -3085,6 +3374,22 @@ def _webagent_process_query(self: HomeMindWebAgent, query: str) -> dict:
     normalized = self.language_normalizer.normalize(query)
     query_for_ai = normalized.normalized or query
     self._record_query_context(query, query_for_ai)
+    safety = self.router.detect_safety_sensitive_request(query, normalized_query=query_for_ai)
+    if safety:
+        self.session_store.clear_pending_clarification()
+        self.session_store.clear_pending_confirmation()
+        message = safety.get("reply_message") or safety.get("message") or "这个请求涉及家庭安全设备，请先确认具体设备和安全状态。"
+        self.session_store.update_clarification(message)
+        return {
+            "status": "clarification",
+            "response_type": "clarification",
+            "question": message,
+            "response": message,
+            "route": "clarify",
+            "route_reason": safety.get("reason", "safety_sensitive_target"),
+            "target": safety.get("target", ""),
+            "normalized_query": normalized.to_dict(),
+        }
     automation_update = self._update_pending_automation_trigger(query, query_for_ai)
     if automation_update is not None:
         return {
@@ -3130,6 +3435,25 @@ def _webagent_process_user_input(self: HomeMindWebAgent, data: dict):
     query_id = f"q_{int(time.time() * 1000)}"
     print(f"[Agent] 收到用户输入: {user_text}")
     self.context.hour = datetime.now().hour
+
+    safety = self.router.detect_safety_sensitive_request(user_text, normalized_query=query_text)
+    if safety:
+        self.session_store.clear_pending_clarification()
+        self.session_store.clear_pending_confirmation()
+        message = safety.get("reply_message") or safety.get("message") or "这个请求涉及家庭安全设备，请先确认具体设备和安全状态。"
+        self.session_store.update_clarification(message)
+        socketio.emit("message", {
+            "type": "agent_clarification",
+            "data": {
+                "question": message,
+                "candidates": [],
+                "query_id": query_id,
+                "route": "clarify",
+                "route_reason": safety.get("reason", "safety_sensitive_target"),
+                "target": safety.get("target", ""),
+            },
+        })
+        return
 
     pipeline = {
         "query_id": query_id,
@@ -3413,11 +3737,33 @@ def create_scene_from_nl():
     """自然语言创建场景接口"""
     data = request.get_json(silent=True) or {}
     if agent:
-        parsed = agent.nl_to_tap.parse_scene_creation(data.get("text", ""))
-        if not parsed:
-            return jsonify({"status": "error", "error": "无法从自然语言解析场景"}), 400
-        scene = agent.scene_store.add_scene(parsed["name"], parsed["config"])
-        return jsonify({"status": "success", "name": parsed["name"], "scene": scene})
+        text = str(data.get("text", "")).strip()
+        if not text:
+            return jsonify({"status": "error", "error": "text is required"}), 400
+        draft = agent._build_scene_draft(text)
+        if not draft:
+            return jsonify({"status": "error", "error": "cannot parse scene draft"}), 400
+        if data.get("save"):
+            if not draft.get("validation", {}).get("valid"):
+                return jsonify({"status": "error", "error": "scene draft validation failed", "validation": draft.get("validation", {})}), 400
+            scene = agent.scene_store.add_scene(draft["name"], draft["config"])
+            return jsonify({
+                "status": "success",
+                "response_type": "scene_saved",
+                "name": draft["name"],
+                "scene": scene,
+                "config": scene,
+                "validation": draft.get("validation", {}),
+                "source": draft.get("source", "local"),
+            })
+        return jsonify({
+            "status": "success",
+            "response_type": "scene_draft",
+            "name": draft["name"],
+            "config": draft["config"],
+            "validation": draft.get("validation", {}),
+            "source": draft.get("source", "local"),
+        })
     return jsonify({"error": "Agent 未初始化"}), 500
 
 
@@ -3646,11 +3992,39 @@ def create_rule_from_nl():
     """自然语言创建 TAP 规则"""
     data = request.get_json(silent=True) or {}
     if agent:
-        rule_data = agent.nl_to_tap.parse(data.get("text", ""))
+        text = str(data.get("text", "")).strip()
+        if not text:
+            return jsonify({"status": "error", "error": "text is required"}), 400
+        rule_data = agent._draft_tap_rule(text, text)
         if not rule_data:
-            return jsonify({"status": "error", "error": "无法从自然语言解析 TAP 规则"}), 400
-        rule = agent.tap_rule_store.add_rule(rule_data)
-        return jsonify({"status": "success", "rule": rule})
+            return jsonify({"status": "error", "error": "cannot parse TAP rule draft"}), 400
+        validation = agent._validate_tap_rule_draft(rule_data)
+        rule_payload = {
+            "name": rule_data.get("name", text[:40]),
+            "enabled": True,
+            "trigger": dict(rule_data.get("trigger", {}) or {}),
+            "conditions": list(rule_data.get("conditions", []) or []),
+            "action": dict(rule_data.get("action", {}) or {}),
+            "priority": int(rule_data.get("priority", 50)),
+        }
+        if data.get("save"):
+            if not validation.get("valid"):
+                return jsonify({"status": "error", "error": "rule draft validation failed", "validation": validation}), 400
+            rule = agent.tap_rule_store.add_rule(rule_payload)
+            return jsonify({
+                "status": "success",
+                "response_type": "tap_rule_saved",
+                "rule": rule,
+                "validation": validation,
+                "source": rule_data.get("source", "local"),
+            })
+        return jsonify({
+            "status": "success",
+            "response_type": "tap_rule_draft",
+            "rule": rule_payload,
+            "validation": validation,
+            "source": rule_data.get("source", "local"),
+        })
     return jsonify({"error": "Agent 未初始化"}), 500
 
 

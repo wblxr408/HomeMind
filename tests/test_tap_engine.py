@@ -23,7 +23,11 @@ DATA_FILES = [
 def _cleanup():
     for path in DATA_FILES:
         if path.exists():
-            path.unlink()
+            try:
+                path.unlink()
+            except PermissionError:
+                if path.name != "kb_backup.enc":
+                    raise
 
 
 class TAPEngineTests(unittest.TestCase):

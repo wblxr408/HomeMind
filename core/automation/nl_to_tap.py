@@ -66,6 +66,8 @@ class NLToTAPConverter:
         text = self._normalize_text(nl_text)
         match = re.search(r"(?:叫|命名为|名称为)\s*['\"]?([^'\"，。；\s]+模式)['\"]?", text)
         if not match:
+            match = re.search(r"(?:创建|新建)(?:一个)?(?:名为|叫)?\s*['\"]?([^'\"，。；\s]+模式)['\"]?", text)
+        if not match:
             return None
         scene_name = match.group(1).strip()
         config = {}
