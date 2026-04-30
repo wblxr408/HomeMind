@@ -130,6 +130,8 @@ class HomeMindAgent:
         if current_scene:
             self.context.current_scene = current_scene
             self.context.last_scene = SCENE_INDEX_MAP.get(current_scene, -1)
+        if self.kb and os.path.exists(os.path.join("data", "kb_backup.enc")):
+            self.kb.restore()
 
     def process(self, user_input: str) -> str:
         """
@@ -678,7 +680,7 @@ def run(argv: Optional[list[str]] = None):
     print()
 
     protocol_gateway = _init_protocol_gateway(args.mode)
-    init_agent(mode=args.mode, protocol_gateway=protocol_gateway)
+    init_agent(mode=args.mode, protocol_gateway=protocol_gateway, init_reason="main.run")
 
     print()
     print(f"  控制面板: http://{args.host}:{args.port}")

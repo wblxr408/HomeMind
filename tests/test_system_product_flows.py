@@ -775,26 +775,36 @@ class WebApiSystemTests(unittest.TestCase):
         self.assertEqual(payload["response_type"], "automation_proposal")
         self.assertEqual(payload["proposal"]["rule_preview"]["trigger"]["at"], "19:00")
 
+    def test_scene_switch_endpoint_updates_scene_and_devices(self):
+        response = self.client.post("/api/scenes/sleep/switch")
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.get_json()
+        self.assertEqual(payload["status"], "success")
+        self.assertEqual(payload["scene"], "sleep")
+        self.assertIn("\u7761\u7720\u6a21\u5f0f", payload["result"])
+        self.assertEqual(self.web_server.agent.session_store.get_current_scene(), "\u7761\u7720\u6a21\u5f0f")
+
     def test_query_may_day_command_returns_holiday_automation_proposal(self):
-        response = self.client.post("/api/query", json={"query": "五一的时候给我关掉空调"})
+        response = self.client.post("/api/query", json={"query": "\u4e94\u4e00\u7684\u65f6\u5019\u7ed9\u6211\u5173\u6389\u7a7a\u8c03"})
 
         self.assertEqual(response.status_code, 200)
         payload = response.get_json()
         self.assertEqual(payload["status"], "success")
         self.assertEqual(payload["response_type"], "automation_proposal")
-        self.assertEqual(payload["proposal"]["rule_preview"]["trigger"], {"type": "holiday", "name": "五一", "month": 5, "day": 1})
-        self.assertIn("五一当天", payload["response"])
-        self.assertIn("关闭空调", payload["response"])
+        self.assertEqual(payload["proposal"]["rule_preview"]["trigger"], {"type": "holiday", "name": "\u4e94\u4e00", "month": 5, "day": 1})
+        self.assertIn("\u4e94\u4e00\u5f53\u5929", payload["response"])
+        self.assertIn("\u5173\u95ed\u7a7a\u8c03", payload["response"])
 
     def test_followup_may_day_updates_pending_automation_trigger(self):
-        first = self.client.post("/api/query", json={"query": "晚上7:00给我关掉空调"}).get_json()
+        first = self.client.post("/api/query", json={"query": "\u665a\u4e0a7:00\u7ed9\u6211\u5173\u6389\u7a7a\u8c03"}).get_json()
         self.assertEqual(first["proposal"]["rule_preview"]["trigger"]["at"], "19:00")
 
-        second = self.client.post("/api/query", json={"query": "五一的时候"}).get_json()
+        second = self.client.post("/api/query", json={"query": "\u4e94\u4e00\u7684\u65f6\u5019"}).get_json()
 
         self.assertEqual(second["status"], "success")
         self.assertEqual(second["response_type"], "automation_proposal")
-        self.assertEqual(second["proposal"]["rule_preview"]["trigger"], {"type": "holiday", "name": "五一", "month": 5, "day": 1})
+        self.assertEqual(second["proposal"]["rule_preview"]["trigger"], {"type": "holiday", "name": "\u4e94\u4e00", "month": 5, "day": 1})
         self.assertEqual(second["proposal"]["rule_preview"]["action"]["device_action"], "off")
 
     def test_accepting_automation_proposal_creates_rule(self):
