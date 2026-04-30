@@ -20,6 +20,13 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 try:
+    from dotenv import load_dotenv
+
+    load_dotenv(REPO_ROOT / ".env")
+except ImportError:
+    pass
+
+try:
     import asyncio as _asyncio_probe
     getattr(_asyncio_probe, "iscoroutinefunction")
     ASYNCIO_AVAILABLE = True
@@ -257,6 +264,31 @@ def _safe_device_id(raw_id: str, fallback_name: str = "") -> str:
     return f"device_{int(time.time() * 1000)}"
 
 
+def _spatial_device_name(name: str, area_name: str = "") -> str:
+    name = str(name or "").strip()
+    area_name = str(area_name or "").strip()
+    generic_names = {
+        "\u706f",
+        "\u706f\u5149",
+        "\u7a7a\u8c03",
+        "\u7535\u89c6",
+        "\u97f3\u54cd",
+        "\u98ce\u6247",
+        "\u7a97\u6237",
+        "\u7a97\u5e18",
+        "\u70ed\u6c34\u5668",
+        "light",
+        "ac",
+        "tv",
+        "speaker",
+        "fan",
+        "window",
+    }
+    if area_name and name and name.lower() in generic_names and not name.startswith(area_name):
+        return f"{area_name}{name}"
+    return name
+
+
 def _default_device_state(device_type: str = "") -> dict:
     state = {"status": "关"}
     if device_type == "climate":
@@ -280,7 +312,15 @@ def _normalize_device_registry_item(item: dict) -> dict | None:
     if not name:
         name = device_id
     device_type = str(item.get("type") or "switch").strip() or "switch"
-    return {"id": device_id, "name": name, "type": device_type}
+    area = str(item.get("area") or item.get("room") or "").strip()
+    area_name = str(item.get("areaName") or item.get("roomName") or "").strip()
+    protocol = str(item.get("protocol") or "simulated").strip() or "simulated"
+    normalized = {"id": device_id, "name": name, "type": device_type, "protocol": protocol}
+    if area:
+        normalized["area"] = area
+    if area_name:
+        normalized["areaName"] = area_name
+    return normalized
 
 
 def _load_device_registry() -> list:
@@ -763,15 +803,70 @@ class HomeMindWebAgent:
         )
         return proposal
 
+    def _update_pending_automation_trigger(self, raw_text: str, normalized_text: str) -> dict | None:
+        pending = self.session_store.get_pending_confirmation()
+        if pending.get("action_type") != "automation_proposal":
+            return None
+        trigger = self.nl_to_tap.extract_trigger(" ".join(part for part in [raw_text, normalized_text] if part))
+        if not trigger:
+            return None
+
+        payload = dict(pending.get("payload", {}) or {})
+        rule_preview = dict(payload.get("rule_preview", {}) or {})
+        action = dict(rule_preview.get("action", {}) or {})
+        if not action:
+            return None
+
+        updated_rule = {
+            "name": rule_preview.get("name", raw_text[:40]),
+            "trigger": trigger,
+            "action": action,
+            "priority": rule_preview.get("priority", 50),
+        }
+        summary = self._summarize_automation_rule(trigger, action)
+        proposal_id = self._next_message_id("proposal")
+        message_id = self._next_message_id("automation")
+        interaction = self._build_message_metadata(
+            "automation_proposal",
+            raw_text,
+            normalized_text,
+            decision_snapshot={"rule": updated_rule},
+            extra={"proposal_id": proposal_id, "rule_preview": updated_rule},
+            message_id=message_id,
+        )
+        proposal = {
+            "message_id": interaction["message_id"],
+            "proposal_id": proposal_id,
+            "summary": summary,
+            "rule_preview": updated_rule,
+            "confirm_actions": ["accept", "change", "reject"],
+        }
+        self.session_store.set_pending_confirmation(
+            "automation_proposal",
+            proposal,
+            feedback_target={"message_id": interaction["message_id"], "target_type": "automation_proposal"},
+        )
+        return proposal
+
     def _summarize_automation_rule(self, trigger: dict, action: dict) -> str:
-        time_text = trigger.get("at", "--:--") if trigger.get("type") == "time" else "满足条件时"
+        trigger_type = trigger.get("type")
+        if trigger_type == "time":
+            trigger_text = f"每天 {trigger.get('at', '--:--')}"
+        elif trigger_type == "day_of_week":
+            days = set(int(day) for day in trigger.get("days", []))
+            trigger_text = "每周末" if days == {5, 6} else f"每周{','.join(str(day) for day in sorted(days))}"
+        elif trigger_type == "holiday":
+            trigger_text = f"{trigger.get('name') or trigger.get('pattern') or '节假日'}当天"
+        else:
+            trigger_text = "满足条件时"
         if action.get("type") == "scene_switch":
             action_text = f"切换到{action.get('scene', '指定场景')}"
         else:
             device = action.get("device", "设备")
             device_action = action.get("device_action", "执行动作")
-            action_text = f"{device}{device_action}"
-        return f"我理解成：每天 {time_text} {action_text}。要为你创建定时任务吗？"
+            action_label = {"on": "打开", "off": "关闭", "adjust": "调节", "open": "打开", "close": "关闭"}.get(device_action, device_action)
+            action_text = f"{action_label}{device}"
+        return f"我理解成：{trigger_text} {action_text}。要为你创建定时任务吗？"
 
     def _accept_automation_proposal(self, message_id: str, original_input: str, normalized_input: str) -> dict:
         pending = self.session_store.get_pending_confirmation()
@@ -815,6 +910,66 @@ class HomeMindWebAgent:
             "response": f"好的，已为你创建定时任务：{created_rule.get('name', '未命名规则')}",
             "rule": created_rule,
         }
+
+    def _build_corrected_execution_result(
+        self,
+        original_input: str,
+        normalized_input: str,
+        correction: str,
+        decision_snapshot: dict,
+    ) -> dict | None:
+        corrected = str(correction or normalized_input or original_input or "").strip()
+        if not corrected:
+            return None
+
+        previous_action_type = str(decision_snapshot.get("action") or "").strip()
+        previous_device = str(decision_snapshot.get("device") or "").strip()
+        previous_device_action = str(decision_snapshot.get("device_action") or "").strip()
+        previous_params = dict(decision_snapshot.get("params", {}) or {})
+
+        parsed_device = self._device_from_text(corrected) if hasattr(self, "_device_from_text") else ""
+        device = parsed_device or previous_device
+        parsed_action, parsed_params = self._action_from_text(corrected, device) if hasattr(self, "_action_from_text") else ("", {})
+        device_action = parsed_action or previous_device_action
+        params = parsed_params if parsed_action else previous_params
+
+        if previous_action_type == "\u8bbe\u5907\u63a7\u5236" and device and device_action:
+            command = {
+                "action": "\u8bbe\u5907\u63a7\u5236",
+                "device": device,
+                "scene": "",
+                "device_action": device_action,
+                "params": params,
+                "confidence": 0.95,
+                "reasoning": "corrected interaction feedback",
+            }
+            executed = self._execute_device_with_spatial_gate(command, text=corrected, route="feedback_change")
+            if executed.get("status") != "success":
+                return executed
+            interaction = self._build_message_metadata(
+                "execution",
+                corrected,
+                corrected,
+                decision_snapshot=command,
+            )
+            return {
+                "status": "success",
+                "response_type": "execution_result",
+                "message_id": interaction["message_id"],
+                "action": executed.get("action", f"{device}_{device_action}"),
+                "response": executed.get("response", ""),
+                "confidence": command["confidence"],
+                "route": "feedback_change",
+                "route_reason": "corrected_previous_execution",
+                "feedback_target": {"message_id": interaction["message_id"], "target_type": "execution"},
+            }
+
+        if previous_action_type == "\u573a\u666f\u5207\u6362":
+            parsed = self._run_llm_first_query(corrected, corrected)
+            parsed.pop("_debug", None)
+            return parsed
+
+        return None
 
     def handle_interaction_feedback(self, payload: dict) -> dict:
         message_id = str(payload.get("message_id", "")).strip()
@@ -897,6 +1052,15 @@ class HomeMindWebAgent:
                         "message": proposal["summary"],
                         "proposal": proposal,
                     }
+            if corrected:
+                corrected_result = self._build_corrected_execution_result(
+                    original_input,
+                    normalized_input,
+                    corrected,
+                    decision_snapshot,
+                )
+                if corrected_result:
+                    return corrected_result
             return {"status": "success", "message": "纠正反馈已记录"}
 
         return {"status": "success", "message": "反馈已记录"}
@@ -1963,6 +2127,14 @@ class HomeMindWebAgent:
         return ""
 
     def _mapped_device_matches_semantic(self, semantic_device: str, mapped_device: dict) -> bool:
+        semantic_key = str(semantic_device or "").strip().lower()
+        exact_values = {
+            str(mapped_device.get("id") or "").strip().lower(),
+            str(mapped_device.get("name") or "").strip().lower(),
+            str(mapped_device.get("entity_id") or "").strip().lower(),
+        }
+        if semantic_key and semantic_key in exact_values:
+            return True
         rule = SEMANTIC_DEVICE_MATCHES.get(semantic_device)
         if not rule:
             return False
@@ -2164,18 +2336,28 @@ class HomeMindWebAgent:
         ]
 
     def create_device(self, payload: dict) -> dict:
-        name = str(payload.get("name") or "").strip()
+        raw_name = str(payload.get("name") or "").strip()
+        area_name = str(payload.get("areaName") or payload.get("roomName") or "").strip()
+        name = _spatial_device_name(raw_name, area_name)
         if not name:
             raise ValueError("name is required")
         device_id = _safe_device_id(payload.get("id") or payload.get("deviceId"), name)
         registry = self._device_registry()
         if any(item["id"] == device_id for item in registry):
             raise KeyError("device id already exists")
+        if any(item["name"] == name for item in registry):
+            raise KeyError("device name already exists")
         item = {
             "id": device_id,
             "name": name,
             "type": str(payload.get("type") or "switch").strip() or "switch",
+            "protocol": "simulated",
         }
+        area = str(payload.get("area") or payload.get("room") or "").strip()
+        if area:
+            item["area"] = area
+        if area_name:
+            item["areaName"] = area_name
         registry.append(item)
         _save_device_registry(registry)
         self.device_control.add_device(item["name"], _default_device_state(item["type"]))
@@ -2192,11 +2374,31 @@ class HomeMindWebAgent:
             if immutable_fields:
                 raise ValueError(f"device runtime fields cannot be changed: {', '.join(immutable_fields)}")
             old_name = item["name"]
+            next_area_name = str(payload.get("areaName") or payload.get("roomName") or item.get("areaName") or "").strip()
+            next_name = _spatial_device_name(
+                str(payload.get("name") or item["name"]).strip() or item["name"],
+                next_area_name,
+            )
+            if any(other["id"] != device_id and other.get("name") == next_name for other in registry):
+                raise ValueError("device name already exists")
             updated = {
                 **item,
-                "name": str(payload.get("name") or item["name"]).strip() or item["name"],
+                "name": next_name,
                 "type": str(payload.get("type") or item.get("type") or "switch").strip() or "switch",
+                "protocol": "simulated",
             }
+            if "area" in payload or "room" in payload:
+                area = str(payload.get("area") or payload.get("room") or "").strip()
+                if area:
+                    updated["area"] = area
+                else:
+                    updated.pop("area", None)
+            if "areaName" in payload or "roomName" in payload:
+                area_name = str(payload.get("areaName") or payload.get("roomName") or "").strip()
+                if area_name:
+                    updated["areaName"] = area_name
+                else:
+                    updated.pop("areaName", None)
             registry[index] = updated
             _save_device_registry(registry)
             self.device_control.update_device(old_name, updated["name"], _default_device_state(updated["type"]))
@@ -2883,6 +3085,19 @@ def _webagent_process_query(self: HomeMindWebAgent, query: str) -> dict:
     normalized = self.language_normalizer.normalize(query)
     query_for_ai = normalized.normalized or query
     self._record_query_context(query, query_for_ai)
+    automation_update = self._update_pending_automation_trigger(query, query_for_ai)
+    if automation_update is not None:
+        return {
+            "status": "success",
+            "response_type": "automation_proposal",
+            "message_id": automation_update["message_id"],
+            "response": automation_update["summary"],
+            "proposal": automation_update,
+            "route": "automation",
+            "route_reason": "pending_automation_trigger_updated",
+            "normalized_query": normalized.to_dict(),
+            "feedback_target": {"message_id": automation_update["message_id"], "target_type": "automation_proposal"},
+        }
     pending_result = self._resolve_pending_clarification(query, query_for_ai)
     if pending_result is not None:
         pending_result["normalized_query"] = normalized.to_dict()
@@ -2929,7 +3144,21 @@ def _webagent_process_user_input(self: HomeMindWebAgent, data: dict):
     }
     socketio.emit("pipeline_update", {"type": "pipeline_start", "data": pipeline})
 
-    result = self._resolve_pending_clarification(user_text, query_text)
+    automation_update = self._update_pending_automation_trigger(user_text, query_text)
+    if automation_update is not None:
+        result = {
+            "status": "success",
+            "response_type": "automation_proposal",
+            "message_id": automation_update["message_id"],
+            "response": automation_update["summary"],
+            "proposal": automation_update,
+            "route": "automation",
+            "route_reason": "pending_automation_trigger_updated",
+            "feedback_target": {"message_id": automation_update["message_id"], "target_type": "automation_proposal"},
+            "_debug": {"intent_plan": {"intent_type": "automation_request", "route": "automation"}},
+        }
+    else:
+        result = self._resolve_pending_clarification(user_text, query_text)
     if result is None:
         result = self._run_llm_first_query(user_text, query_text)
     debug = result.pop("_debug", {}) or {}

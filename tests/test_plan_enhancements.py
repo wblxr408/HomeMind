@@ -82,6 +82,18 @@ class NLToTAPEnhancementTests(unittest.TestCase):
         self.assertEqual(rule["action"]["device"], "空调")
         self.assertEqual(rule["action"]["device_action"], "on")
 
+    def test_nl_to_tap_parses_may_day_as_fixed_holiday(self):
+        rule = NLToTAPConverter().parse("五一的时候给我关掉空调")
+
+        self.assertEqual(rule["trigger"], {"type": "holiday", "name": "五一", "month": 5, "day": 1})
+        self.assertEqual(rule["action"]["device"], "空调")
+        self.assertEqual(rule["action"]["device_action"], "off")
+
+    def test_nl_to_tap_extracts_trigger_without_action_for_followup(self):
+        trigger = NLToTAPConverter().extract_trigger("五一的时候")
+
+        self.assertEqual(trigger, {"type": "holiday", "name": "五一", "month": 5, "day": 1})
+
     def test_nl_to_tap_parses_scene_creation_actions_per_clause(self):
         parsed = NLToTAPConverter().parse_scene_creation(
             "创建一个叫健身模式的场景，关闭所有灯，打开空调"
@@ -106,6 +118,24 @@ class NLToTAPEnhancementTests(unittest.TestCase):
 
         self.assertEqual(len(matches), 1)
         self.assertEqual(matches[0]["command"]["scene"], "早安模式")
+
+    def test_tap_engine_supports_fixed_holiday_trigger(self):
+        engine = TAPEngine()
+        context = HomeContext()
+        rules = [{
+            "enabled": True,
+            "priority": 10,
+            "trigger": {"type": "holiday", "name": "五一", "month": 5, "day": 1},
+            "conditions": [],
+            "action": {"type": "device_control", "device": "空调", "device_action": "off", "params": {}},
+        }]
+
+        matches = engine.evaluate(context, rules, now=datetime(2026, 5, 1, 8, 0))
+        misses = engine.evaluate(context, rules, now=datetime(2026, 4, 30, 8, 0))
+
+        self.assertEqual(len(matches), 1)
+        self.assertEqual(matches[0]["command"]["device"], "空调")
+        self.assertEqual(misses, [])
 
 
 class ProtocolSecurityEnhancementTests(unittest.TestCase):

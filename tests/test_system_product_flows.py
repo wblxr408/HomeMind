@@ -471,12 +471,21 @@ class WebApiSystemTests(unittest.TestCase):
 
         created = self.client.post(
             "/api/devices",
-            json={"id": "desk_lamp", "name": "\u4e66\u684c\u706f", "type": "light"},
+            json={
+                "id": "desk_lamp",
+                "name": "\u4e66\u684c\u706f",
+                "type": "light",
+                "area": "study",
+                "areaName": "\u4e66\u623f",
+            },
         )
         self.assertEqual(created.status_code, 200)
         created_payload = created.get_json()
         self.assertEqual(created_payload["status"], "success")
         self.assertEqual(created_payload["device"]["id"], "desk_lamp")
+        self.assertEqual(created_payload["device"]["protocol"], "simulated")
+        self.assertEqual(created_payload["device"]["area"], "study")
+        self.assertEqual(created_payload["device"]["areaName"], "\u4e66\u623f")
         self.assertFalse(created_payload["device"]["state"]["is_on"])
 
         turned_on = self.client.post("/api/devices/desk_lamp/control", json={"action": "on"})
@@ -500,10 +509,12 @@ class WebApiSystemTests(unittest.TestCase):
 
         updated = self.client.put(
             "/api/devices/desk_lamp",
-            json={"name": "\u9605\u8bfb\u706f", "type": "switch"},
+            json={"name": "\u9605\u8bfb\u706f", "type": "switch", "area": "bedroom2", "areaName": "\u6b21\u5367"},
         )
         self.assertEqual(updated.status_code, 200)
         self.assertEqual(updated.get_json()["device"]["name"], "\u9605\u8bfb\u706f")
+        self.assertEqual(updated.get_json()["device"]["area"], "bedroom2")
+        self.assertEqual(updated.get_json()["device"]["areaName"], "\u6b21\u5367")
 
         status_payload = self.client.get("/api/status").get_json()
         self.assertIn("desk_lamp", status_payload["devices"])
@@ -523,6 +534,24 @@ class WebApiSystemTests(unittest.TestCase):
 
         self.assertEqual(created.status_code, 409)
         self.assertEqual(renamed.status_code, 400)
+
+    def test_simulated_devices_use_space_to_disambiguate_generic_names(self):
+        main = self.client.post(
+            "/api/devices",
+            json={"id": "light.main_bedroom", "name": "\u706f", "type": "light", "area": "bedroom", "areaName": "\u4e3b\u5367"},
+        )
+        second = self.client.post(
+            "/api/devices",
+            json={"id": "light.second_bedroom", "name": "\u706f", "type": "light", "area": "bedroom2", "areaName": "\u6b21\u5367"},
+        )
+
+        self.assertEqual(main.status_code, 200)
+        self.assertEqual(second.status_code, 200)
+        self.assertEqual(main.get_json()["device"]["name"], "\u4e3b\u5367\u706f")
+        self.assertEqual(second.get_json()["device"]["name"], "\u6b21\u5367\u706f")
+        names = [device["name"] for device in self.client.get("/api/devices").get_json()["devices"]]
+        self.assertIn("\u4e3b\u5367\u706f", names)
+        self.assertIn("\u6b21\u5367\u706f", names)
 
     def test_scene_crud_endpoints_manage_custom_scene_configs(self):
         scene_name = "\u9605\u8bfb\u6a21\u5f0f"
@@ -682,6 +711,28 @@ class WebApiSystemTests(unittest.TestCase):
         self.assertEqual(payload["response_type"], "automation_proposal")
         self.assertEqual(payload["proposal"]["rule_preview"]["trigger"]["at"], "19:00")
 
+    def test_query_may_day_command_returns_holiday_automation_proposal(self):
+        response = self.client.post("/api/query", json={"query": "五一的时候给我关掉空调"})
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.get_json()
+        self.assertEqual(payload["status"], "success")
+        self.assertEqual(payload["response_type"], "automation_proposal")
+        self.assertEqual(payload["proposal"]["rule_preview"]["trigger"], {"type": "holiday", "name": "五一", "month": 5, "day": 1})
+        self.assertIn("五一当天", payload["response"])
+        self.assertIn("关闭空调", payload["response"])
+
+    def test_followup_may_day_updates_pending_automation_trigger(self):
+        first = self.client.post("/api/query", json={"query": "晚上7:00给我关掉空调"}).get_json()
+        self.assertEqual(first["proposal"]["rule_preview"]["trigger"]["at"], "19:00")
+
+        second = self.client.post("/api/query", json={"query": "五一的时候"}).get_json()
+
+        self.assertEqual(second["status"], "success")
+        self.assertEqual(second["response_type"], "automation_proposal")
+        self.assertEqual(second["proposal"]["rule_preview"]["trigger"], {"type": "holiday", "name": "五一", "month": 5, "day": 1})
+        self.assertEqual(second["proposal"]["rule_preview"]["action"]["device_action"], "off")
+
     def test_accepting_automation_proposal_creates_rule(self):
         proposal_response = self.client.post("/api/query", json={"query": "晚上7:00打开空调"})
         proposal = proposal_response.get_json()
@@ -719,6 +770,48 @@ class WebApiSystemTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         normalized = self.web_server.agent.preference_store.snapshot()["language"]["dialect_terms"]
         self.assertEqual(normalized.get("早安"), "切换早安模式")
+
+    def test_change_feedback_reexecutes_correction_and_keeps_feedback_loop(self):
+        mapping = json.loads(self.web_server.FLOOR_PLAN_DEVICE_STORE_PATH.read_text(encoding="utf-8"))
+        mapping[0]["devices"].extend([
+            {"id": "light.main_bedroom", "name": "\u4e3b\u5367\u706f", "type": "light", "area": "bedroom", "areaName": "\u4e3b\u5367", "x": 51, "y": 31},
+            {"id": "light.second_bedroom", "name": "\u6b21\u5367\u706f", "type": "light", "area": "bedroom2", "areaName": "\u6b21\u5367", "x": 61, "y": 31},
+        ])
+        mapping[0]["areaNames"]["bedroom2"] = "\u6b21\u5367"
+        self.web_server.FLOOR_PLAN_DEVICE_STORE_PATH.write_text(
+            json.dumps(mapping, ensure_ascii=False),
+            encoding="utf-8",
+        )
+
+        initial = self.client.post("/api/query", json={"query": "\u5173\u6389\u4e3b\u5367\u706f"}).get_json()
+        response = self.client.post(
+            "/api/interaction/feedback",
+            json={
+                "message_id": initial["message_id"],
+                "target_type": "execution",
+                "feedback_type": "change",
+                "correction": "\u662f\u6b21\u5367\u706f",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.get_json()
+        self.assertEqual(payload["status"], "success")
+        self.assertEqual(payload["response_type"], "execution_result")
+        self.assertEqual(payload["action"], "\u706f\u5149_off")
+        self.assertIn("\u6b21\u5367\u706f", payload["response"])
+        self.assertEqual(payload["feedback_target"]["target_type"], "execution")
+
+        accepted = self.client.post(
+            "/api/interaction/feedback",
+            json={
+                "message_id": payload["feedback_target"]["message_id"],
+                "target_type": "execution",
+                "feedback_type": "accept",
+            },
+        )
+        self.assertEqual(accepted.status_code, 200)
+        self.assertEqual(accepted.get_json()["status"], "success")
 
     def test_reject_feedback_updates_interaction_metrics(self):
         response = self.client.post(

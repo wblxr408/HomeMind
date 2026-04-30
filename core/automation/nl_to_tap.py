@@ -9,9 +9,16 @@ from typing import Dict, Optional
 class NLToTAPConverter:
     """Convert simple natural language automation requests into TAP rules."""
 
+    FIXED_HOLIDAYS = {
+        "元旦": {"type": "holiday", "name": "元旦", "month": 1, "day": 1},
+        "五一": {"type": "holiday", "name": "五一", "month": 5, "day": 1},
+        "劳动节": {"type": "holiday", "name": "五一", "month": 5, "day": 1},
+        "国庆": {"type": "holiday", "name": "国庆", "month": 10, "day": 1},
+        "圣诞": {"type": "holiday", "name": "圣诞", "month": 12, "day": 25},
+    }
     HOLIDAY_PATTERNS = [
         r"节假日", r"周末", r"周六", r"周日",
-        r"元旦", r"春节", r"清明", r"五一", r"端午",
+        r"元旦", r"春节", r"清明", r"五一", r"劳动节", r"端午",
         r"中秋", r"国庆", r"圣诞",
     ]
     SCENE_NAMES = [
@@ -80,11 +87,20 @@ class NLToTAPConverter:
         return normalized
 
     def _extract_time_condition(self, text: str) -> Dict:
+        explicit = self.extract_trigger(text)
+        if explicit:
+            return explicit
+        return {"type": "time", "at": "08:00"}
+
+    def extract_trigger(self, text: str) -> Optional[Dict]:
         for pattern in self.HOLIDAY_PATTERNS:
             if re.search(pattern, text):
                 if pattern in (r"周六", r"周日", r"周末"):
                     return {"type": "day_of_week", "days": [5, 6]}
-                return {"type": "holiday", "pattern": pattern}
+                holiday = self.FIXED_HOLIDAYS.get(pattern)
+                if holiday:
+                    return dict(holiday)
+                return {"type": "holiday", "name": pattern}
 
         exact_match = re.search(r"(早上|上午|中午|下午|晚上|今晚)?\s*(\d{1,2}):(\d{2})", text)
         if exact_match:
@@ -104,7 +120,7 @@ class NLToTAPConverter:
             hour = self._normalize_hour(int(hour_match.group(2)), period)
             return {"type": "time", "at": f"{hour:02d}:{minute}"}
 
-        return {"type": "time", "at": "08:00"}
+        return None
 
     def _normalize_hour(self, hour: int, period: str) -> int:
         hour = hour % 24

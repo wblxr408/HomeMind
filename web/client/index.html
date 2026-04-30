@@ -791,7 +791,7 @@
 
         .device-inline-form {
             display: grid;
-            grid-template-columns: minmax(0, 1fr) 120px;
+            grid-template-columns: minmax(0, 1fr) 120px 110px 110px;
             gap: 6px;
             margin-top: 8px;
         }
@@ -825,6 +825,42 @@
             color: var(--text-tertiary);
             margin-top: 2px;
             word-break: break-word;
+        }
+
+        .device-meta {
+            font-size: 10px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        .scene-action-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .scene-action-row {
+            display: grid;
+            grid-template-columns: minmax(0, 1.4fr) 110px 110px 90px auto;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .scene-action-row select,
+        .scene-action-row input {
+            min-width: 0;
+            border: 0.5px solid var(--border-light);
+            border-radius: var(--radius-md);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 11px;
+            padding: 7px 8px;
+            outline: none;
+        }
+
+        .advanced-json {
+            margin-top: 10px;
         }
 
         .toggle {
@@ -1073,6 +1109,28 @@
             { value: "cover", label: "窗户/窗帘" }
         ];
 
+        const areaOptions = [
+            { value: "", label: "未指定" },
+            { value: "living_room", label: "客厅" },
+            { value: "bedroom", label: "主卧" },
+            { value: "bedroom2", label: "次卧" },
+            { value: "study", label: "书房" },
+            { value: "kitchen", label: "厨房" },
+            { value: "bathroom1", label: "主卫" },
+            { value: "bathroom2", label: "次卫" },
+            { value: "dining_room", label: "餐厅" },
+            { value: "balcony", label: "阳台" },
+            { value: "entrance", label: "玄关" }
+        ];
+
+        const sceneActionOptions = [
+            { value: "on", label: "打开" },
+            { value: "off", label: "关闭" },
+            { value: "adjust", label: "调节" },
+            { value: "open", label: "打开窗/窗帘" },
+            { value: "close", label: "关闭窗/窗帘" }
+        ];
+
         const progressOrder = ["bsr", "lsr", "llm", "exec"];
         let socket = null;
         let devices = {};
@@ -1141,6 +1199,103 @@
                 const selected = type.value === selectedType ? "selected" : "";
                 return `<option value="${escapeAttr(type.value)}" ${selected}>${type.label}</option>`;
             }).join("");
+        }
+
+        function renderAreaOptions(selectedArea) {
+            return areaOptions.map((area) => {
+                const selected = area.value === selectedArea ? "selected" : "";
+                return `<option value="${escapeAttr(area.value)}" ${selected}>${area.label}</option>`;
+            }).join("");
+        }
+
+        function areaLabel(area, areaName = "") {
+            if (areaName) return areaName;
+            const match = areaOptions.find((item) => item.value === area);
+            return match ? match.label : (area || "未指定");
+        }
+
+        function deviceSceneLabel(device) {
+            const room = areaLabel(device.area || "", device.areaName || "");
+            return device.area || device.areaName ? `${room} · ${device.name}` : device.name;
+        }
+
+        function renderSceneDeviceOptions(selectedDevice = "") {
+            return deviceList.map((device) => {
+                const selected = device.name === selectedDevice ? "selected" : "";
+                return `<option value="${escapeAttr(device.name)}" ${selected}>${escapeHtml(deviceSceneLabel(device))}</option>`;
+            }).join("");
+        }
+
+        function renderSceneActionOptions(selectedAction = "off") {
+            return sceneActionOptions.map((action) => {
+                const selected = action.value === selectedAction ? "selected" : "";
+                return `<option value="${escapeAttr(action.value)}" ${selected}>${action.label}</option>`;
+            }).join("");
+        }
+
+        function renderSceneActionRow(action = {}) {
+            return `
+                <div class="scene-action-row">
+                    <select data-scene-action-device>${renderSceneDeviceOptions(action.device || "")}</select>
+                    <select data-scene-action-type>${renderSceneActionOptions(action.action || "off")}</select>
+                    <select data-scene-param-key>
+                        <option value="">无参数</option>
+                        <option value="brightness" ${action.paramKey === "brightness" ? "selected" : ""}>亮度</option>
+                        <option value="temperature" ${action.paramKey === "temperature" ? "selected" : ""}>温度</option>
+                        <option value="volume" ${action.paramKey === "volume" ? "selected" : ""}>音量</option>
+                    </select>
+                    <input data-scene-param-value type="number" placeholder="数值" value="${escapeAttr(action.paramValue || "")}">
+                    <button class="mini-btn" type="button" data-remove-scene-action>删除</button>
+                </div>
+            `;
+        }
+
+        function sceneConfigToActions(config = {}) {
+            return Object.entries(config || {}).map(([device, command]) => {
+                const params = command && command.params ? command.params : {};
+                const paramKey = Object.keys(params)[0] || "";
+                return {
+                    device,
+                    action: command && command.action ? command.action : "off",
+                    paramKey,
+                    paramValue: paramKey ? params[paramKey] : ""
+                };
+            });
+        }
+
+        function addSceneActionRow(action = {}) {
+            const list = document.getElementById("new-scene-actions");
+            if (!list) return;
+            list.insertAdjacentHTML("beforeend", renderSceneActionRow(action));
+            wireSceneActionRemoveButtons();
+        }
+
+        function wireSceneActionRemoveButtons() {
+            document.querySelectorAll("[data-remove-scene-action]").forEach((btn) => {
+                btn.onclick = () => {
+                    const row = btn.closest(".scene-action-row");
+                    if (row) row.remove();
+                };
+            });
+        }
+
+        function buildSceneConfigFromRows() {
+            const rows = Array.from(document.querySelectorAll("#new-scene-actions .scene-action-row"));
+            const config = {};
+            rows.forEach((row) => {
+                const device = row.querySelector("[data-scene-action-device]")?.value || "";
+                const action = row.querySelector("[data-scene-action-type]")?.value || "off";
+                const paramKey = row.querySelector("[data-scene-param-key]")?.value || "";
+                const paramValueRaw = row.querySelector("[data-scene-param-value]")?.value || "";
+                if (!device) return;
+                const params = {};
+                if (paramKey && paramValueRaw !== "") {
+                    const numberValue = Number(paramValueRaw);
+                    params[paramKey] = Number.isFinite(numberValue) ? numberValue : paramValueRaw;
+                }
+                config[device] = { action, params };
+            });
+            return config;
         }
 
         function sceneConfigText(config) {
@@ -1308,12 +1463,15 @@
                 deviceList = (data.devices || []).map((device) => ({
                     id: device.id,
                     name: device.name,
-                    type: device.type || "switch"
+                    type: device.type || "switch",
+                    area: device.area || "",
+                    areaName: device.areaName || "",
+                    protocol: device.protocol || "simulated"
                 }));
                 (data.devices || []).forEach((device) => {
                     devices[device.id] = device.state || {};
                 });
-                if (rerender && currentModal === "device") renderModal("device");
+                if (rerender && (currentModal === "device" || currentModal === "scene")) renderModal(currentModal);
             } catch (e) {
                 showToast("设备加载失败");
             }
@@ -1323,7 +1481,10 @@
             const payload = {
                 id: document.getElementById("new-device-id").value.trim(),
                 name: document.getElementById("new-device-name").value.trim(),
-                type: document.getElementById("new-device-type").value
+                type: document.getElementById("new-device-type").value,
+                area: document.getElementById("new-device-area").value,
+                areaName: document.getElementById("new-device-area-name").value.trim(),
+                protocol: "simulated"
             };
             if (!payload.name) {
                 showToast("请输入设备名称");
@@ -1345,9 +1506,14 @@
         async function updateDeviceFromCard(deviceId) {
             const nameInput = Array.from(document.querySelectorAll("[data-device-name]")).find((el) => el.dataset.deviceName === deviceId);
             const typeInput = Array.from(document.querySelectorAll("[data-device-type]")).find((el) => el.dataset.deviceType === deviceId);
+            const areaInput = Array.from(document.querySelectorAll("[data-device-area]")).find((el) => el.dataset.deviceArea === deviceId);
+            const areaNameInput = Array.from(document.querySelectorAll("[data-device-area-name]")).find((el) => el.dataset.deviceAreaName === deviceId);
             const payload = {
                 name: nameInput ? nameInput.value.trim() : "",
-                type: typeInput ? typeInput.value : "switch"
+                type: typeInput ? typeInput.value : "switch",
+                area: areaInput ? areaInput.value : "",
+                areaName: areaNameInput ? areaNameInput.value.trim() : "",
+                protocol: "simulated"
             };
             if (!payload.name) {
                 showToast("请输入设备名称");
@@ -1417,8 +1583,15 @@
                 return;
             }
             try {
-                const config = parseSceneConfigInput("new-scene-config");
-                const data = await apiJson("/api/scenes", "POST", { name, config });
+                const config = buildSceneConfigFromRows();
+                const advanced = document.getElementById("new-scene-config");
+                const advancedRaw = advanced ? advanced.value.trim() : "";
+                const finalConfig = Object.keys(config).length ? config : (advancedRaw ? parseSceneConfigInput("new-scene-config") : {});
+                if (!Object.keys(finalConfig).length) {
+                    showToast("请至少添加一个场景动作");
+                    return;
+                }
+                const data = await apiJson("/api/scenes", "POST", { name, config: finalConfig });
                 if (data.status !== "success") {
                     showToast(data.error || "场景保存失败");
                     return;
@@ -1526,6 +1699,9 @@
             renderModal(type);
             document.getElementById("overlay").classList.add("open");
             if (type === "scene") loadScenes();
+            if (type === "scene") loadDevices(false).then(() => {
+                if (currentModal === "scene") renderModal("scene");
+            });
             if (type === "rules") loadRules();
             if (type === "rules") loadSchedulerStatus();
             if (type === "device") loadDevices();
@@ -1544,7 +1720,7 @@
                         <div class="summary-head">
                             <div>
                                 <div class="summary-title">新增场景</div>
-                                <div class="summary-meta">场景配置以设备名为键，动作对象包含 action 和 params；切换场景时仍会经过 SVG 设备表校验。</div>
+                                <div class="summary-meta">用动作行编排场景；保存时自动生成配置，切换场景时仍会经过 SVG 设备表校验。</div>
                             </div>
                             <button class="mini-btn" id="refresh-scenes-btn">刷新</button>
                         </div>
@@ -1554,8 +1730,15 @@
                                 <input id="new-scene-name" placeholder="阅读模式">
                             </div>
                             <div class="field full">
-                                <label>场景配置 JSON</label>
-                                <textarea id="new-scene-config" rows="5" placeholder='{"灯光":{"action":"adjust","params":{"brightness":60}},"音响":{"action":"on","params":{"volume":20}}}'></textarea>
+                                <label>动作编排</label>
+                                <div class="scene-action-list" id="new-scene-actions">
+                                    ${renderSceneActionRow({ action: "off" })}
+                                </div>
+                                <button class="mini-btn" type="button" id="add-scene-action-btn">添加动作</button>
+                            </div>
+                            <div class="field full advanced-json">
+                                <label>高级 JSON（无动作行时才使用）</label>
+                                <textarea id="new-scene-config" rows="4" placeholder='{"主卧灯":{"action":"off","params":{}},"次卧灯":{"action":"adjust","params":{"brightness":60}}}'></textarea>
                             </div>
                             <div class="field full">
                                 <button class="mini-btn" id="create-scene-btn">保存场景</button>
@@ -1581,6 +1764,8 @@
                     }</div>`;
                 document.getElementById("refresh-scenes-btn").onclick = loadScenes;
                 document.getElementById("create-scene-btn").onclick = createSceneFromForm;
+                document.getElementById("add-scene-action-btn").onclick = () => addSceneActionRow({ action: "off" });
+                wireSceneActionRemoveButtons();
                 body.querySelectorAll(".scene-card").forEach((card) => {
                     card.addEventListener("click", (event) => {
                         if (event.target.closest("textarea") || event.target.closest("button")) return;
@@ -1605,7 +1790,7 @@
                         <div class="summary-head">
                             <div>
                                 <div class="summary-title">新增设备</div>
-                                <div class="summary-meta">设备保存到后端注册表，开关控制使用同一份状态。</div>
+                                <div class="summary-meta">当前按模拟设备创建；必须标注空间，便于区分同类型设备。</div>
                             </div>
                             <button class="mini-btn" id="refresh-devices-btn">刷新</button>
                         </div>
@@ -1618,9 +1803,17 @@
                                 <label>类型</label>
                                 <select id="new-device-type">${renderDeviceTypeOptions("switch")}</select>
                             </div>
-                            <div class="field full">
+                            <div class="field">
                                 <label>名称</label>
-                                <input id="new-device-name" placeholder="客厅灯带">
+                                <input id="new-device-name" placeholder="主卧灯">
+                            </div>
+                            <div class="field">
+                                <label>空间</label>
+                                <select id="new-device-area">${renderAreaOptions("living_room")}</select>
+                            </div>
+                            <div class="field full">
+                                <label>空间显示名</label>
+                                <input id="new-device-area-name" placeholder="主卧 / 次卧 / 客厅">
                             </div>
                             <div class="field full">
                                 <button class="mini-btn" id="create-device-btn">保存设备</button>
@@ -1635,10 +1828,13 @@
                                     <div class="device-main">
                                         <div class="device-name">${escapeHtml(device.name)}</div>
                                         <div class="device-status">${buildDeviceStatus(device.id, state)}</div>
+                                        <div class="device-meta">模拟设备 · ${escapeHtml(areaLabel(device.area || "", device.areaName || ""))}</div>
                                         <div class="device-id">${escapeHtml(device.id)}</div>
                                         <div class="device-inline-form">
                                             <input data-device-name="${escapeAttr(device.id)}" value="${escapeAttr(device.name)}">
                                             <select data-device-type="${escapeAttr(device.id)}">${renderDeviceTypeOptions(device.type || "switch")}</select>
+                                            <select data-device-area="${escapeAttr(device.id)}">${renderAreaOptions(device.area || "")}</select>
+                                            <input data-device-area-name="${escapeAttr(device.id)}" value="${escapeAttr(device.areaName || "")}" placeholder="空间名">
                                         </div>
                                     </div>
                                     <div class="device-actions">
@@ -2532,6 +2728,8 @@
                     });
                 } else if (data.response_type === "automation_created") {
                     addMsg("ai", data.response || "\u5df2\u521b\u5efa\u5b9a\u65f6\u4efb\u52a1", "\u4efb\u52a1\u5df2\u521b\u5efa");
+                } else if (data.response_type === "execution_result") {
+                    renderAgentMessage(data, "\u6267\u884c\u5b8c\u6210");
                 } else if (feedbackType === "change") {
                     addMsg("ai", data.message || "\u4fee\u6539\u53cd\u9988\u5df2\u8bb0\u5f55\uff0c\u4f60\u53ef\u4ee5\u7ee7\u7eed\u8f93\u5165\u6216\u518d\u6b21\u4fee\u6539\u3002", "\u53cd\u9988\u5df2\u8bb0\u5f55");
                     addLog("\u7cfb\u7edf", data.message || "\u4fee\u6539\u53cd\u9988\u5df2\u8bb0\u5f55");

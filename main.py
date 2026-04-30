@@ -10,6 +10,13 @@ import sys
 import argparse
 from typing import Optional
 
+try:
+    from dotenv import load_dotenv
+
+    load_dotenv()
+except ImportError:
+    pass
+
 from demo.context import HomeContext
 from core.bsr.candidate_recall import BSRecall
 from core.automation import NLToTAPConverter, TAPRuleStore
