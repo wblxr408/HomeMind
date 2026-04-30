@@ -364,11 +364,15 @@ HomeMind 当前采用的是：
 - TAP 引擎与规则接口
 - CLI / Web mock 主流程
 - 语音反馈历史
+- SVG 户型图、设备映射和设备 CRUD
+- 本地敏感数据加密与韧性恢复
+
+当前全量自动化测试结果：`99 passed`。
 
 运行：
 
 ```bash
-python -m unittest tests.test_tap_engine tests.test_routing_validation tests.test_context_privacy tests.test_mock_flows tests.test_voice_feedback -v
+python -m pytest -q
 ```
 
 ---

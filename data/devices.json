@@ -1,0 +1,183 @@
+[
+  {
+    "floorPlanId": "floorPlan-sample.svg",
+    "areaNames": {
+      "living_room": "\u5ba2\u5385",
+      "bedroom": "\u4e3b\u5367",
+      "bedroom2": "\u6b21\u5367",
+      "bathroom1": "\u4e3b\u536b",
+      "bathroom2": "\u6b21\u536b",
+      "dining_room": "\u9910\u5385",
+      "kitchen": "\u53a8\u623f",
+      "study": "\u4e66\u623f",
+      "balcony": "\u9633\u53f0",
+      "entrance": "\u7384\u5173"
+    },
+    "devices": [
+      {
+        "id": "light.living_room_main",
+        "name": "\u5ba2\u5385\u4e3b\u706f",
+        "type": "light",
+        "area": "living_room",
+        "areaName": "\u5ba2\u5385",
+        "x": 12.33,
+        "y": 27.4
+      },
+      {
+        "id": "light.living_room_accent",
+        "name": "\u5ba2\u5385\u6c1b\u56f4\u706f",
+        "type": "light",
+        "area": "living_room",
+        "areaName": "\u5ba2\u5385",
+        "x": 17.03,
+        "y": 27.4
+      },
+      {
+        "id": "climate.living_room_ac",
+        "name": "\u5ba2\u5385\u7a7a\u8c03",
+        "type": "air_conditioner",
+        "area": "living_room",
+        "areaName": "\u5ba2\u5385",
+        "x": 20.0,
+        "y": 31.0
+      },
+      {
+        "id": "media.living_room_tv",
+        "name": "\u5ba2\u5385\u7535\u89c6",
+        "type": "tv",
+        "area": "living_room",
+        "areaName": "\u5ba2\u5385",
+        "x": 21.73,
+        "y": 27.4
+      },
+      {
+        "id": "speaker.living_room",
+        "name": "\u5ba2\u5385\u97f3\u54cd",
+        "type": "speaker",
+        "area": "living_room",
+        "areaName": "\u5ba2\u5385",
+        "x": 24.0,
+        "y": 31.0
+      },
+      {
+        "id": "light.bedroom_main",
+        "name": "\u4e3b\u5367\u4e3b\u706f",
+        "type": "light",
+        "area": "bedroom",
+        "areaName": "\u4e3b\u5367",
+        "x": 50.57,
+        "y": 29.53
+      },
+      {
+        "id": "fan.bedroom",
+        "name": "\u4e3b\u5367\u98ce\u6247",
+        "type": "fan",
+        "area": "bedroom",
+        "areaName": "\u4e3b\u5367",
+        "x": 57.24,
+        "y": 29.53
+      },
+      {
+        "id": "cover.bedroom_window",
+        "name": "\u4e3b\u5367\u7a97\u6237",
+        "type": "window",
+        "area": "bedroom",
+        "areaName": "\u4e3b\u5367",
+        "x": 55.0,
+        "y": 35.0
+      },
+      {
+        "id": "climate.bedroom_ac",
+        "name": "\u4e3b\u5367\u7a7a\u8c03",
+        "type": "air_conditioner",
+        "area": "bedroom",
+        "areaName": "\u4e3b\u5367",
+        "x": 50.57,
+        "y": 35.32
+      },
+      {
+        "id": "light.bedroom2_main",
+        "name": "\u6b21\u5367\u4e3b\u706f",
+        "type": "light",
+        "area": "bedroom2",
+        "areaName": "\u6b21\u5367",
+        "x": 77.56,
+        "y": 27.37
+      },
+      {
+        "id": "fan.bedroom2",
+        "name": "\u6b21\u5367\u98ce\u6247",
+        "type": "fan",
+        "area": "bedroom2",
+        "areaName": "\u6b21\u5367",
+        "x": 77.56,
+        "y": 34.44
+      },
+      {
+        "id": "light.bathroom1",
+        "name": "\u4e3b\u536b\u706f",
+        "type": "light",
+        "area": "bathroom1",
+        "areaName": "\u4e3b\u536b",
+        "x": 57.46,
+        "y": 71.87
+      },
+      {
+        "id": "water_heater.bathroom",
+        "name": "\u4e3b\u536b\u70ed\u6c34\u5668",
+        "type": "water_heater",
+        "area": "bathroom1",
+        "areaName": "\u4e3b\u536b",
+        "x": 59.72,
+        "y": 71.87
+      },
+      {
+        "id": "light.kitchen_main",
+        "name": "\u53a8\u623f\u4e3b\u706f",
+        "type": "light",
+        "area": "kitchen",
+        "areaName": "\u53a8\u623f",
+        "x": 42.54,
+        "y": 68.76
+      },
+      {
+        "id": "light.study_desk",
+        "name": "\u4e66\u623f\u53f0\u706f",
+        "type": "light",
+        "area": "study",
+        "areaName": "\u4e66\u623f",
+        "x": 73.95,
+        "y": 81.89
+      },
+      {
+        "id": "light.entrance",
+        "name": "\u7384\u5173\u706f",
+        "type": "light",
+        "area": "entrance",
+        "areaName": "\u7384\u5173",
+        "x": 12.82,
+        "y": 51.08
+      }
+    ],
+    "rawDevices": [
+      ["light.living_room_main", "living_room", "light", "\u5ba2\u5385\u4e3b\u706f", "\u5ba2\u5385"],
+      ["light.living_room_accent", "living_room", "light", "\u5ba2\u5385\u6c1b\u56f4\u706f", "\u5ba2\u5385"],
+      ["climate.living_room_ac", "living_room", "air_conditioner", "\u5ba2\u5385\u7a7a\u8c03", "\u5ba2\u5385"],
+      ["media.living_room_tv", "living_room", "tv", "\u5ba2\u5385\u7535\u89c6", "\u5ba2\u5385"],
+      ["speaker.living_room", "living_room", "speaker", "\u5ba2\u5385\u97f3\u54cd", "\u5ba2\u5385"],
+      ["light.bedroom_main", "bedroom", "light", "\u4e3b\u5367\u4e3b\u706f", "\u4e3b\u5367"],
+      ["fan.bedroom", "bedroom", "fan", "\u4e3b\u5367\u98ce\u6247", "\u4e3b\u5367"],
+      ["cover.bedroom_window", "bedroom", "window", "\u4e3b\u5367\u7a97\u6237", "\u4e3b\u5367"],
+      ["climate.bedroom_ac", "bedroom", "air_conditioner", "\u4e3b\u5367\u7a7a\u8c03", "\u4e3b\u5367"],
+      ["light.bedroom2_main", "bedroom2", "light", "\u6b21\u5367\u4e3b\u706f", "\u6b21\u5367"],
+      ["fan.bedroom2", "bedroom2", "fan", "\u6b21\u5367\u98ce\u6247", "\u6b21\u5367"],
+      ["light.bathroom1", "bathroom1", "light", "\u4e3b\u536b\u706f", "\u4e3b\u536b"],
+      ["water_heater.bathroom", "bathroom1", "water_heater", "\u4e3b\u536b\u70ed\u6c34\u5668", "\u4e3b\u536b"],
+      ["light.kitchen_main", "kitchen", "light", "\u53a8\u623f\u4e3b\u706f", "\u53a8\u623f"],
+      ["light.study_desk", "study", "light", "\u4e66\u623f\u53f0\u706f", "\u4e66\u623f"],
+      ["light.entrance", "entrance", "light", "\u7384\u5173\u706f", "\u7384\u5173"]
+    ],
+    "updatedAt": "2026-04-30T11:20:00+08:00",
+    "createdAt": "2026-03-29T03:10:45+08:00"
+  }
+]

@@ -10,6 +10,8 @@ DATA_KEY_FILES = [
     REPO_ROOT / "data" / "session_state.json",
     REPO_ROOT / "data" / "preferences.json",
     REPO_ROOT / "data" / "tap_rules.json",
+    REPO_ROOT / "data" / "test_dqn_models" / "dqn_policy.pkl",
+    REPO_ROOT / "data" / "kb_backup.enc",
 ]
 
 
@@ -55,6 +57,7 @@ class HomeMindWebMockFlowTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         os.environ["HOMEMIND_STORAGE_KEY"] = "test-storage-key"
+        os.environ["HOMEMIND_DQN_MODEL_DIR"] = str(REPO_ROOT / "data" / "test_dqn_models")
         from web import server as web_server
 
         cls.web_server = web_server
@@ -65,6 +68,7 @@ class HomeMindWebMockFlowTests(unittest.TestCase):
     def tearDownClass(cls):
         cls.web_server.agent = None
         _cleanup_generated_files()
+        os.environ.pop("HOMEMIND_DQN_MODEL_DIR", None)
 
     def test_status_endpoint_returns_context_devices_and_kb_status(self):
         response = self.client.get("/api/status")
@@ -155,7 +159,9 @@ class HomeMindWebMockFlowTests(unittest.TestCase):
         self.assertEqual(info_payload["status"], "success")
         self.assertIn("温度", info_payload["result"])
         self.assertIn(recommend_response.get_json()["status"], ("success", "no_recommendation"))
-        self.assertEqual(feedback_response.get_json()["status"], "success")
+        feedback_payload = feedback_response.get_json()
+        self.assertEqual(feedback_payload["status"], "success")
+        self.assertTrue(feedback_payload["model_saved"])
         self.assertEqual(add_response.get_json()["status"], "success")
         self.assertEqual(preferences_response.get_json()["status"], "success")
         self.assertEqual(memory_response.get_json()["status"], "success")
@@ -165,6 +171,10 @@ class HomeMindWebMockFlowTests(unittest.TestCase):
         kb_results = query_response.get_json()["results"]
         self.assertGreaterEqual(len(kb_results), 1)
         self.assertTrue(any(probe_text in item["content"] for item in kb_results))
+        dqn_preferences = self.web_server.agent.preference_store.snapshot()["dqn"]
+        self.assertGreaterEqual(len(dqn_preferences["feedback"]), 1)
+        self.assertEqual(dqn_preferences["feedback"][-1]["reward"], 1.0)
+        self.assertTrue(any(item.get("event_type") == "feedback" for item in self.web_server.agent.kb.memory_store))
 
     def test_voice_endpoint_requires_uploaded_audio(self):
         response = self.client.post("/api/voice/transcribe")

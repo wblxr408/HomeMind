@@ -41,6 +41,11 @@ class BSRecall:
     def _init_rules(self):
         """High-precision keyword rules for common smart-home commands."""
         self.rule_map = {
+            "\u6696\u6c14": ["\u6253\u5f00\u6696\u6c14", "\u8c03\u9ad8\u7a7a\u8c03\u6e29\u5ea6"],
+            "\u6709\u70b9\u95f7": ["\u6253\u5f00\u7a7a\u8c03", "\u6253\u5f00\u98ce\u6247", "\u6253\u5f00\u7a97\u6237"],
+            "\u5de5\u4f5c\u6a21\u5f0f": ["\u5207\u6362\u5de5\u4f5c\u6a21\u5f0f"],
+            "\u665a\u5f52\u6a21\u5f0f": ["\u5207\u6362\u665a\u5f52\u6a21\u5f0f"],
+            "\u70ed\u6c34\u5668": ["\u6253\u5f00\u70ed\u6c34\u5668", "\u5173\u95ed\u70ed\u6c34\u5668"],
             "闷": ["打开空调", "打开风扇", "打开窗户"],
             "热": ["打开空调", "打开风扇"],
             "冷": ["调高空调温度", "打开暖气"],

@@ -22,38 +22,39 @@
 \contentsline {chapter}{\numberline {第五章\hspace {.3em}}工具函数设计与调用逻辑}{19}{chapter.5}%
 \contentsline {section}{\numberline {5.1}工具函数设计概述}{19}{section.5.1}%
 \contentsline {section}{\numberline {5.2}设备控制工具}{19}{section.5.2}%
-\contentsline {section}{\numberline {5.3}场景切换工具}{19}{section.5.3}%
+\contentsline {section}{\numberline {5.3}场景切换工具}{20}{section.5.3}%
 \contentsline {section}{\numberline {5.4}信息查询工具}{20}{section.5.4}%
 \contentsline {section}{\numberline {5.5}知识检索工具}{20}{section.5.5}%
 \contentsline {section}{\numberline {5.6}工具调用编排逻辑}{20}{section.5.6}%
-\contentsline {section}{\numberline {5.7}TAP 规则引擎}{20}{section.5.7}%
+\contentsline {section}{\numberline {5.7}TAP 规则引擎}{21}{section.5.7}%
 \contentsline {chapter}{\numberline {第六章\hspace {.3em}}性能优化措施}{22}{chapter.6}%
 \contentsline {section}{\numberline {6.1}推理效率优化}{22}{section.6.1}%
-\contentsline {section}{\numberline {6.2}内存占用优化}{22}{section.6.2}%
+\contentsline {section}{\numberline {6.2}端侧内存占用测试}{22}{section.6.2}%
 \contentsline {section}{\numberline {6.3}响应延迟优化}{23}{section.6.3}%
-\contentsline {section}{\numberline {6.4}存储效率优化}{23}{section.6.4}%
-\contentsline {chapter}{\numberline {第七章\hspace {.3em}}可扩展性与实用性评估}{24}{chapter.7}%
-\contentsline {section}{\numberline {7.1}协议扩展能力}{24}{section.7.1}%
-\contentsline {section}{\numberline {7.2}工具函数扩展能力}{24}{section.7.2}%
-\contentsline {section}{\numberline {7.3}模型后端扩展能力}{24}{section.7.3}%
-\contentsline {section}{\numberline {7.4}场景迁移能力}{25}{section.7.4}%
-\contentsline {section}{\numberline {7.5}实用性评估}{25}{section.7.5}%
-\contentsline {chapter}{\numberline {第八章\hspace {.3em}}端云协同与隐私保护设计}{26}{chapter.8}%
-\contentsline {section}{\numberline {8.1}端云协同策略}{26}{section.8.1}%
-\contentsline {section}{\numberline {8.2}Token 压缩策略}{26}{section.8.2}%
-\contentsline {section}{\numberline {8.3}隐私保护与结构化校验}{26}{section.8.3}%
-\contentsline {chapter}{\numberline {第九章\hspace {.3em}}上下文记忆与偏好持久化}{28}{chapter.9}%
-\contentsline {section}{\numberline {9.1}三层记忆架构}{28}{section.9.1}%
-\contentsline {chapter}{\numberline {第十章\hspace {.3em}}空间配置与设备映射设计}{30}{chapter.10}%
-\contentsline {chapter}{\numberline {第十一章\hspace {.3em}}实验设计与结果分析}{31}{chapter.11}%
-\contentsline {section}{\numberline {11.1}实验环境}{31}{section.11.1}%
-\contentsline {section}{\numberline {11.2}实验结果}{31}{section.11.2}%
-\contentsline {section}{\numberline {11.3}结果分析}{31}{section.11.3}%
-\contentsline {chapter}{\numberline {第十二章\hspace {.3em}}系统展示与应用场景}{34}{chapter.12}%
-\contentsline {section}{\numberline {12.1}典型使用场景}{34}{section.12.1}%
-\contentsline {chapter}{\numberline {第十三章\hspace {.3em}}总结与展望}{37}{chapter.13}%
-\contentsline {section}{\numberline {13.1}项目总结}{37}{section.13.1}%
-\contentsline {section}{\numberline {13.2}设计边界}{38}{section.13.2}%
-\contentsline {section}{\numberline {13.3}未来工作}{38}{section.13.3}%
-\contentsline {chapter}{参考文献}{38}{section.13.3}%
-\contentsline {chapter}{附录}{40}{chapter*.18}%
+\contentsline {section}{\numberline {6.4}存储效率优化}{24}{section.6.4}%
+\contentsline {chapter}{\numberline {第七章\hspace {.3em}}可扩展性与实用性评估}{25}{chapter.7}%
+\contentsline {section}{\numberline {7.1}协议扩展能力}{25}{section.7.1}%
+\contentsline {section}{\numberline {7.2}工具函数扩展能力}{25}{section.7.2}%
+\contentsline {section}{\numberline {7.3}模型后端扩展能力}{25}{section.7.3}%
+\contentsline {section}{\numberline {7.4}场景迁移能力}{26}{section.7.4}%
+\contentsline {section}{\numberline {7.5}实用性评估}{26}{section.7.5}%
+\contentsline {chapter}{\numberline {第八章\hspace {.3em}}端云协同与隐私保护设计}{27}{chapter.8}%
+\contentsline {section}{\numberline {8.1}端云协同策略}{27}{section.8.1}%
+\contentsline {section}{\numberline {8.2}Token 压缩策略}{27}{section.8.2}%
+\contentsline {section}{\numberline {8.3}隐私保护与结构化校验}{27}{section.8.3}%
+\contentsline {chapter}{\numberline {第九章\hspace {.3em}}上下文记忆与偏好持久化}{29}{chapter.9}%
+\contentsline {section}{\numberline {9.1}三层记忆架构}{29}{section.9.1}%
+\contentsline {chapter}{\numberline {第十章\hspace {.3em}}空间配置与设备映射设计}{31}{chapter.10}%
+\contentsline {chapter}{\numberline {第十一章\hspace {.3em}}测试设计与结果分析}{32}{chapter.11}%
+\contentsline {section}{\numberline {11.1}测试环境}{32}{section.11.1}%
+\contentsline {section}{\numberline {11.2}测试结果}{33}{section.11.2}%
+\contentsline {subsection}{\numberline {11.2.1}批量指令数据集对比评测}{33}{subsection.11.2.1}%
+\contentsline {section}{\numberline {11.3}结果分析}{35}{section.11.3}%
+\contentsline {chapter}{\numberline {第十二章\hspace {.3em}}系统展示与应用场景}{38}{chapter.12}%
+\contentsline {section}{\numberline {12.1}典型使用场景}{38}{section.12.1}%
+\contentsline {chapter}{\numberline {第十三章\hspace {.3em}}总结与展望}{41}{chapter.13}%
+\contentsline {section}{\numberline {13.1}项目总结}{41}{section.13.1}%
+\contentsline {section}{\numberline {13.2}产品化演进方向}{42}{section.13.2}%
+\contentsline {section}{\numberline {13.3}未来工作}{42}{section.13.3}%
+\contentsline {chapter}{参考文献}{42}{section.13.3}%
+\contentsline {chapter}{附录}{44}{chapter*.21}%

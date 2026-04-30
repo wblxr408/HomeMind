@@ -1,0 +1,29 @@
+加密存储已禁用：缺少 HOMEMIND_STORAGE_KEY
+EmbeddingService: all-MiniLM-L6-v2 本地缓存加载失败: No module named 'sentence_transformers'
+ChromaDB not installed; using in-memory knowledge store
+PyTorch unavailable, DQNPolicy using NumPy fallback: module 'asyncio' has no attribute 'coroutines'
+检测到加密文件，但当前缺少密钥: models\dqn_policy.pkl
+PreferenceStore save skipped: encrypted storage unavailable
+敏感存储写入已禁用: {'enabled': False, 'reason': 'missing_key', 'backend': 'cryptography.fernet', 'key_source': 'missing'}
+Traceback (most recent call last):
+  File "D:\HomeMind\web\server.py", line 4005, in <module>
+    socketio.run(app, host="127.0.0.1", port=5000, debug=True, allow_unsafe_werkzeug=True)
+  File "D:\HomeMind\web\server.py", line 56, in run
+    return app.run(host=host, port=port, debug=debug)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\wblxr\anaconda3\Lib\site-packages\flask\app.py", line 1191, in run
+    run_simple(t.cast(str, host), port, self, **options)
+  File "C:\Users\wblxr\anaconda3\Lib\site-packages\werkzeug\serving.py", line 1037, in run_simple
+    srv = make_server(
+          ^^^^^^^^^^^^
+  File "C:\Users\wblxr\anaconda3\Lib\site-packages\werkzeug\serving.py", line 877, in make_server
+    return ThreadedWSGIServer(
+           ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\wblxr\anaconda3\Lib\site-packages\werkzeug\serving.py", line 701, in __init__
+    super().__init__(
+  File "C:\Users\wblxr\anaconda3\Lib\socketserver.py", line 452, in __init__
+    self.socket = socket.socket(self.address_family,
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\wblxr\anaconda3\Lib\socket.py", line 232, in __init__
+    _socket.socket.__init__(self, family, type, proto, fileno)
+OSError: [WinError 10106] 无法加载或初始化请求的服务提供程序。

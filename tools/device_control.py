@@ -153,6 +153,32 @@ class DeviceController:
         self._sync_from_gateway()
         return self.state.copy()
 
+    def add_device(self, device: str, initial_state: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        device = str(device or "").strip()
+        if not device:
+            raise ValueError("device name is required")
+        if device not in self.state:
+            self.state[device] = dict(initial_state or {"status": "关"})
+        return self.state[device]
+
+    def update_device(self, old_device: str, new_device: str, initial_state: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        old_device = str(old_device or "").strip()
+        new_device = str(new_device or "").strip()
+        if not new_device:
+            raise ValueError("device name is required")
+        if old_device and old_device != new_device and old_device in self.state:
+            self.state[new_device] = self.state.pop(old_device)
+        elif new_device not in self.state:
+            self.state[new_device] = dict(initial_state or {"status": "关"})
+        return self.state[new_device]
+
+    def delete_device(self, device: str) -> bool:
+        device = str(device or "").strip()
+        if device in self.state:
+            del self.state[device]
+            return True
+        return False
+
     def is_gateway_connected(self) -> bool:
         """检查协议网关是否已连接"""
         if self._gateway is None:

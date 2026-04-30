@@ -279,6 +279,37 @@
             border-color: rgba(29, 158, 117, 0.35);
         }
 
+        .inline-correction {
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            gap: 6px;
+            margin-top: 8px;
+            align-items: center;
+        }
+
+        .inline-correction input {
+            min-width: 0;
+            height: 30px;
+            border: 0.5px solid var(--border-light);
+            border-radius: 6px;
+            padding: 0 8px;
+            font-size: 12px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            outline: none;
+        }
+
+        .inline-correction input:focus {
+            border-color: rgba(29, 158, 117, 0.45);
+            box-shadow: 0 0 0 2px rgba(29, 158, 117, 0.10);
+        }
+
+        .inline-correction button {
+            border-radius: 6px;
+            padding: 5px 9px;
+        }
+
         .chat-input-wrap {
             border-top: 0.5px solid var(--border-light);
             padding: 10px 12px;
@@ -642,7 +673,8 @@
         }
 
         .field input,
-        .field select {
+        .field select,
+        .field textarea {
             border: 0.5px solid var(--border-light);
             border-radius: var(--radius-md);
             background: var(--bg-primary);
@@ -653,8 +685,56 @@
         }
 
         .field input:focus,
-        .field select:focus {
+        .field select:focus,
+        .field textarea:focus {
             border-color: var(--border-mid);
+        }
+
+        .floorplan-preview {
+            position: relative;
+            min-height: 220px;
+            border: 0.5px solid var(--border-light);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            background: var(--bg-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .floorplan-preview img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .device-marker {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            min-width: 18px;
+            height: 18px;
+            border-radius: 999px;
+            padding: 0 5px;
+            background: #0F6E56;
+            color: #fff;
+            font-size: 10px;
+            line-height: 18px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+            white-space: nowrap;
+        }
+
+        .device-marker-label {
+            position: absolute;
+            transform: translate(-50%, 8px);
+            background: rgba(255, 255, 255, 0.92);
+            border: 0.5px solid var(--border-light);
+            border-radius: 999px;
+            padding: 2px 6px;
+            color: var(--text-primary);
+            font-size: 10px;
+            white-space: nowrap;
         }
 
         .empty-hint {
@@ -697,6 +777,37 @@
             background: var(--bg-primary);
         }
 
+        .device-main {
+            min-width: 0;
+            flex: 1;
+        }
+
+        .device-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        .device-inline-form {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 120px 110px 110px;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .device-inline-form input,
+        .device-inline-form select {
+            min-width: 0;
+            border: 0.5px solid var(--border-light);
+            border-radius: var(--radius-md);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 11px;
+            padding: 6px 8px;
+            outline: none;
+        }
+
         .device-name {
             font-size: 12px;
             color: var(--text-primary);
@@ -707,6 +818,49 @@
             font-size: 10px;
             color: var(--text-tertiary);
             margin-top: 2px;
+        }
+
+        .device-id {
+            font-size: 10px;
+            color: var(--text-tertiary);
+            margin-top: 2px;
+            word-break: break-word;
+        }
+
+        .device-meta {
+            font-size: 10px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        .scene-action-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .scene-action-row {
+            display: grid;
+            grid-template-columns: minmax(0, 1.4fr) 110px 110px 90px auto;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .scene-action-row select,
+        .scene-action-row input {
+            min-width: 0;
+            border: 0.5px solid var(--border-light);
+            border-radius: var(--radius-md);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 11px;
+            padding: 7px 8px;
+            outline: none;
+        }
+
+        .advanced-json {
+            margin-top: 10px;
         }
 
         .toggle {
@@ -879,6 +1033,13 @@
                         </div>
                         <span class="entry-card-arrow">›</span>
                     </button>
+                    <button class="entry-card" onclick="openModal('floorplan')">
+                        <div>
+                            <div class="entry-card-title">SVG 户型图</div>
+                            <div class="entry-card-sub">上传 · 元数据 · 设备映射</div>
+                        </div>
+                        <span class="entry-card-arrow">›</span>
+                    </button>
                     <button class="entry-card" onclick="openModal('memory')">
                         <div>
                             <div class="entry-card-title">记忆与偏好</div>
@@ -918,7 +1079,7 @@
     </div>
 
     <script>
-        const scenes = [
+        let scenes = [
             { id: "sleep", name: "睡眠模式", desc: "关闭灯光、调节温度、安防布控" },
             { id: "entertainment", name: "观影模式", desc: "调暗灯光、启动电视、音响就绪" },
             { id: "work", name: "工作模式", desc: "明亮环境、关闭娱乐设备" },
@@ -927,7 +1088,7 @@
             { id: "evening", name: "晚归模式", desc: "门廊亮起、室温预调、氛围灯光" }
         ];
 
-        const deviceList = [
+        let deviceList = [
             { id: "air_conditioner", name: "空调" },
             { id: "light", name: "灯光" },
             { id: "tv", name: "电视" },
@@ -935,6 +1096,39 @@
             { id: "fan", name: "风扇" },
             { id: "speaker", name: "音响" },
             { id: "window", name: "窗户" }
+        ];
+
+        const deviceTypes = [
+            { value: "switch", label: "开关" },
+            { value: "light", label: "灯光" },
+            { value: "climate", label: "空调" },
+            { value: "fan", label: "风扇" },
+            { value: "media_player", label: "媒体" },
+            { value: "speaker", label: "音响" },
+            { value: "water_heater", label: "热水器" },
+            { value: "cover", label: "窗户/窗帘" }
+        ];
+
+        const areaOptions = [
+            { value: "", label: "未指定" },
+            { value: "living_room", label: "客厅" },
+            { value: "bedroom", label: "主卧" },
+            { value: "bedroom2", label: "次卧" },
+            { value: "study", label: "书房" },
+            { value: "kitchen", label: "厨房" },
+            { value: "bathroom1", label: "主卫" },
+            { value: "bathroom2", label: "次卫" },
+            { value: "dining_room", label: "餐厅" },
+            { value: "balcony", label: "阳台" },
+            { value: "entrance", label: "玄关" }
+        ];
+
+        const sceneActionOptions = [
+            { value: "on", label: "打开" },
+            { value: "off", label: "关闭" },
+            { value: "adjust", label: "调节" },
+            { value: "open", label: "打开窗/窗帘" },
+            { value: "close", label: "关闭窗/窗帘" }
         ];
 
         const progressOrder = ["bsr", "lsr", "llm", "exec"];
@@ -953,6 +1147,9 @@
         let memorySnapshot = null;
         let privacySnapshot = null;
         let schedulerSnapshot = null;
+        let floorPlanUploads = [];
+        let selectedFloorPlan = null;
+        let floorPlanDevices = [];
 
         async function apiGet(url) {
             const response = await fetch(url);
@@ -993,6 +1190,131 @@
                 .replace(/\n/g, "<br>");
         }
 
+        function escapeAttr(text) {
+            return escapeHtml(text).replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+        }
+
+        function renderDeviceTypeOptions(selectedType) {
+            return deviceTypes.map((type) => {
+                const selected = type.value === selectedType ? "selected" : "";
+                return `<option value="${escapeAttr(type.value)}" ${selected}>${type.label}</option>`;
+            }).join("");
+        }
+
+        function renderAreaOptions(selectedArea) {
+            return areaOptions.map((area) => {
+                const selected = area.value === selectedArea ? "selected" : "";
+                return `<option value="${escapeAttr(area.value)}" ${selected}>${area.label}</option>`;
+            }).join("");
+        }
+
+        function areaLabel(area, areaName = "") {
+            if (areaName) return areaName;
+            const match = areaOptions.find((item) => item.value === area);
+            return match ? match.label : (area || "未指定");
+        }
+
+        function deviceSceneLabel(device) {
+            const room = areaLabel(device.area || "", device.areaName || "");
+            return device.area || device.areaName ? `${room} · ${device.name}` : device.name;
+        }
+
+        function renderSceneDeviceOptions(selectedDevice = "") {
+            return deviceList.map((device) => {
+                const selected = device.name === selectedDevice ? "selected" : "";
+                return `<option value="${escapeAttr(device.name)}" ${selected}>${escapeHtml(deviceSceneLabel(device))}</option>`;
+            }).join("");
+        }
+
+        function renderSceneActionOptions(selectedAction = "off") {
+            return sceneActionOptions.map((action) => {
+                const selected = action.value === selectedAction ? "selected" : "";
+                return `<option value="${escapeAttr(action.value)}" ${selected}>${action.label}</option>`;
+            }).join("");
+        }
+
+        function renderSceneActionRow(action = {}) {
+            return `
+                <div class="scene-action-row">
+                    <select data-scene-action-device>${renderSceneDeviceOptions(action.device || "")}</select>
+                    <select data-scene-action-type>${renderSceneActionOptions(action.action || "off")}</select>
+                    <select data-scene-param-key>
+                        <option value="">无参数</option>
+                        <option value="brightness" ${action.paramKey === "brightness" ? "selected" : ""}>亮度</option>
+                        <option value="temperature" ${action.paramKey === "temperature" ? "selected" : ""}>温度</option>
+                        <option value="volume" ${action.paramKey === "volume" ? "selected" : ""}>音量</option>
+                    </select>
+                    <input data-scene-param-value type="number" placeholder="数值" value="${escapeAttr(action.paramValue || "")}">
+                    <button class="mini-btn" type="button" data-remove-scene-action>删除</button>
+                </div>
+            `;
+        }
+
+        function sceneConfigToActions(config = {}) {
+            return Object.entries(config || {}).map(([device, command]) => {
+                const params = command && command.params ? command.params : {};
+                const paramKey = Object.keys(params)[0] || "";
+                return {
+                    device,
+                    action: command && command.action ? command.action : "off",
+                    paramKey,
+                    paramValue: paramKey ? params[paramKey] : ""
+                };
+            });
+        }
+
+        function addSceneActionRow(action = {}) {
+            const list = document.getElementById("new-scene-actions");
+            if (!list) return;
+            list.insertAdjacentHTML("beforeend", renderSceneActionRow(action));
+            wireSceneActionRemoveButtons();
+        }
+
+        function wireSceneActionRemoveButtons() {
+            document.querySelectorAll("[data-remove-scene-action]").forEach((btn) => {
+                btn.onclick = () => {
+                    const row = btn.closest(".scene-action-row");
+                    if (row) row.remove();
+                };
+            });
+        }
+
+        function buildSceneConfigFromRows() {
+            const rows = Array.from(document.querySelectorAll("#new-scene-actions .scene-action-row"));
+            const config = {};
+            rows.forEach((row) => {
+                const device = row.querySelector("[data-scene-action-device]")?.value || "";
+                const action = row.querySelector("[data-scene-action-type]")?.value || "off";
+                const paramKey = row.querySelector("[data-scene-param-key]")?.value || "";
+                const paramValueRaw = row.querySelector("[data-scene-param-value]")?.value || "";
+                if (!device) return;
+                const params = {};
+                if (paramKey && paramValueRaw !== "") {
+                    const numberValue = Number(paramValueRaw);
+                    params[paramKey] = Number.isFinite(numberValue) ? numberValue : paramValueRaw;
+                }
+                config[device] = { action, params };
+            });
+            return config;
+        }
+
+        function sceneConfigText(config) {
+            try {
+                return JSON.stringify(config || {}, null, 2);
+            } catch (e) {
+                return "{}";
+            }
+        }
+
+        function sceneSummary(config) {
+            const entries = Object.entries(config || {});
+            if (!entries.length) return "暂无动作";
+            return entries.map(([device, command]) => {
+                const action = command && command.action ? command.action : "-";
+                return `${device} ${action}`;
+            }).join(" · ");
+        }
+
         function buildFeedbackButtons(options = {}) {
             const target = options.feedbackTarget || {};
             const correctionPrompt = escapeHtml(options.correctionPrompt || "请输入你期望的正确理解");
@@ -1006,6 +1328,24 @@
             buttons.push(`<button onclick="sendInteractionFeedback('${target.message_id}', '${target.target_type}', 'reject')">Reject</button>`);
             return `<div class="voice-feedback">${buttons.join("")}</div>`;
         }
+
+        function buildFeedbackButtonsInline(options = {}) {
+            const target = options.feedbackTarget || {};
+            if (!target.message_id || !target.target_type) return "";
+            const messageId = escapeAttr(target.message_id || "");
+            const targetType = escapeAttr(target.target_type || "");
+            const correctionPrompt = escapeAttr(options.correctionPrompt || "\u8bf7\u8f93\u5165\u4f60\u671f\u671b\u7684\u6b63\u786e\u7406\u89e3");
+            const allowAccept = options.allowAccept !== false;
+            const buttons = [];
+            if (allowAccept) {
+                buttons.push(`<button onclick="sendInteractionFeedback('${messageId}', '${targetType}', 'accept')">Accept</button>`);
+            }
+            buttons.push(`<button onclick="openInlineCorrection(this, '${messageId}', '${targetType}', '${correctionPrompt}')">Change</button>`);
+            buttons.push(`<button onclick="sendInteractionFeedback('${messageId}', '${targetType}', 'reject')">Reject</button>`);
+            return `<div class="voice-feedback">${buttons.join("")}</div>`;
+        }
+
+        buildFeedbackButtons = buildFeedbackButtonsInline;
 
         function addMsg(role, html, tag, options = {}) {
             const el = document.createElement("div");
@@ -1082,8 +1422,12 @@
         }
 
         function getSceneName(id) {
-            const match = scenes.find((item) => item.id === id);
+            const match = scenes.find((item) => item.id === id || item.name === id);
             return match ? match.name : id;
+        }
+
+        function isSceneActive(scene) {
+            return currentScene === scene.id || currentScene === scene.name;
         }
 
         function updateContext(ctx) {
@@ -1107,6 +1451,188 @@
 
         function updateDevices(states) {
             Object.entries(states || {}).forEach(([id, state]) => updateDeviceState(id, state));
+        }
+
+        async function loadDevices(rerender = true) {
+            try {
+                const data = await apiGet("/api/devices");
+                if (data.status !== "success") {
+                    showToast(data.error || "设备加载失败");
+                    return;
+                }
+                deviceList = (data.devices || []).map((device) => ({
+                    id: device.id,
+                    name: device.name,
+                    type: device.type || "switch",
+                    area: device.area || "",
+                    areaName: device.areaName || "",
+                    protocol: device.protocol || "simulated"
+                }));
+                (data.devices || []).forEach((device) => {
+                    devices[device.id] = device.state || {};
+                });
+                if (rerender && (currentModal === "device" || currentModal === "scene")) renderModal(currentModal);
+            } catch (e) {
+                showToast("设备加载失败");
+            }
+        }
+
+        async function createDeviceFromForm() {
+            const payload = {
+                id: document.getElementById("new-device-id").value.trim(),
+                name: document.getElementById("new-device-name").value.trim(),
+                type: document.getElementById("new-device-type").value,
+                area: document.getElementById("new-device-area").value,
+                areaName: document.getElementById("new-device-area-name").value.trim(),
+                protocol: "simulated"
+            };
+            if (!payload.name) {
+                showToast("请输入设备名称");
+                return;
+            }
+            try {
+                const data = await apiJson("/api/devices", "POST", payload);
+                if (data.status !== "success") {
+                    showToast(data.error || "设备保存失败");
+                    return;
+                }
+                showToast("设备已保存");
+                await loadDevices();
+            } catch (e) {
+                showToast("设备保存失败");
+            }
+        }
+
+        async function updateDeviceFromCard(deviceId) {
+            const nameInput = Array.from(document.querySelectorAll("[data-device-name]")).find((el) => el.dataset.deviceName === deviceId);
+            const typeInput = Array.from(document.querySelectorAll("[data-device-type]")).find((el) => el.dataset.deviceType === deviceId);
+            const areaInput = Array.from(document.querySelectorAll("[data-device-area]")).find((el) => el.dataset.deviceArea === deviceId);
+            const areaNameInput = Array.from(document.querySelectorAll("[data-device-area-name]")).find((el) => el.dataset.deviceAreaName === deviceId);
+            const payload = {
+                name: nameInput ? nameInput.value.trim() : "",
+                type: typeInput ? typeInput.value : "switch",
+                area: areaInput ? areaInput.value : "",
+                areaName: areaNameInput ? areaNameInput.value.trim() : "",
+                protocol: "simulated"
+            };
+            if (!payload.name) {
+                showToast("请输入设备名称");
+                return;
+            }
+            try {
+                const data = await apiJson(`/api/devices/${encodeURIComponent(deviceId)}`, "PUT", payload);
+                if (data.status !== "success") {
+                    showToast(data.error || "设备更新失败");
+                    return;
+                }
+                showToast("设备已更新");
+                await loadDevices();
+            } catch (e) {
+                showToast("设备更新失败");
+            }
+        }
+
+        async function deleteDeviceFromCard(deviceId) {
+            if (!deviceId || !confirm("删除这个设备？")) return;
+            try {
+                const response = await fetch(`/api/devices/${encodeURIComponent(deviceId)}`, { method: "DELETE" });
+                const data = await response.json();
+                if (!response.ok || data.status !== "success") {
+                    showToast(data.error || "设备删除失败");
+                    return;
+                }
+                delete devices[deviceId];
+                showToast("设备已删除");
+                await loadDevices();
+            } catch (e) {
+                showToast("设备删除失败");
+            }
+        }
+
+        async function loadScenes(rerender = true) {
+            try {
+                const data = await apiGet("/api/scenes");
+                if (data.status !== "success") {
+                    showToast(data.error || "场景加载失败");
+                    return;
+                }
+                scenes = (data.items || []).map((scene) => ({
+                    id: scene.id || scene.name,
+                    name: scene.name,
+                    desc: sceneSummary(scene.config || {}),
+                    config: scene.config || {}
+                }));
+                if (rerender && currentModal === "scene") renderModal("scene");
+            } catch (e) {
+                showToast("场景加载失败");
+            }
+        }
+
+        function parseSceneConfigInput(inputRef) {
+            const input = typeof inputRef === "string" ? document.getElementById(inputRef) : inputRef;
+            if (!input) throw new Error("scene config input not found");
+            const raw = input.value.trim();
+            if (!raw) return {};
+            return JSON.parse(raw);
+        }
+
+        async function createSceneFromForm() {
+            const name = document.getElementById("new-scene-name").value.trim();
+            if (!name) {
+                showToast("请输入场景名称");
+                return;
+            }
+            try {
+                const config = buildSceneConfigFromRows();
+                const advanced = document.getElementById("new-scene-config");
+                const advancedRaw = advanced ? advanced.value.trim() : "";
+                const finalConfig = Object.keys(config).length ? config : (advancedRaw ? parseSceneConfigInput("new-scene-config") : {});
+                if (!Object.keys(finalConfig).length) {
+                    showToast("请至少添加一个场景动作");
+                    return;
+                }
+                const data = await apiJson("/api/scenes", "POST", { name, config: finalConfig });
+                if (data.status !== "success") {
+                    showToast(data.error || "场景保存失败");
+                    return;
+                }
+                showToast("场景已保存");
+                await loadScenes();
+            } catch (e) {
+                showToast("场景配置 JSON 无效");
+            }
+        }
+
+        async function updateSceneFromCard(sceneName) {
+            try {
+                const input = Array.from(document.querySelectorAll("[data-scene-config]")).find((el) => el.dataset.sceneConfig === sceneName);
+                const config = parseSceneConfigInput(input);
+                const data = await apiJson(`/api/scenes/${encodeURIComponent(sceneName)}`, "PUT", { config });
+                if (data.status !== "success") {
+                    showToast(data.error || "场景更新失败");
+                    return;
+                }
+                showToast("场景已更新");
+                await loadScenes();
+            } catch (e) {
+                showToast("场景配置 JSON 无效");
+            }
+        }
+
+        async function deleteSceneFromCard(sceneName) {
+            if (!sceneName || !confirm("删除这个场景？")) return;
+            try {
+                const response = await fetch(`/api/scenes/${encodeURIComponent(sceneName)}`, { method: "DELETE" });
+                const data = await response.json();
+                if (!response.ok || data.status !== "success") {
+                    showToast(data.error || "场景删除失败");
+                    return;
+                }
+                showToast("场景已删除");
+                await loadScenes();
+            } catch (e) {
+                showToast("场景删除失败");
+            }
         }
 
         async function sendQuery(query) {
@@ -1169,13 +1695,19 @@
         function openModal(type) {
             currentModal = type;
             const modal = document.querySelector(".modal");
-            modal.classList.toggle("wide", ["rules", "memory", "privacy"].includes(type));
+            modal.classList.toggle("wide", ["scene", "device", "rules", "memory", "privacy", "floorplan"].includes(type));
             renderModal(type);
             document.getElementById("overlay").classList.add("open");
+            if (type === "scene") loadScenes();
+            if (type === "scene") loadDevices(false).then(() => {
+                if (currentModal === "scene") renderModal("scene");
+            });
             if (type === "rules") loadRules();
             if (type === "rules") loadSchedulerStatus();
+            if (type === "device") loadDevices();
             if (type === "memory") loadMemorySummary();
             if (type === "privacy") loadPrivacyStatus();
+            if (type === "floorplan") loadFloorPlanUploads();
         }
 
         function renderModal(type) {
@@ -1183,37 +1715,139 @@
             const body = document.getElementById("modalBody");
             if (type === "scene") {
                 title.textContent = "场景模式";
-                body.innerHTML = `<div class="card-grid">${
-                    scenes.map((scene) => `
-                        <div class="scene-card ${currentScene === scene.id ? "active" : ""}" data-scene-id="${scene.id}">
-                            <div class="scene-card-name">${scene.name}</div>
-                            <div class="scene-card-desc">${scene.desc}</div>
+                body.innerHTML = `
+                    <div class="summary-card">
+                        <div class="summary-head">
+                            <div>
+                                <div class="summary-title">新增场景</div>
+                                <div class="summary-meta">用动作行编排场景；保存时自动生成配置，切换场景时仍会经过 SVG 设备表校验。</div>
+                            </div>
+                            <button class="mini-btn" id="refresh-scenes-btn">刷新</button>
                         </div>
-                    `).join("")
-                }</div>`;
+                        <div class="form-grid">
+                            <div class="field full">
+                                <label>场景名称</label>
+                                <input id="new-scene-name" placeholder="阅读模式">
+                            </div>
+                            <div class="field full">
+                                <label>动作编排</label>
+                                <div class="scene-action-list" id="new-scene-actions">
+                                    ${renderSceneActionRow({ action: "off" })}
+                                </div>
+                                <button class="mini-btn" type="button" id="add-scene-action-btn">添加动作</button>
+                            </div>
+                            <div class="field full advanced-json">
+                                <label>高级 JSON（无动作行时才使用）</label>
+                                <textarea id="new-scene-config" rows="4" placeholder='{"主卧灯":{"action":"off","params":{}},"次卧灯":{"action":"adjust","params":{"brightness":60}}}'></textarea>
+                            </div>
+                            <div class="field full">
+                                <button class="mini-btn" id="create-scene-btn">保存场景</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-grid" style="margin-top: 10px;">${
+                        scenes.map((scene) => `
+                            <div class="scene-card ${isSceneActive(scene) ? "active" : ""}" data-scene-id="${escapeAttr(scene.id)}">
+                                <div class="scene-card-name">${escapeHtml(scene.name)}</div>
+                                <div class="scene-card-desc">${escapeHtml(scene.desc || sceneSummary(scene.config || {}))}</div>
+                                <div class="field full" style="margin-top: 8px;">
+                                    <label>配置 JSON</label>
+                                    <textarea data-scene-config="${escapeAttr(scene.name)}" rows="5">${escapeHtml(sceneConfigText(scene.config || {}))}</textarea>
+                                </div>
+                                <div class="mini-actions">
+                                    <button class="mini-btn" data-scene-switch="${escapeAttr(scene.id)}">切换</button>
+                                    <button class="mini-btn" data-scene-save="${escapeAttr(scene.name)}">保存</button>
+                                    <button class="mini-btn" data-scene-delete="${escapeAttr(scene.name)}">删除</button>
+                                </div>
+                            </div>
+                        `).join("")
+                    }</div>`;
+                document.getElementById("refresh-scenes-btn").onclick = loadScenes;
+                document.getElementById("create-scene-btn").onclick = createSceneFromForm;
+                document.getElementById("add-scene-action-btn").onclick = () => addSceneActionRow({ action: "off" });
+                wireSceneActionRemoveButtons();
                 body.querySelectorAll(".scene-card").forEach((card) => {
-                    card.addEventListener("click", () => {
-                        const sceneId = card.dataset.sceneId;
-                        switchScene(sceneId);
-                        closeOverlay();
+                    card.addEventListener("click", (event) => {
+                        if (event.target.closest("textarea") || event.target.closest("button")) return;
+                        switchScene(card.dataset.sceneId);
                     });
                 });
-            } else if (type === "device") {
+                body.querySelectorAll("[data-scene-switch]").forEach((btn) => {
+                    btn.onclick = () => switchScene(btn.dataset.sceneSwitch);
+                });
+                body.querySelectorAll("[data-scene-save]").forEach((btn) => {
+                    btn.onclick = () => updateSceneFromCard(btn.dataset.sceneSave);
+                });
+                body.querySelectorAll("[data-scene-delete]").forEach((btn) => {
+                    btn.onclick = () => deleteSceneFromCard(btn.dataset.sceneDelete);
+                });
+                return;
+            }
+            if (type === "device") {
                 title.textContent = "设备控制";
-                body.innerHTML = `<div class="card-grid">${
-                    deviceList.map((device) => {
-                        const state = devices[device.id] || {};
-                        return `
-                            <div class="device-card">
-                                <div>
-                                    <div class="device-name">${device.name}</div>
-                                    <div class="device-status">${buildDeviceStatus(device.id, state)}</div>
-                                </div>
-                                <button class="toggle ${state.is_on ? "on" : ""}" data-device-id="${device.id}"></button>
+                body.innerHTML = `
+                    <div class="summary-card">
+                        <div class="summary-head">
+                            <div>
+                                <div class="summary-title">新增设备</div>
+                                <div class="summary-meta">当前按模拟设备创建；必须标注空间，便于区分同类型设备。</div>
                             </div>
-                        `;
-                    }).join("")
-                }</div>`;
+                            <button class="mini-btn" id="refresh-devices-btn">刷新</button>
+                        </div>
+                        <div class="form-grid">
+                            <div class="field">
+                                <label>ID</label>
+                                <input id="new-device-id" placeholder="living_room_light">
+                            </div>
+                            <div class="field">
+                                <label>类型</label>
+                                <select id="new-device-type">${renderDeviceTypeOptions("switch")}</select>
+                            </div>
+                            <div class="field">
+                                <label>名称</label>
+                                <input id="new-device-name" placeholder="主卧灯">
+                            </div>
+                            <div class="field">
+                                <label>空间</label>
+                                <select id="new-device-area">${renderAreaOptions("living_room")}</select>
+                            </div>
+                            <div class="field full">
+                                <label>空间显示名</label>
+                                <input id="new-device-area-name" placeholder="主卧 / 次卧 / 客厅">
+                            </div>
+                            <div class="field full">
+                                <button class="mini-btn" id="create-device-btn">保存设备</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-grid" style="margin-top: 10px;">${
+                        deviceList.map((device) => {
+                            const state = devices[device.id] || {};
+                            return `
+                                <div class="device-card">
+                                    <div class="device-main">
+                                        <div class="device-name">${escapeHtml(device.name)}</div>
+                                        <div class="device-status">${buildDeviceStatus(device.id, state)}</div>
+                                        <div class="device-meta">模拟设备 · ${escapeHtml(areaLabel(device.area || "", device.areaName || ""))}</div>
+                                        <div class="device-id">${escapeHtml(device.id)}</div>
+                                        <div class="device-inline-form">
+                                            <input data-device-name="${escapeAttr(device.id)}" value="${escapeAttr(device.name)}">
+                                            <select data-device-type="${escapeAttr(device.id)}">${renderDeviceTypeOptions(device.type || "switch")}</select>
+                                            <select data-device-area="${escapeAttr(device.id)}">${renderAreaOptions(device.area || "")}</select>
+                                            <input data-device-area-name="${escapeAttr(device.id)}" value="${escapeAttr(device.areaName || "")}" placeholder="空间名">
+                                        </div>
+                                    </div>
+                                    <div class="device-actions">
+                                        <button class="toggle ${state.is_on ? "on" : ""}" data-device-id="${escapeAttr(device.id)}"></button>
+                                        <button class="mini-btn" data-device-save="${escapeAttr(device.id)}">保存</button>
+                                        <button class="mini-btn" data-device-delete="${escapeAttr(device.id)}">删除</button>
+                                    </div>
+                                </div>
+                            `;
+                        }).join("")
+                    }</div>`;
+                document.getElementById("refresh-devices-btn").onclick = loadDevices;
+                document.getElementById("create-device-btn").onclick = createDeviceFromForm;
                 body.querySelectorAll(".toggle").forEach((toggle) => {
                     toggle.addEventListener("click", async (event) => {
                         event.preventDefault();
@@ -1222,6 +1856,12 @@
                         const state = devices[id] || {};
                         await controlDevice(id, state.is_on ? "off" : "on");
                     });
+                });
+                body.querySelectorAll("[data-device-save]").forEach((btn) => {
+                    btn.onclick = () => updateDeviceFromCard(btn.dataset.deviceSave);
+                });
+                body.querySelectorAll("[data-device-delete]").forEach((btn) => {
+                    btn.onclick = () => deleteDeviceFromCard(btn.dataset.deviceDelete);
                 });
             } else if (type === "rules") {
                 title.textContent = "自动化规则";
@@ -1322,6 +1962,83 @@
                 body.querySelectorAll("[data-rule-run]").forEach((btn) => {
                     btn.onclick = () => runSingleRule(btn.dataset.ruleRun);
                 });
+            } else if (type === "floorplan") {
+                title.textContent = "SVG 户型图";
+                const selected = selectedFloorPlan;
+                body.innerHTML = `
+                    <div class="summary-card">
+                        <div class="summary-head">
+                            <div>
+                                <div class="summary-title">上传户型图</div>
+                                <div class="summary-meta">保存 SVG 元数据，并支持绑定设备映射后在图上叠加设备位置。</div>
+                            </div>
+                            <button class="mini-btn" id="refresh-floorplans-btn">刷新</button>
+                        </div>
+                        <div class="form-grid">
+                            <div class="field">
+                                <label>名称</label>
+                                <input id="floorplan-name" placeholder="例如：一层户型">
+                            </div>
+                            <div class="field">
+                                <label>说明</label>
+                                <input id="floorplan-desc" placeholder="可选">
+                            </div>
+                            <div class="field full">
+                                <input id="floorplan-file" type="file" accept="image/svg+xml,.svg">
+                            </div>
+                            <div class="field full">
+                                <button class="mini-btn" id="upload-floorplan-btn">上传 SVG</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="summary-card" style="margin-top: 10px;">
+                        <div class="summary-title">当前预览</div>
+                        <div class="summary-meta">${selected ? `${escapeHtml(selected.name || selected.id)} · ${Math.round((selected.width || 0))} x ${Math.round((selected.height || 0))}` : "请选择或上传一个户型图"}</div>
+                        <div class="floorplan-preview">
+                            ${selected ? `<img src="/api/floor-plans/${encodeURIComponent(selected.id)}/svg" alt="${escapeHtml(selected.name || selected.id)}">${floorPlanDevices.map((device) => `<span class="device-marker" style="left:${device.x}%;top:${device.y}%" title="${escapeHtml(device.name)} (${escapeHtml(device.type)})">${escapeHtml((device.type || "D").slice(0, 2).toUpperCase())}</span><span class="device-marker-label" style="left:${device.x}%;top:${device.y}%">${escapeHtml(device.name)}</span>`).join("")}` : `<div class="empty-hint">暂无户型图</div>`}
+                        </div>
+                    </div>
+                    <div class="summary-card" style="margin-top: 10px;">
+                        <div class="summary-title">设备映射</div>
+                        <div class="summary-meta">格式支持 [["light.bedroom","bedroom","light","卧室灯","主卧"]] 或 {"areaNames":{"bedroom":"主卧"},"devices":[{"entity_id":"light.bedroom","area":"bedroom","type":"light","name":"卧室灯","areaName":"主卧"}]}。</div>
+                        <div class="form-grid">
+                            <div class="field full">
+                                <textarea id="device-mapping-json" rows="5" placeholder='{"areaNames":{"living_room":"客厅"},"devices":[{"entity_id":"light.living_room","area":"living_room","type":"light","name":"客厅灯","areaName":"客厅"}]}'></textarea>
+                            </div>
+                            <div class="field full">
+                                <button class="mini-btn" id="save-device-mapping-btn" ${selected ? "" : "disabled"}>保存设备映射</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stack" style="margin-top: 10px;">
+                        ${floorPlanUploads.length ? floorPlanUploads.map((plan) => `
+                            <div class="rule-card">
+                                <div class="rule-head">
+                                    <div>
+                                        <div class="rule-name">${escapeHtml(plan.name || plan.id)}</div>
+                                        <div class="rule-meta">${escapeHtml(plan.description || "无说明")} · ${Math.round(plan.width || 0)} x ${Math.round(plan.height || 0)}</div>
+                                    </div>
+                                    <span class="pill ${selected && selected.id === plan.id ? "on" : ""}">${selected && selected.id === plan.id ? "当前" : "已保存"}</span>
+                                </div>
+                                <div class="mini-actions">
+                                    <button class="mini-btn" data-floorplan-select="${escapeHtml(plan.id)}">选择</button>
+                                    <a class="mini-btn" href="/api/floor-plans/${encodeURIComponent(plan.id)}/svg" target="_blank" rel="noopener">预览</a>
+                                    <button class="mini-btn" data-floorplan-delete="${escapeHtml(plan.id)}">删除</button>
+                                </div>
+                            </div>
+                        `).join("") : `<div class="empty-hint">还没有上传的 SVG 户型图。</div>`}
+                    </div>
+                `;
+                document.getElementById("refresh-floorplans-btn").onclick = loadFloorPlanUploads;
+                document.getElementById("upload-floorplan-btn").onclick = uploadFloorPlanSvg;
+                const saveMappingBtn = document.getElementById("save-device-mapping-btn");
+                if (saveMappingBtn) saveMappingBtn.onclick = saveFloorPlanDeviceMapping;
+                body.querySelectorAll("[data-floorplan-select]").forEach((btn) => {
+                    btn.onclick = () => selectFloorPlan(btn.dataset.floorplanSelect);
+                });
+                body.querySelectorAll("[data-floorplan-delete]").forEach((btn) => {
+                    btn.onclick = () => deleteFloorPlan(btn.dataset.floorplanDelete);
+                });
             } else if (type === "memory") {
                 title.textContent = "记忆与偏好";
                 const snapshot = memorySnapshot || {};
@@ -1409,45 +2126,48 @@
         }
 
         async function switchScene(scene) {
-            const data = await apiJson(`/api/scenes/${encodeURIComponent(scene)}/switch`, "POST", {});
-            if (data.status !== "success") {
-                showToast(data.error || "场景切换失败");
-                return;
+            try {
+                const data = await apiJson(`/api/scenes/${encodeURIComponent(scene)}/switch`, "POST", {});
+                if (data.status !== "success") {
+                    showToast(data.error || "\u573a\u666f\u5207\u6362\u5931\u8d25");
+                    return;
+                }
+                currentScene = data.scene || scene;
+                updateDevices(data.devices || {});
+                renderAgentMessage({
+                    status: "success",
+                    response_type: "execution_result",
+                    action: "scene_switch",
+                    response: data.result || `\u5df2\u5207\u6362\u5230${getSceneName(scene)}`
+                }, "\u6267\u884c\u5b8c\u6210");
+                addLog("\u573a\u666f", getSceneName(currentScene));
+                if (currentModal === "scene") renderModal("scene");
+                loadStatus();
+                loadMemorySummary();
+                loadPrivacyStatus();
+            } catch (e) {
+                showToast("\u573a\u666f\u5207\u6362\u5931\u8d25");
             }
-            currentScene = data.scene || scene;
-            updateDevices(data.devices || {});
-            addMsg("system", data.result || `已切换到${getSceneName(currentScene)}`, "场景切换");
-            loadStatus();
-            loadMemorySummary();
-            if (currentModal === "scene") {
-                renderModal("scene");
-            }
-            addLog("场景", getSceneName(scene));
         }
 
         async function controlDevice(deviceId, action) {
-            if (socket && socket.connected) {
-                socket.emit("message", { type: "device_control", data: { device: deviceId, action, params: {} } });
-                return;
-            }
-
             try {
-                const data = await apiJson(`/api/devices/${encodeURIComponent(deviceId)}/control`, "POST", {
-                    action,
-                    params: {},
-                });
+                const data = await apiJson(`/api/devices/${encodeURIComponent(deviceId)}/control`, "POST", { action, params: {} });
                 if (data.status !== "success") {
-                    showToast(data.error || "设备控制失败");
+                    showToast("璁惧鎺у埗澶辫触");
                     return;
                 }
-
                 updateDeviceState(deviceId, data.state || {});
                 addLog(getDeviceName(deviceId), buildDeviceStatus(deviceId, data.state || {}));
                 if (currentModal === "device") {
                     renderModal("device");
                 }
-            } catch (error) {
-                showToast("设备控制失败");
+            } catch (e) {
+                if (socket && socket.connected) {
+                    socket.emit("message", { type: "device_control", data: { device: deviceId, action, params: {} } });
+                    return;
+                }
+                showToast("璁惧鎺у埗澶辫触");
             }
         }
 
@@ -1546,6 +2266,114 @@
             }
         }
 
+        async function loadFloorPlanUploads() {
+            try {
+                const data = await apiGet("/api/floor-plans");
+                floorPlanUploads = data.floorPlans || data.files || [];
+                if (!selectedFloorPlan && floorPlanUploads.length) {
+                    selectedFloorPlan = floorPlanUploads[0];
+                    await loadFloorPlanDevices(selectedFloorPlan.id, false);
+                }
+                if (currentModal === "floorplan") renderModal("floorplan");
+            } catch (e) {
+                showToast("SVG 户型图加载失败");
+            }
+        }
+
+        async function selectFloorPlan(planId) {
+            const plan = floorPlanUploads.find((item) => item.id === planId);
+            if (!plan) return;
+            await apiJson(`/api/floor-plans/${encodeURIComponent(plan.id)}/activate`, "POST", {});
+            selectedFloorPlan = plan;
+            await loadFloorPlanDevices(plan.id, false);
+            if (currentModal === "floorplan") renderModal("floorplan");
+        }
+
+        async function loadFloorPlanDevices(planId, rerender = true) {
+            if (!planId) return;
+            try {
+                const data = await apiGet(`/api/floor-plans/${encodeURIComponent(planId)}/devices`);
+                floorPlanDevices = data.devices || [];
+                if (rerender && currentModal === "floorplan") renderModal("floorplan");
+            } catch (e) {
+                floorPlanDevices = [];
+            }
+        }
+
+        async function uploadFloorPlanSvg() {
+            const input = document.getElementById("floorplan-file");
+            const file = input && input.files ? input.files[0] : null;
+            if (!file) {
+                showToast("请先选择 SVG 文件");
+                return;
+            }
+            const form = new FormData();
+            form.append("floorPlan", file, file.name);
+            form.append("name", document.getElementById("floorplan-name").value.trim() || file.name.replace(/\.svg$/i, ""));
+            form.append("description", document.getElementById("floorplan-desc").value.trim());
+            try {
+                const response = await fetch("/api/floor-plans", {
+                    method: "POST",
+                    body: form
+                });
+                const data = await response.json();
+                if (!response.ok || data.status !== "success") {
+                    showToast(data.error || "SVG 上传失败");
+                    return;
+                }
+                selectedFloorPlan = data.floorPlan;
+                floorPlanDevices = [];
+                showToast("SVG 已上传");
+                await loadFloorPlanUploads();
+            } catch (e) {
+                showToast("SVG 上传失败");
+            }
+        }
+
+        async function saveFloorPlanDeviceMapping() {
+            if (!selectedFloorPlan) {
+                showToast("请先选择户型图");
+                return;
+            }
+            const raw = document.getElementById("device-mapping-json").value.trim();
+            if (!raw) {
+                showToast("请输入设备映射 JSON");
+                return;
+            }
+            try {
+                const parsed = JSON.parse(raw);
+                const data = await apiJson(`/api/floor-plans/${encodeURIComponent(selectedFloorPlan.id)}/devices`, "POST", { devices: parsed });
+                if (data.status !== "success") {
+                    showToast(data.error || "设备映射保存失败");
+                    return;
+                }
+                floorPlanDevices = data.devices || [];
+                showToast("设备映射已保存");
+                if (currentModal === "floorplan") renderModal("floorplan");
+            } catch (e) {
+                showToast("设备映射 JSON 无效");
+            }
+        }
+
+        async function deleteFloorPlan(planId) {
+            if (!planId || !confirm("删除这个户型图及其设备映射？")) return;
+            try {
+                const response = await fetch(`/api/floor-plans/${encodeURIComponent(planId)}`, { method: "DELETE" });
+                const data = await response.json();
+                if (!response.ok || data.status !== "success") {
+                    showToast(data.error || "删除失败");
+                    return;
+                }
+                if (selectedFloorPlan && selectedFloorPlan.id === planId) {
+                    selectedFloorPlan = null;
+                    floorPlanDevices = [];
+                }
+                await loadFloorPlanUploads();
+                showToast("户型图已删除");
+            } catch (e) {
+                showToast("删除失败");
+            }
+        }
         async function createRuleFromForm() {
             const triggerType = document.getElementById("rule-trigger-type").value;
             const triggerValue = document.getElementById("rule-trigger-value").value.trim();
@@ -1832,6 +2660,89 @@
             }
         }
 
+        function openInlineCorrection(button, messageId, targetType, correctionPrompt = "") {
+            const container = button.closest(".voice-feedback");
+            if (!container) return;
+            container.querySelector(".inline-correction")?.remove();
+            const form = document.createElement("div");
+            form.className = "inline-correction";
+            form.innerHTML = `
+                <input type="text" placeholder="${escapeAttr(correctionPrompt || "\u8bf7\u8f93\u5165\u7ea0\u6b63\u540e\u7684\u7406\u89e3")}" aria-label="\u7ea0\u6b63\u540e\u7684\u7406\u89e3">
+                <button type="button">\u63d0\u4ea4</button>
+                <button type="button">\u53d6\u6d88</button>
+            `;
+            const input = form.querySelector("input");
+            const submit = form.querySelectorAll("button")[0];
+            const cancel = form.querySelectorAll("button")[1];
+            submit.addEventListener("click", () => submitInlineCorrection(form, messageId, targetType));
+            cancel.addEventListener("click", () => form.remove());
+            input.addEventListener("keydown", (event) => {
+                if (event.key === "Enter") submitInlineCorrection(form, messageId, targetType);
+                if (event.key === "Escape") form.remove();
+            });
+            container.appendChild(form);
+            input.focus();
+            document.getElementById("messages").scrollTop = document.getElementById("messages").scrollHeight;
+        }
+
+        function submitInlineCorrection(form, messageId, targetType) {
+            const input = form.querySelector("input");
+            const correction = (input?.value || "").trim();
+            if (!correction) {
+                showToast("\u8bf7\u8f93\u5165\u4fee\u6539\u5185\u5bb9");
+                input?.focus();
+                return;
+            }
+            sendInteractionFeedback(messageId, targetType, "change", correction);
+            form.remove();
+        }
+
+        async function sendInteractionFeedbackInline(messageId, targetType, feedbackType, correctionValue = "") {
+            const correction = feedbackType === "change" ? String(correctionValue || "").trim() : "";
+            if (feedbackType === "change" && !correction) {
+                showToast("\u8bf7\u8f93\u5165\u4fee\u6539\u5185\u5bb9");
+                return;
+            }
+            try {
+                const data = await apiJson("/api/interaction/feedback", "POST", {
+                    message_id: messageId,
+                    target_type: targetType,
+                    feedback_type: feedbackType,
+                    correction
+                });
+                if (data.status !== "success") {
+                    showToast(data.error || "\u53cd\u9988\u63d0\u4ea4\u5931\u8d25");
+                    return;
+                }
+                if (feedbackType === "change") {
+                    addMsg("user", correction);
+                    addLog("\u7528\u6237", correction);
+                }
+                if (data.response_type === "automation_proposal" && data.proposal) {
+                    addMsg("ai", data.message || data.proposal.summary, "\u5f85\u786e\u8ba4\u4efb\u52a1", {
+                        feedbackTarget: { message_id: data.proposal.message_id, target_type: "automation_proposal" },
+                        correctionPrompt: "\u8bf7\u8f93\u5165\u4fee\u6b63\u540e\u7684\u5b9a\u65f6\u4efb\u52a1\u63cf\u8ff0",
+                    });
+                } else if (data.response_type === "automation_created") {
+                    addMsg("ai", data.response || "\u5df2\u521b\u5efa\u5b9a\u65f6\u4efb\u52a1", "\u4efb\u52a1\u5df2\u521b\u5efa");
+                } else if (data.response_type === "execution_result") {
+                    renderAgentMessage(data, "\u6267\u884c\u5b8c\u6210");
+                } else if (feedbackType === "change") {
+                    addMsg("ai", data.message || "\u4fee\u6539\u53cd\u9988\u5df2\u8bb0\u5f55\uff0c\u4f60\u53ef\u4ee5\u7ee7\u7eed\u8f93\u5165\u6216\u518d\u6b21\u4fee\u6539\u3002", "\u53cd\u9988\u5df2\u8bb0\u5f55");
+                    addLog("\u7cfb\u7edf", data.message || "\u4fee\u6539\u53cd\u9988\u5df2\u8bb0\u5f55");
+                } else if (feedbackType === "accept" || feedbackType === "reject") {
+                    addMsg("ai", data.message || "\u53cd\u9988\u5df2\u8bb0\u5f55", "\u53cd\u9988\u5df2\u8bb0\u5f55");
+                }
+                showToast(data.message || "\u53cd\u9988\u5df2\u8bb0\u5f55");
+                loadMemorySummary();
+                loadPrivacyStatus();
+            } catch (e) {
+                showToast("\u53cd\u9988\u63d0\u4ea4\u5931\u8d25");
+            }
+        }
+
+        sendInteractionFeedback = sendInteractionFeedbackInline;
+
         function handlePipelineUpdate(msg) {
             const { type, data } = msg;
             if (type === "pipeline_start") {
@@ -1871,6 +2782,7 @@
                 case "connected":
                     updateContext(data.context || {});
                     updateDevices(data.devices || {});
+                    loadDevices(false);
                     loadRules();
                     loadMemorySummary();
                     loadPrivacyStatus();
@@ -1998,6 +2910,7 @@
                 case "connected":
                     updateContext(data.context || {});
                     updateDevices(data.devices || {});
+                    loadDevices(false);
                     loadRules();
                     loadMemorySummary();
                     loadPrivacyStatus();
@@ -2054,6 +2967,7 @@
             autoResize();
             initVoiceRecognition();
             initWebSocket();
+            loadDevices(false);
             loadStatus();
             loadRules();
             loadSchedulerStatus();

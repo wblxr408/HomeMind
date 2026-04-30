@@ -80,6 +80,12 @@ AUTOMATION_TIME_PATTERNS = (
 )
 
 ACTION_HINTS = (
+    "\u518d\u6697",
+    "\u6697\u4e00\u70b9",
+    "\u518d\u4eae",
+    "\u4eae\u4e00\u70b9",
+    "\u5173\u6389\u5b83",
+    "\u542f\u52a8",
     "打开",
     "关闭",
     "调高",
@@ -109,6 +115,7 @@ ACTION_HINTS = (
 )
 
 SOFT_COMMAND_NORMALIZATIONS = (
+    (("\u6709\u70b9\u95f7", "\u95f7\u5f97\u5f88", "\u95f7\u5f97\u614c", "\u5c4b\u91cc\u95f7", "\u95f7"), "\u6253\u5f00\u7a7a\u8c03"),
     (("有点热", "好热", "太热", "闷热", "热"), "打开空调"),
     (("有点冷", "好冷", "太冷", "冷"), "打开暖气"),
     (("太亮", "有点亮", "亮一点太多", "刺眼"), "调暗灯光"),
@@ -566,6 +573,19 @@ class LLMDecider:
         text = str(text or "").strip()
         if not text:
             return ""
+        explicit_devices = (
+            "\u7a7a\u8c03",
+            "\u706f\u5149",
+            "\u706f",
+            "\u7535\u89c6",
+            "\u97f3\u54cd",
+            "\u98ce\u6247",
+            "\u7a97\u6237",
+            "\u70ed\u6c34\u5668",
+        )
+        explicit_verbs = ("\u6253\u5f00", "\u5f00\u542f", "\u5173\u95ed", "\u5173\u6389", "\u8c03\u9ad8", "\u8c03\u4f4e", "\u8c03\u4eae", "\u8c03\u6697")
+        if any(device in text for device in explicit_devices) and any(verb in text for verb in explicit_verbs):
+            return text
         for keywords, normalized in SOFT_COMMAND_NORMALIZATIONS:
             if any(keyword in text for keyword in keywords):
                 return normalized

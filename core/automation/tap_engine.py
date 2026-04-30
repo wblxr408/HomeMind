@@ -55,7 +55,11 @@ class TAPEngine:
             days = trigger.get("days", [])
             return int(getattr(context, "day_of_week", now.weekday())) in {int(day) for day in days}
         if trigger_type == "holiday":
-            # Local fallback: without a holiday calendar, treat configured holiday rules as non-firing.
+            month = trigger.get("month")
+            day = trigger.get("day")
+            if month and day:
+                return now.month == int(month) and now.day == int(day)
+            # Local fallback: movable holiday names require a calendar service.
             return False
         return False
 

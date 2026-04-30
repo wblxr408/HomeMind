@@ -1,15 +1,19 @@
 __pycache__/
 *.py[cod]
 gcm-diagnose.log
+.env
+.env.*
+!.env.example
 
 .pytest_cache/
 .mypy_cache/
 
-uploads/*
-!uploads/floor-plans/
-uploads/floor-plans/*
-!uploads/floor-plans/*.svg
+reports/
+
 data/scenes.json
+data/preferences.json
+data/session_state.json
+data/device-registry.json
 data/.key
 data/.key.salt
 data/chroma_db/

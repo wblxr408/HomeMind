@@ -8,7 +8,8 @@ updates while avoiding the fragile hand-written gradient path.
 
 import logging
 import os
-from typing import Dict, List, Tuple
+from datetime import datetime
+from typing import Any, Dict, List, Tuple
 
 import numpy as np
 try:
@@ -47,6 +48,23 @@ REWARD_MAP = {
     "忽略": 0.0,
     "拒绝": -0.5,
     "纠正": -1.0,
+}
+
+
+REWARD_ALIASES = {
+    **REWARD_MAP,
+    "\u63a5\u53d7": 1.0,
+    "\u5ffd\u7565": 0.0,
+    "\u62d2\u7edd": -0.5,
+    "\u7ea0\u6b63": -1.0,
+    "accepted": 1.0,
+    "accept": 1.0,
+    "ignored": 0.0,
+    "ignore": 0.0,
+    "rejected": -0.5,
+    "reject": -0.5,
+    "corrected": -1.0,
+    "change": -1.0,
 }
 
 
@@ -185,6 +203,8 @@ class DQNPolicy:
         self.target_sync_freq = 250
         self.model_dir = model_dir
         self._storage = get_encrypted_storage()
+        self.last_feedback_event: Dict[str, Any] = {}
+        self.last_update_summary: Dict[str, Any] = {}
         os.makedirs(model_dir, exist_ok=True)
         if not TORCH_AVAILABLE:
             logger.warning("PyTorch unavailable, DQNPolicy using NumPy fallback: %s", TORCH_IMPORT_ERROR)
@@ -261,24 +281,42 @@ class DQNPolicy:
 
         return action, confidence
 
+    def _reward_for_feedback(self, user_response: str) -> float:
+        response = str(user_response or "").strip()
+        return float(REWARD_ALIASES.get(response, REWARD_ALIASES.get(response.lower(), 0.0)))
+
     def record_feedback(self, context, action: int, user_response: str) -> bool:
-        reward = REWARD_MAP.get(user_response, 0.0)
+        reward = self._reward_for_feedback(user_response)
         state = self._state_to_vector(context)
         next_state = state.copy()
         self.replay.push(state, action, reward, next_state)
 
         self.update_counter += 1
+        updated = False
+        update_summary: Dict[str, Any] = {}
         if self.update_counter % self.update_freq == 0 and len(self.replay) >= 10:
-            self._light_update()
+            update_summary = self._light_update(trigger="feedback")
+            updated = update_summary.get("status") == "updated"
+
+        self.last_feedback_event = {
+            "action": int(action),
+            "feedback": str(user_response or ""),
+            "reward": reward,
+            "buffer_size": len(self.replay),
+            "updated": updated,
+            "update_counter": self.update_counter,
+            "timestamp": datetime.now().astimezone().isoformat(),
+        }
+        if update_summary:
+            self.last_feedback_event["learning"] = update_summary
 
         logger.info("DQN feedback recorded: action=%s, reward=%s, buffer=%s", action, reward, len(self.replay))
         return True
 
-    def _light_update(self):
+    def _light_update(self, trigger: str = "incremental") -> Dict[str, Any]:
         """Run a Double DQN update using online action selection and target scoring."""
         if not TORCH_AVAILABLE:
-            self._numpy_light_update()
-            return
+            return self._numpy_light_update(trigger=trigger)
 
         optimizer = getattr(self, "optimizer", None)
         if optimizer is None:
@@ -286,6 +324,10 @@ class DQNPolicy:
             self.optimizer = optimizer
 
         batch = self.replay.sample(16)
+        if not batch:
+            summary = self._learning_summary("skipped", trigger, reason="empty_replay")
+            self.last_update_summary = summary
+            return summary
         states = torch.as_tensor(np.stack([exp["state"] for exp in batch]), dtype=torch.float32)
         actions = torch.as_tensor([exp["action"] for exp in batch], dtype=torch.long)
         rewards = torch.as_tensor([exp["reward"] for exp in batch], dtype=torch.float32)
@@ -305,13 +347,29 @@ class DQNPolicy:
 
         self.epsilon = max(self.epsilon_min, self.epsilon * 0.99)
 
+        target_synced = False
         if self.update_counter % getattr(self, "target_sync_freq", self.update_freq * 5) == 0:
             self._sync_target()
+            target_synced = True
             logger.info("TargetNet synced")
 
-    def _numpy_light_update(self):
+        summary = self._learning_summary(
+            "updated",
+            trigger,
+            batch_size=len(batch),
+            loss=float(loss.detach().cpu().item()),
+            target_synced=target_synced,
+        )
+        self.last_update_summary = summary
+        return summary
+
+    def _numpy_light_update(self, trigger: str = "incremental") -> Dict[str, Any]:
         """Fallback update used only when PyTorch cannot be imported."""
         batch = self.replay.sample(16)
+        if not batch:
+            summary = self._learning_summary("skipped", trigger, reason="empty_replay")
+            self.last_update_summary = summary
+            return summary
         for exp in batch:
             state = exp["state"].astype(np.float32)
             action = int(exp["action"])
@@ -330,8 +388,44 @@ class DQNPolicy:
             self.q_net.b3[action] += self.lr * delta
 
         self.epsilon = max(self.epsilon_min, self.epsilon * 0.99)
+        target_synced = False
         if self.update_counter % getattr(self, "target_sync_freq", self.update_freq * 5) == 0:
             self._sync_target()
+            target_synced = True
+
+        summary = self._learning_summary(
+            "updated",
+            trigger,
+            batch_size=len(batch),
+            target_synced=target_synced,
+        )
+        self.last_update_summary = summary
+        return summary
+
+    def _learning_summary(self, status: str, trigger: str, **extra) -> Dict[str, Any]:
+        summary = {
+            "status": status,
+            "trigger": trigger,
+            "buffer_size": len(self.replay),
+            "epsilon": float(self.epsilon),
+            "update_counter": int(getattr(self, "update_counter", 0)),
+            "timestamp": datetime.now().astimezone().isoformat(),
+        }
+        summary.update(extra)
+        return summary
+
+    def daily_incremental_update(self, min_replay: int = 10) -> Dict[str, Any]:
+        """Run the scheduled daily incremental DQN update from persisted replay data."""
+        if len(self.replay) < min_replay:
+            summary = self._learning_summary(
+                "skipped",
+                "daily",
+                reason="insufficient_replay",
+                min_replay=int(min_replay),
+            )
+            self.last_update_summary = summary
+            return summary
+        return self._light_update(trigger="daily")
 
     def save(self, path: str = ""):
         if not path:
@@ -343,7 +437,7 @@ class DQNPolicy:
             "state_dim": self.state_dim,
             "action_dim": self.action_dim,
         }
-        self._storage.save_pickle(data, path)
+        return self._storage.save_pickle(data, path)
 
     def _load_if_exists(self):
         path = os.path.join(self.model_dir, "dqn_policy.pkl")

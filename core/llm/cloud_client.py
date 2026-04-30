@@ -14,6 +14,7 @@ class CloudClient:
         self.api_key = api_key or os.getenv("LLM_API_KEY", "")
         self.model = model or os.getenv("LLM_MODEL", "gpt-3.5-turbo")
         self._client = None
+        self._requests = None
         self._available = False
         self._init_client()
 
@@ -40,13 +41,44 @@ class CloudClient:
             logger.warning("openai package is not installed; CloudClient unavailable")
         except Exception as exc:
             logger.warning("CloudClient init failed: %s", exc)
+        if not self._available:
+            self._init_requests_client()
+
+    def _init_requests_client(self):
+        try:
+            import requests
+
+            self._requests = requests
+            self._available = True
+            logger.info("CloudClient initialized with requests fallback%s", f" for {self.api_base}" if self.api_base else "")
+        except ImportError:
+            logger.warning("requests package is not installed; CloudClient unavailable")
 
     def is_available(self) -> bool:
-        return self._available and self._client is not None
+        return self._available and (self._client is not None or self._requests is not None)
 
     def complete(self, prompt: str, max_tokens: int = 256) -> str:
         if not self.is_available():
             raise RuntimeError("cloud client is not available")
+        if self._requests is not None and self._client is None:
+            base = (self.api_base or "https://api.openai.com/v1").rstrip("/")
+            url = f"{base}/chat/completions"
+            response = self._requests.post(
+                url,
+                headers={
+                    "Authorization": f"Bearer {self.api_key}",
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "model": self.model,
+                    "messages": [{"role": "user", "content": prompt}],
+                    "max_tokens": max_tokens,
+                },
+                timeout=30,
+            )
+            response.raise_for_status()
+            payload = response.json()
+            return payload.get("choices", [{}])[0].get("message", {}).get("content", "") or ""
         response = self._client.chat.completions.create(
             model=self.model,
             messages=[{"role": "user", "content": prompt}],

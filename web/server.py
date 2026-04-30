@@ -4,6 +4,7 @@ HomeMind Web 服务 - 中央指令器
 """
 import inspect
 import json
+import re
 import threading
 import time
 from copy import deepcopy
@@ -11,6 +12,19 @@ from datetime import datetime
 import os
 import sys
 import types
+from pathlib import Path
+from xml.etree import ElementTree
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+try:
+    from dotenv import load_dotenv
+
+    load_dotenv(REPO_ROOT / ".env")
+except ImportError:
+    pass
 
 try:
     import asyncio as _asyncio_probe
@@ -22,7 +36,7 @@ except Exception:
     sys.modules["asyncio"] = asyncio_stub
     ASYNCIO_AVAILABLE = False
 
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 try:
     from flask_cors import CORS
 except ImportError:
@@ -105,6 +119,457 @@ voice_asr = VoskASR()
 voice_feedback_store = VoiceFeedbackStore()
 language_normalizer = LanguageNormalizer(feedback_store=voice_feedback_store)
 
+UPLOAD_ROOT = Path(os.environ.get("HOMEMIND_UPLOAD_DIR", "uploads"))
+FLOOR_PLAN_UPLOAD_DIR = UPLOAD_ROOT / "floor-plans"
+FLOOR_PLAN_STORE_PATH = Path(os.environ.get("HOMEMIND_FLOOR_PLAN_STORE", "data/floor-plans.json"))
+FLOOR_PLAN_DEVICE_STORE_PATH = Path(os.environ.get("HOMEMIND_FLOOR_PLAN_DEVICE_STORE", "data/devices.json"))
+DEVICE_REGISTRY_PATH = Path(os.environ.get("HOMEMIND_DEVICE_REGISTRY_STORE", "data/device-registry.json"))
+MAX_SVG_UPLOAD_BYTES = int(os.environ.get("HOMEMIND_MAX_SVG_UPLOAD_BYTES", str(2 * 1024 * 1024)))
+DEFAULT_SVG_WIDTH = 640.0
+DEFAULT_SVG_HEIGHT = 660.0
+DEFAULT_DEVICE_REGISTRY = [
+    {"id": "air_conditioner", "name": "空调", "type": "climate"},
+    {"id": "light", "name": "灯光", "type": "light"},
+    {"id": "tv", "name": "电视", "type": "media_player"},
+    {"id": "water_heater", "name": "热水器", "type": "water_heater"},
+    {"id": "fan", "name": "风扇", "type": "fan"},
+    {"id": "speaker", "name": "音响", "type": "speaker"},
+    {"id": "window", "name": "窗户", "type": "cover"},
+]
+IMMUTABLE_DEVICE_UPDATE_FIELDS = {
+    "state",
+    "status",
+    "is_on",
+    "isOn",
+    "runtime",
+    "current_state",
+    "currentState",
+    "last_state",
+    "lastState",
+    "createdAt",
+    "updatedAt",
+}
+
+DEFAULT_ROOM_AREAS = {
+    "living_room": {"coordinates": [{"x": 23, "y": 108}, {"x": 195, "y": 298}]},
+    "bedroom": {"coordinates": [{"x": 284, "y": 132}, {"x": 406, "y": 296}]},
+    "bedroom2": {"coordinates": [{"x": 422, "y": 104}, {"x": 616, "y": 304}]},
+    "bathroom1": {"coordinates": [{"x": 344, "y": 431}, {"x": 406, "y": 544}]},
+    "bathroom2": {"coordinates": [{"x": 495, "y": 335}, {"x": 591, "y": 424}]},
+    "dining_room": {"coordinates": [{"x": 118, "y": 368}, {"x": 232, "y": 513}]},
+}
+DEFAULT_AREA_ALIASES = {
+    "living_room": ["\u5ba2\u5385", "\u8d77\u5c45\u5ba4", "living room", "living_room"],
+    "bedroom": ["\u5367\u5ba4", "\u4e3b\u5367", "bedroom"],
+    "bedroom2": ["\u6b21\u5367", "\u5367\u5ba42", "bedroom2"],
+    "kitchen": ["\u53a8\u623f", "kitchen"],
+    "bathroom1": ["\u536b\u751f\u95f4", "\u4e3b\u536b", "bathroom1"],
+    "bathroom2": ["\u6b21\u536b", "\u536b\u751f\u95f42", "bathroom2"],
+    "dining_room": ["\u9910\u5385", "dining room", "dining_room"],
+    "study": ["\u4e66\u623f", "study"],
+    "balcony": ["\u9633\u53f0", "balcony"],
+    "entrance": ["\u7384\u5173", "\u5165\u6237", "entrance"],
+}
+SEMANTIC_DEVICE_MATCHES = {
+    "\u706f\u5149": {
+        "types": {"light"},
+        "tokens": {"light", "lamp", "\u706f", "\u706f\u5149"},
+    },
+    "\u7a7a\u8c03": {
+        "types": {"climate", "air_conditioner", "hvac"},
+        "tokens": {"climate", "air_conditioner", "air conditioner", "ac", "\u7a7a\u8c03"},
+    },
+    "\u7535\u89c6": {
+        "types": {"tv", "television", "media_player"},
+        "tokens": {"tv", "television", "\u7535\u89c6"},
+    },
+    "\u70ed\u6c34\u5668": {
+        "types": {"water_heater"},
+        "tokens": {"water_heater", "water heater", "\u70ed\u6c34\u5668"},
+    },
+    "\u98ce\u6247": {
+        "types": {"fan"},
+        "tokens": {"fan", "\u98ce\u6247"},
+    },
+    "\u97f3\u54cd": {
+        "types": {"speaker", "audio", "media_player"},
+        "tokens": {"speaker", "audio", "sound", "\u97f3\u54cd", "\u5587\u53ed"},
+    },
+    "\u7a97\u6237": {
+        "types": {"cover", "window", "curtain"},
+        "tokens": {"window", "curtain", "cover", "\u7a97", "\u7a97\u6237", "\u7a97\u5e18"},
+    },
+}
+
+
+def _safe_svg_filename(filename: str) -> str:
+    stem = Path(filename or "floor-plan.svg").stem.strip() or "floor-plan"
+    stem = re.sub(r"[^A-Za-z0-9_.-]+", "-", stem).strip(".-") or "floor-plan"
+    return f"{stem[:80]}.svg"
+
+
+def _validate_svg_upload(filename: str, data: bytes) -> tuple[bool, str]:
+    if not filename.lower().endswith(".svg"):
+        return False, "only .svg files are supported"
+    if not data:
+        return False, "svg file is empty"
+    if len(data) > MAX_SVG_UPLOAD_BYTES:
+        return False, "svg file is too large"
+    try:
+        root = ElementTree.fromstring(data)
+    except ElementTree.ParseError:
+        return False, "invalid svg xml"
+
+    root_name = root.tag.rsplit("}", 1)[-1].lower()
+    if root_name != "svg":
+        return False, "root element must be svg"
+
+    for node in root.iter():
+        tag = node.tag.rsplit("}", 1)[-1].lower()
+        if tag in {"script", "foreignobject"}:
+            return False, "unsafe svg content is not allowed"
+        for attr, value in node.attrib.items():
+            attr_name = attr.rsplit("}", 1)[-1].lower()
+            attr_value = str(value or "").strip().lower()
+            if attr_name.startswith("on") or attr_value.startswith("javascript:"):
+                return False, "unsafe svg attributes are not allowed"
+    return True, ""
+
+
+def _read_json_list(path: Path) -> list:
+    if not path.exists():
+        return []
+    try:
+        with path.open("r", encoding="utf-8") as handle:
+            data = json.load(handle)
+        return data if isinstance(data, list) else []
+    except Exception:
+        return []
+
+
+def _write_json_list(path: Path, data: list) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8") as handle:
+        json.dump(data, handle, ensure_ascii=False, indent=2)
+
+
+def _safe_device_id(raw_id: str, fallback_name: str = "") -> str:
+    raw_id = str(raw_id or "").strip()
+    candidate = re.sub(r"[^A-Za-z0-9_.-]+", "_", raw_id).strip("._-")
+    if candidate:
+        return candidate[:80]
+    fallback = re.sub(r"[^A-Za-z0-9_.-]+", "_", str(fallback_name or "")).strip("._-")
+    if fallback:
+        return fallback[:80]
+    return f"device_{int(time.time() * 1000)}"
+
+
+def _spatial_device_name(name: str, area_name: str = "") -> str:
+    name = str(name or "").strip()
+    area_name = str(area_name or "").strip()
+    generic_names = {
+        "\u706f",
+        "\u706f\u5149",
+        "\u7a7a\u8c03",
+        "\u7535\u89c6",
+        "\u97f3\u54cd",
+        "\u98ce\u6247",
+        "\u7a97\u6237",
+        "\u7a97\u5e18",
+        "\u70ed\u6c34\u5668",
+        "light",
+        "ac",
+        "tv",
+        "speaker",
+        "fan",
+        "window",
+    }
+    if area_name and name and name.lower() in generic_names and not name.startswith(area_name):
+        return f"{area_name}{name}"
+    return name
+
+
+def _default_device_state(device_type: str = "") -> dict:
+    state = {"status": "关"}
+    if device_type == "climate":
+        state.update({"temperature": 26, "mode": "制冷"})
+    elif device_type == "light":
+        state["brightness"] = 100
+    elif device_type in {"media_player", "speaker"}:
+        state["volume"] = 30
+    elif device_type == "fan":
+        state["speed"] = 2
+    elif device_type == "water_heater":
+        state["temperature"] = 45
+    return state
+
+
+def _normalize_device_registry_item(item: dict) -> dict | None:
+    if not isinstance(item, dict):
+        return None
+    name = str(item.get("name") or "").strip()
+    device_id = _safe_device_id(item.get("id") or item.get("deviceId"), name)
+    if not name:
+        name = device_id
+    device_type = str(item.get("type") or "switch").strip() or "switch"
+    area = str(item.get("area") or item.get("room") or "").strip()
+    area_name = str(item.get("areaName") or item.get("roomName") or "").strip()
+    protocol = str(item.get("protocol") or "simulated").strip() or "simulated"
+    normalized = {"id": device_id, "name": name, "type": device_type, "protocol": protocol}
+    if area:
+        normalized["area"] = area
+    if area_name:
+        normalized["areaName"] = area_name
+    return normalized
+
+
+def _load_device_registry() -> list:
+    raw_items = _read_json_list(DEVICE_REGISTRY_PATH) if DEVICE_REGISTRY_PATH.exists() else DEFAULT_DEVICE_REGISTRY
+    registry = []
+    seen = set()
+    for raw in raw_items:
+        item = _normalize_device_registry_item(raw)
+        if not item or item["id"] in seen:
+            continue
+        registry.append(item)
+        seen.add(item["id"])
+    if registry:
+        return registry
+    return [dict(item) for item in DEFAULT_DEVICE_REGISTRY]
+
+
+def _save_device_registry(registry: list) -> None:
+    _write_json_list(DEVICE_REGISTRY_PATH, registry)
+
+
+def _parse_svg_dimensions(data: bytes) -> tuple[float, float]:
+    try:
+        root = ElementTree.fromstring(data)
+    except ElementTree.ParseError:
+        return DEFAULT_SVG_WIDTH, DEFAULT_SVG_HEIGHT
+
+    view_box = root.attrib.get("viewBox") or root.attrib.get("viewbox") or ""
+    parts = [part for part in re.split(r"[\s,]+", view_box.strip()) if part]
+    if len(parts) >= 4:
+        try:
+            return float(parts[2]) or DEFAULT_SVG_WIDTH, float(parts[3]) or DEFAULT_SVG_HEIGHT
+        except ValueError:
+            pass
+
+    def numeric_attr(name: str, fallback: float) -> float:
+        value = str(root.attrib.get(name, "")).strip()
+        match = re.match(r"^([0-9]+(?:\.[0-9]+)?)", value)
+        return float(match.group(1)) if match else fallback
+
+    return numeric_attr("width", DEFAULT_SVG_WIDTH), numeric_attr("height", DEFAULT_SVG_HEIGHT)
+
+
+def _floor_plan_id_exists(plan_id: str) -> bool:
+    return any(plan.get("id") == plan_id for plan in _read_json_list(FLOOR_PLAN_STORE_PATH))
+
+
+def _find_floor_plan(plan_id: str) -> dict | None:
+    for plan in _read_json_list(FLOOR_PLAN_STORE_PATH):
+        if plan.get("id") == plan_id:
+            return plan
+    return None
+
+
+def _set_active_floor_plan(plan_id: str) -> dict | None:
+    plans = _read_json_list(FLOOR_PLAN_STORE_PATH)
+    updated_plan = None
+    for index, plan in enumerate(plans):
+        updated = dict(plan)
+        updated["active"] = plan.get("id") == plan_id
+        if updated["active"]:
+            updated["updatedAt"] = datetime.now().astimezone().isoformat()
+            updated_plan = updated
+        plans[index] = updated
+    if updated_plan:
+        _write_json_list(FLOOR_PLAN_STORE_PATH, plans)
+    return updated_plan
+
+
+def _normalize_area_name(raw: str) -> str:
+    return re.sub(r"[\s_\-]+", "", str(raw or "").strip().lower())
+
+
+def _extract_device_mapping_item(item) -> dict | None:
+    if isinstance(item, list) and len(item) >= 2:
+        entity_id = str(item[0] or "").strip()
+        area = str(item[1] or "").strip()
+        device_type = str(item[2] if len(item) >= 3 and item[2] is not None else "light").strip() or "light"
+        device_name = str(item[3] if len(item) >= 4 and item[3] is not None else "").strip()
+        area_name = str(item[4] if len(item) >= 5 and item[4] is not None else "").strip()
+    elif isinstance(item, dict):
+        entity_id = str(item.get("entity_id") or item.get("entityId") or item.get("id") or item.get("entity") or "").strip()
+        area = str(item.get("area") or item.get("room") or item.get("zone") or "").strip()
+        device_type = str(item.get("device_type") or item.get("deviceType") or item.get("type") or "light").strip() or "light"
+        device_name = str(item.get("name") or item.get("displayName") or item.get("deviceName") or "").strip()
+        area_name = str(
+            item.get("areaName")
+            or item.get("area_name")
+            or item.get("roomName")
+            or item.get("room_name")
+            or item.get("displayArea")
+            or item.get("display_area")
+            or ""
+        ).strip()
+    else:
+        return None
+
+    if not entity_id or not area:
+        return None
+    if not device_name:
+        device_name = entity_id.split(".", 1)[-1].replace("_", " ")
+    return {
+        "entity_id": entity_id,
+        "area": area,
+        "device_type": device_type,
+        "name": device_name,
+        "area_name": area_name,
+    }
+
+
+def _area_names_from_payload(data: dict, device_items: list) -> dict:
+    area_names = {}
+    nested = data.get("devices") if isinstance(data.get("devices"), dict) else {}
+    raw_area_names = data.get("areaNames") or data.get("roomNames") or nested.get("areaNames") or nested.get("roomNames") or {}
+    if isinstance(raw_area_names, dict):
+        for area, name in raw_area_names.items():
+            area = str(area or "").strip()
+            name = str(name or "").strip()
+            if area and name:
+                area_names[area] = name
+    custom_rooms = data.get("customRooms") if isinstance(data.get("customRooms"), dict) else nested.get("customRooms", {})
+    for area, room in custom_rooms.items():
+        if not isinstance(room, dict):
+            continue
+        name = str(room.get("name") or room.get("displayName") or room.get("areaName") or "").strip()
+        if str(area or "").strip() and name:
+            area_names[str(area).strip()] = name
+    for item in device_items:
+        area = item.get("area", "")
+        area_name = item.get("area_name", "")
+        if area and area_name:
+            area_names[area] = area_name
+    return area_names
+
+
+def _normalize_device_mapping_to_tuples(raw_input) -> tuple[bool, str, list]:
+    if isinstance(raw_input, str):
+        try:
+            raw_input = json.loads(raw_input)
+        except json.JSONDecodeError:
+            return False, "invalid device mapping json", []
+
+    if isinstance(raw_input, dict):
+        items = raw_input.get("devices") or raw_input.get("deviceMapping") or raw_input.get("mappings")
+        if items is None:
+            return False, 'expected "devices", "deviceMapping", or "mappings"', []
+    elif isinstance(raw_input, list):
+        items = raw_input
+    else:
+        return False, "invalid root type for device mapping", []
+
+    tuples = []
+    for item in items:
+        normalized = _extract_device_mapping_item(item)
+        if normalized:
+            tuples.append(normalized)
+
+    if not tuples and items:
+        return False, "no valid devices found", []
+    return True, "", tuples
+
+
+def _compute_device_positions(device_mapping: list, plan: dict, custom_rooms: dict | None = None) -> list:
+    rooms = custom_rooms or DEFAULT_ROOM_AREAS
+    width = float(plan.get("width") or DEFAULT_SVG_WIDTH)
+    height = float(plan.get("height") or DEFAULT_SVG_HEIGHT)
+    grouped = {}
+    for item in device_mapping:
+        normalized = _extract_device_mapping_item(item)
+        if not normalized:
+            continue
+        area = normalized["area"]
+        grouped.setdefault(area, []).append(normalized)
+
+    devices = []
+    for area, room_devices in grouped.items():
+        room_area = rooms.get(area) if isinstance(rooms, dict) else None
+        coordinates = room_area.get("coordinates") if isinstance(room_area, dict) else None
+        if not coordinates or len(coordinates) < 2:
+            continue
+        top_left, bottom_right = coordinates[0], coordinates[1]
+        room_x = float(top_left.get("x", 0))
+        room_y = float(top_left.get("y", 0))
+        room_width = float(bottom_right.get("x", room_x) - room_x)
+        room_height = float(bottom_right.get("y", room_y) - room_y)
+        if room_width <= 0 or room_height <= 0:
+            continue
+
+        cols = max(1, int(len(room_devices) ** 0.5 + 0.999))
+        rows = max(1, int((len(room_devices) + cols - 1) / cols))
+        margin_x = room_width * 0.15
+        margin_y = room_height * 0.15
+        usable_width = max(1.0, room_width - 2 * margin_x)
+        usable_height = max(1.0, room_height - 2 * margin_y)
+        for index, device in enumerate(room_devices):
+            row = index // cols
+            col = index % cols
+            abs_x = room_x + margin_x + (usable_width / (cols + 1)) * (col + 1)
+            abs_y = room_y + margin_y + (usable_height / (rows + 1)) * (row + 1)
+            entity_id = device["entity_id"]
+            devices.append({
+                "id": entity_id,
+                "name": device.get("name") or entity_id.split(".", 1)[-1].replace("_", " "),
+                "type": device["device_type"],
+                "area": area,
+                "areaName": device.get("area_name") or "",
+                "x": round(max(0.0, min(100.0, abs_x / width * 100)), 2),
+                "y": round(max(0.0, min(100.0, abs_y / height * 100)), 2),
+                "icon": device["device_type"],
+            })
+    return devices
+
+
+def _save_floor_plan_svg(file_storage, name: str = "", description: str = "") -> dict:
+    original_name = file_storage.filename or "floor-plan.svg"
+    data = file_storage.read()
+    ok, error = _validate_svg_upload(original_name, data)
+    if not ok:
+        return {"status": "error", "error": error}
+
+    FLOOR_PLAN_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+    filename = _safe_svg_filename(original_name)
+    target = FLOOR_PLAN_UPLOAD_DIR / filename
+    while target.exists() or _floor_plan_id_exists(filename):
+        filename = f"{Path(filename).stem}-{int(time.time())}.svg"
+        target = FLOOR_PLAN_UPLOAD_DIR / filename
+    width, height = _parse_svg_dimensions(data)
+    target.write_bytes(data)
+    plans = _read_json_list(FLOOR_PLAN_STORE_PATH)
+    entry = {
+        "id": filename,
+        "name": str(name or Path(original_name).stem or filename).strip(),
+        "description": str(description or "").strip(),
+        "filePath": str(target),
+        "url": f"/uploads/floor-plans/{filename}",
+        "width": width,
+        "height": height,
+        "uploadedAt": datetime.now().astimezone().isoformat(),
+    }
+    plans.append(entry)
+    _write_json_list(FLOOR_PLAN_STORE_PATH, plans)
+    return {
+        "status": "success",
+        "floorPlan": entry,
+        "filename": filename,
+        "size": len(data),
+        "url": entry["url"],
+    }
+
 
 class HomeMindWebAgent:
     """支持 Web 接口的 HomeMind Agent"""
@@ -162,6 +627,7 @@ class HomeMindWebAgent:
         self.dqn_scheduler_interval = float(os.environ.get("HOMEMIND_DQN_SCHEDULER_INTERVAL", "300"))
         self._last_rule_fire = {}
         self._last_dqn_recommend_at = 0.0
+        self._last_dqn_daily_learning_date = ""
         
         # 初始化上下文
         def init_context():
@@ -244,7 +710,10 @@ class HomeMindWebAgent:
             print(f"[警告] LLM 初始化失败: {e}")
         
         try:
-            self.dqn = self._timed_phase("dqn", DQNPolicy)
+            self.dqn = self._timed_phase(
+                "dqn",
+                lambda: DQNPolicy(model_dir=os.environ.get("HOMEMIND_DQN_MODEL_DIR", "models")),
+            )
             self.dqn_fb = DQNFeedbackTool(self.dqn)
             print("[初始化] DQN 策略模块已加载")
         except Exception as e:
@@ -334,15 +803,70 @@ class HomeMindWebAgent:
         )
         return proposal
 
+    def _update_pending_automation_trigger(self, raw_text: str, normalized_text: str) -> dict | None:
+        pending = self.session_store.get_pending_confirmation()
+        if pending.get("action_type") != "automation_proposal":
+            return None
+        trigger = self.nl_to_tap.extract_trigger(" ".join(part for part in [raw_text, normalized_text] if part))
+        if not trigger:
+            return None
+
+        payload = dict(pending.get("payload", {}) or {})
+        rule_preview = dict(payload.get("rule_preview", {}) or {})
+        action = dict(rule_preview.get("action", {}) or {})
+        if not action:
+            return None
+
+        updated_rule = {
+            "name": rule_preview.get("name", raw_text[:40]),
+            "trigger": trigger,
+            "action": action,
+            "priority": rule_preview.get("priority", 50),
+        }
+        summary = self._summarize_automation_rule(trigger, action)
+        proposal_id = self._next_message_id("proposal")
+        message_id = self._next_message_id("automation")
+        interaction = self._build_message_metadata(
+            "automation_proposal",
+            raw_text,
+            normalized_text,
+            decision_snapshot={"rule": updated_rule},
+            extra={"proposal_id": proposal_id, "rule_preview": updated_rule},
+            message_id=message_id,
+        )
+        proposal = {
+            "message_id": interaction["message_id"],
+            "proposal_id": proposal_id,
+            "summary": summary,
+            "rule_preview": updated_rule,
+            "confirm_actions": ["accept", "change", "reject"],
+        }
+        self.session_store.set_pending_confirmation(
+            "automation_proposal",
+            proposal,
+            feedback_target={"message_id": interaction["message_id"], "target_type": "automation_proposal"},
+        )
+        return proposal
+
     def _summarize_automation_rule(self, trigger: dict, action: dict) -> str:
-        time_text = trigger.get("at", "--:--") if trigger.get("type") == "time" else "满足条件时"
+        trigger_type = trigger.get("type")
+        if trigger_type == "time":
+            trigger_text = f"每天 {trigger.get('at', '--:--')}"
+        elif trigger_type == "day_of_week":
+            days = set(int(day) for day in trigger.get("days", []))
+            trigger_text = "每周末" if days == {5, 6} else f"每周{','.join(str(day) for day in sorted(days))}"
+        elif trigger_type == "holiday":
+            trigger_text = f"{trigger.get('name') or trigger.get('pattern') or '节假日'}当天"
+        else:
+            trigger_text = "满足条件时"
         if action.get("type") == "scene_switch":
             action_text = f"切换到{action.get('scene', '指定场景')}"
         else:
             device = action.get("device", "设备")
             device_action = action.get("device_action", "执行动作")
-            action_text = f"{device}{device_action}"
-        return f"我理解成：每天 {time_text} {action_text}。要为你创建定时任务吗？"
+            action_label = {"on": "打开", "off": "关闭", "adjust": "调节", "open": "打开", "close": "关闭"}.get(device_action, device_action)
+            action_text = f"{action_label}{device}"
+        return f"我理解成：{trigger_text} {action_text}。要为你创建定时任务吗？"
 
     def _accept_automation_proposal(self, message_id: str, original_input: str, normalized_input: str) -> dict:
         pending = self.session_store.get_pending_confirmation()
@@ -387,6 +911,66 @@ class HomeMindWebAgent:
             "rule": created_rule,
         }
 
+    def _build_corrected_execution_result(
+        self,
+        original_input: str,
+        normalized_input: str,
+        correction: str,
+        decision_snapshot: dict,
+    ) -> dict | None:
+        corrected = str(correction or normalized_input or original_input or "").strip()
+        if not corrected:
+            return None
+
+        previous_action_type = str(decision_snapshot.get("action") or "").strip()
+        previous_device = str(decision_snapshot.get("device") or "").strip()
+        previous_device_action = str(decision_snapshot.get("device_action") or "").strip()
+        previous_params = dict(decision_snapshot.get("params", {}) or {})
+
+        parsed_device = self._device_from_text(corrected) if hasattr(self, "_device_from_text") else ""
+        device = parsed_device or previous_device
+        parsed_action, parsed_params = self._action_from_text(corrected, device) if hasattr(self, "_action_from_text") else ("", {})
+        device_action = parsed_action or previous_device_action
+        params = parsed_params if parsed_action else previous_params
+
+        if previous_action_type == "\u8bbe\u5907\u63a7\u5236" and device and device_action:
+            command = {
+                "action": "\u8bbe\u5907\u63a7\u5236",
+                "device": device,
+                "scene": "",
+                "device_action": device_action,
+                "params": params,
+                "confidence": 0.95,
+                "reasoning": "corrected interaction feedback",
+            }
+            executed = self._execute_device_with_spatial_gate(command, text=corrected, route="feedback_change")
+            if executed.get("status") != "success":
+                return executed
+            interaction = self._build_message_metadata(
+                "execution",
+                corrected,
+                corrected,
+                decision_snapshot=command,
+            )
+            return {
+                "status": "success",
+                "response_type": "execution_result",
+                "message_id": interaction["message_id"],
+                "action": executed.get("action", f"{device}_{device_action}"),
+                "response": executed.get("response", ""),
+                "confidence": command["confidence"],
+                "route": "feedback_change",
+                "route_reason": "corrected_previous_execution",
+                "feedback_target": {"message_id": interaction["message_id"], "target_type": "execution"},
+            }
+
+        if previous_action_type == "\u573a\u666f\u5207\u6362":
+            parsed = self._run_llm_first_query(corrected, corrected)
+            parsed.pop("_debug", None)
+            return parsed
+
+        return None
+
     def handle_interaction_feedback(self, payload: dict) -> dict:
         message_id = str(payload.get("message_id", "")).strip()
         feedback_type = str(payload.get("feedback_type", "")).strip()
@@ -410,6 +994,8 @@ class HomeMindWebAgent:
                 return self._accept_automation_proposal(message_id, original_input, normalized_input)
             if target_type == "recommendation":
                 action = int(interaction.get("action", 5))
+                self._record_dqn_feedback(action, "\u63a5\u53d7", source="interaction")
+                return {"status": "success", "message": "DQN feedback recorded"}
                 if self.dqn_fb:
                     self.dqn_fb.record(self.context, action, "接受")
                 self.preference_store.record_recommendation_feedback(SCENE_NAMES.get(action, ""), "接受")
@@ -428,6 +1014,9 @@ class HomeMindWebAgent:
         if feedback_type == "reject":
             if target_type == "recommendation":
                 action = int(interaction.get("action", 5))
+                self._record_dqn_feedback(action, "\u62d2\u7edd", source="interaction")
+                self.session_store.clear_pending_confirmation()
+                return {"status": "success", "message": "DQN feedback recorded"}
                 if self.dqn_fb:
                     self.dqn_fb.record(self.context, action, "拒绝")
                 self.preference_store.record_recommendation_feedback(SCENE_NAMES.get(action, ""), "拒绝")
@@ -463,6 +1052,15 @@ class HomeMindWebAgent:
                         "message": proposal["summary"],
                         "proposal": proposal,
                     }
+            if corrected:
+                corrected_result = self._build_corrected_execution_result(
+                    original_input,
+                    normalized_input,
+                    corrected,
+                    decision_snapshot,
+                )
+                if corrected_result:
+                    return corrected_result
             return {"status": "success", "message": "纠正反馈已记录"}
 
         return {"status": "success", "message": "反馈已记录"}
@@ -507,28 +1105,13 @@ class HomeMindWebAgent:
         params = normalized.get("params", {})
 
         if action_type == "设备控制" and device and device_action:
-            message = self.device_control.execute(device, device_action, params)
-            self.session_store.update_from_decision(normalized, route=route, result=message)
-            self.preference_store.record_action_accept(normalized, self.context)
-            return {
-                "status": "success",
-                "action": f"{device}_{device_action}",
-                "response": message,
-                "command": normalized,
-            }
+            result = self._execute_device_with_spatial_gate(normalized, text="", route=route)
+            result["command"] = normalized
+            return result
         if action_type == "场景切换" and scene:
-            message = self.scene_switcher.execute(scene)
-            self.context.current_scene = scene
-            self.context.last_scene = SCENE_INDEX_MAP.get(scene, -1)
-            self.session_store.update_scene(scene)
-            self.session_store.update_from_decision(normalized, route=route, result=message)
-            self.preference_store.record_action_accept(normalized, self.context)
-            return {
-                "status": "success",
-                "action": "scene_switch",
-                "response": message,
-                "command": normalized,
-            }
+            result = self._execute_scene_with_spatial_gate(scene, route=route)
+            result["command"] = normalized
+            return result
         if action_type == "信息查询":
             result = self.info_query.execute(normalized.get("query_type", "status"), params)
             return {
@@ -550,6 +1133,162 @@ class HomeMindWebAgent:
         snapshot.devices = deepcopy(getattr(self.context, "devices", {}))
         snapshot.current_scene = getattr(self.context, "current_scene", "")
         return snapshot
+
+    def _parse_dqn_action(self, recommendation_id: str, fallback: int = 5) -> int:
+        parts = str(recommendation_id or "").rsplit("_", 1)
+        if len(parts) == 2:
+            try:
+                return int(parts[1])
+            except ValueError:
+                return fallback
+        return fallback
+
+    def _normalize_dqn_feedback(self, response: str) -> str:
+        value = str(response or "").strip()
+        lowered = value.lower()
+        if lowered in {"accept", "accepted"} or value in {"\u63a5\u53d7", "\u93ba\u30e5\u5f48"}:
+            return "\u63a5\u53d7"
+        if lowered in {"reject", "rejected"} or value in {"\u62d2\u7edd", "\u93b7\u6394\u7cb7"}:
+            return "\u62d2\u7edd"
+        if lowered in {"ignore", "ignored"} or value in {"\u5ffd\u7565", "\u8e47\u754c\u6690"}:
+            return "\u5ffd\u7565"
+        if lowered in {"change", "corrected"} or value in {"\u7ea0\u6b63", "\u7efe\u72b3\ue11c"}:
+            return "\u7ea0\u6b63"
+        return value
+
+    def _dqn_feedback_acceptance(self, feedback: str) -> bool | None:
+        value = str(feedback or "").strip()
+        if value in {"\u63a5\u53d7", "accepted", "accept"}:
+            return True
+        if value in {"\u62d2\u7edd", "\u7ea0\u6b63", "rejected", "reject", "corrected", "change"}:
+            return False
+        return None
+
+    def _record_dqn_recommendation_memory(self, recommendation: dict, action: int, source: str = "scheduler") -> None:
+        scene = str(recommendation.get("scene_name") or recommendation.get("scene") or SCENE_NAMES.get(action, "") or "")
+        if not scene:
+            return
+        confidence = float(recommendation.get("confidence", 0.0) or 0.0)
+        reason = str(recommendation.get("reason", "") or "")
+        message_id = str(recommendation.get("message_id", "") or "")
+        self.preference_store.record_dqn_recommendation(
+            scene=scene,
+            action=action,
+            confidence=confidence,
+            reason=reason,
+            source=source,
+            message_id=message_id,
+        )
+        if self.kb:
+            self.kb.add(
+                f"DQN recommendation: scene={scene}, action={action}, confidence={confidence:.4f}, source={source}",
+                category="DQN",
+                accepted=True,
+                event_type="recommendation",
+                scene=scene,
+                action=action,
+                confidence=confidence,
+                source=source,
+                memory_key=f"dqn:recommendation:{source}:{message_id or action}:{int(time.time())}",
+            )
+            self.kb.backup()
+
+    def _record_dqn_feedback(self, action: int, response: str, source: str = "api") -> dict:
+        if not self.dqn:
+            return {"status": "unavailable", "reason": "dqn_not_initialized"}
+
+        feedback = self._normalize_dqn_feedback(response)
+        if self.dqn_fb:
+            self.dqn_fb.record(self.context, action, feedback)
+        else:
+            self.dqn.record_feedback(self.context, action, feedback)
+
+        event = dict(getattr(self.dqn, "last_feedback_event", {}) or {})
+        scene = SCENE_NAMES.get(action, "")
+        reward = float(event.get("reward", 0.0) or 0.0)
+        updated = bool(event.get("updated", False))
+        buffer_size = int(event.get("buffer_size", 0) or 0)
+        model_saved = False
+        try:
+            model_saved = bool(self.dqn.save())
+        except Exception as exc:
+            print(f"[DQN Save Error] {exc}")
+
+        self.preference_store.record_recommendation_feedback(scene, feedback)
+        self.preference_store.record_dqn_feedback(
+            scene=scene,
+            action=action,
+            feedback=feedback,
+            reward=reward,
+            updated=updated,
+            buffer_size=buffer_size,
+            source=source,
+        )
+        if self.kb:
+            accepted = self._dqn_feedback_acceptance(feedback)
+            self.kb.add(
+                f"DQN feedback: scene={scene}, action={action}, feedback={feedback}, reward={reward:.2f}, source={source}",
+                category="DQN",
+                accepted=bool(accepted),
+                event_type="feedback",
+                scene=scene,
+                action=action,
+                feedback=feedback,
+                reward=reward,
+                updated=updated,
+                source=source,
+                memory_key=f"dqn:feedback:{source}:{action}:{int(time.time())}",
+            )
+            self.kb.backup()
+
+        return {
+            "status": "success",
+            "action": action,
+            "scene": scene,
+            "feedback": feedback,
+            "reward": reward,
+            "updated": updated,
+            "buffer_size": buffer_size,
+            "model_saved": model_saved,
+        }
+
+    def _run_daily_dqn_learning(self, now: datetime = None) -> dict:
+        if not self.dqn:
+            return {}
+        now = now or datetime.now()
+        today = now.date().isoformat()
+        if self._last_dqn_daily_learning_date == today:
+            return {}
+
+        summary = self.dqn.daily_incremental_update()
+        if summary.get("status") != "updated":
+            return dict(summary)
+
+        self._last_dqn_daily_learning_date = today
+        model_saved = False
+        try:
+            model_saved = bool(self.dqn.save())
+        except Exception as exc:
+            print(f"[DQN Save Error] {exc}")
+        summary = dict(summary)
+        summary["model_saved"] = model_saved
+        self.preference_store.record_dqn_learning(summary, source="scheduler")
+        if self.kb:
+            self.kb.add(
+                "DQN daily learning: "
+                f"status={summary.get('status')}, buffer={summary.get('buffer_size')}, "
+                f"epsilon={summary.get('epsilon')}, saved={model_saved}",
+                category="DQN",
+                accepted=summary.get("status") == "updated",
+                event_type="daily_learning",
+                source="scheduler",
+                status=summary.get("status"),
+                buffer_size=summary.get("buffer_size"),
+                model_saved=model_saved,
+                memory_key=f"dqn:daily_learning:{today}",
+            )
+            self.kb.backup()
+        return summary
 
     def evaluate_rules(self, execute: bool = False, context_overrides: dict = None, now: datetime = None) -> dict:
         evaluation_context = self._context_snapshot()
@@ -618,6 +1357,10 @@ class HomeMindWebAgent:
         for key in stale:
             self._last_rule_fire.pop(key, None)
 
+        dqn_learning = self._run_daily_dqn_learning(now)
+        if dqn_learning and dqn_learning.get("status") == "updated":
+            executed.append({"type": "dqn_daily_learning", "learning": dqn_learning})
+
         dqn_recommendation = self._dqn_proactive_recommend(now)
         if dqn_recommendation:
             executed.append({"type": "dqn_recommendation", "recommendation": dqn_recommendation})
@@ -656,6 +1399,7 @@ class HomeMindWebAgent:
             extra={"action": action_idx},
         )
         recommendation["message_id"] = interaction["message_id"]
+        self._record_dqn_recommendation_memory(recommendation, action_idx, source="scheduler")
         self._last_dqn_recommend_at = current
         socketio.emit("message", {
             "type": "dqn_recommendation",
@@ -1196,6 +1940,17 @@ class HomeMindWebAgent:
         device_id = data.get("device")
         action = data.get("action")
         params = data.get("params", {})
+
+        if not self._has_device_identifier(device_id):
+            socketio.emit("message", {
+                "type": "device_update",
+                "data": {
+                    "device": device_id,
+                    "state": {},
+                    "result": "device not found"
+                }
+            })
+            return
         
         dev_name = self._resolve_device(device_id)
         result = self.device_control.execute(dev_name, action, params)
@@ -1227,9 +1982,8 @@ class HomeMindWebAgent:
         if self.bsr:
             self.bsr.recall(f"切换到{scene}场景", self.context)
         
-        self.scene_switcher.execute(scene)
-        self.context.current_scene = scene_id
-        self.session_store.update_scene(scene)
+        result_payload = self._execute_scene_with_spatial_gate(scene, route="local")
+        result = result_payload.get("response", result_payload.get("message", ""))
         
         socketio.emit("message", {
             "type": "scene_update",
@@ -1237,6 +1991,18 @@ class HomeMindWebAgent:
                 "scene": scene_id,
                 "devices": self.get_all_states()["devices"]
             }
+        })
+        socketio.emit("message", {
+            "type": "agent_response",
+            "data": {
+                "action": "scene_switch",
+                "result": result,
+                "status": "success",
+                "response_type": "execution_result",
+                "scene": scene_id,
+                "route": "local",
+                "route_reason": "scene_switch_event",
+            },
         })
     
     def _handle_dqn_response(self, data: dict):
@@ -1252,6 +2018,8 @@ class HomeMindWebAgent:
                 action = int(parts[1])
             except ValueError:
                 pass
+        self._record_dqn_feedback(action, response, source="websocket")
+        return
         
         if self.dqn_fb:
             self.dqn_fb.record(self.context, action, response)
@@ -1297,18 +2065,365 @@ class HomeMindWebAgent:
                 return scene_id
         return scene_name
 
+    def _device_registry(self) -> list:
+        registry = _load_device_registry()
+        self._ensure_device_states(registry)
+        return registry
+
+    def _active_floor_plan_mapping(self) -> dict | None:
+        mappings = _read_json_list(FLOOR_PLAN_DEVICE_STORE_PATH)
+        if not mappings:
+            return None
+        plans = _read_json_list(FLOOR_PLAN_STORE_PATH)
+        active_plan = next((plan for plan in plans if plan.get("active")), None)
+        if active_plan:
+            active_id = active_plan.get("id")
+            matched = next((item for item in mappings if item.get("floorPlanId") == active_id), None)
+            if matched:
+                return matched
+        if plans:
+            plan_ids = {plan.get("id") for plan in plans}
+            matched = next((item for item in mappings if item.get("floorPlanId") in plan_ids), None)
+            if matched:
+                return matched
+        return mappings[0]
+
+    def _floor_plan_devices(self) -> list:
+        mapping = self._active_floor_plan_mapping()
+        if not mapping:
+            return []
+        return [device for device in mapping.get("devices", []) if isinstance(device, dict)]
+
+    def _floor_plan_area_aliases(self) -> dict:
+        mapping = self._active_floor_plan_mapping() or {}
+        aliases = {area: list(values) for area, values in DEFAULT_AREA_ALIASES.items()}
+        for area, name in (mapping.get("areaNames") or {}).items():
+            area = str(area or "").strip()
+            name = str(name or "").strip()
+            if area and name:
+                aliases.setdefault(area, []).append(name)
+        for device in mapping.get("devices", []):
+            area = str(device.get("area") or "").strip()
+            name = str(device.get("areaName") or "").strip()
+            if area and name:
+                aliases.setdefault(area, []).append(name)
+            if area:
+                aliases.setdefault(area, []).append(area)
+        return aliases
+
+    def _area_filter_from_text(self, text: str) -> str:
+        normalized_text = _normalize_area_name(text)
+        if not normalized_text:
+            return ""
+        candidates = []
+        for area, aliases in self._floor_plan_area_aliases().items():
+            for alias in aliases:
+                alias_key = _normalize_area_name(alias)
+                if alias_key:
+                    candidates.append((len(alias_key), area, alias_key))
+        for _, area, alias_key in sorted(candidates, reverse=True):
+            if alias_key in normalized_text:
+                return area
+        return ""
+
+    def _mapped_device_matches_semantic(self, semantic_device: str, mapped_device: dict) -> bool:
+        semantic_key = str(semantic_device or "").strip().lower()
+        exact_values = {
+            str(mapped_device.get("id") or "").strip().lower(),
+            str(mapped_device.get("name") or "").strip().lower(),
+            str(mapped_device.get("entity_id") or "").strip().lower(),
+        }
+        if semantic_key and semantic_key in exact_values:
+            return True
+        rule = SEMANTIC_DEVICE_MATCHES.get(semantic_device)
+        if not rule:
+            return False
+        device_type = str(mapped_device.get("type") or mapped_device.get("device_type") or "").strip().lower()
+        haystack = " ".join(
+            str(mapped_device.get(key) or "").lower()
+            for key in ("id", "name", "type", "area", "areaName")
+        )
+        if device_type in rule["types"]:
+            return True
+        return any(token.lower() in haystack for token in rule["tokens"])
+
+    def _semantic_device_for_mapped_device(self, mapped_device: dict) -> str:
+        for semantic_device in SEMANTIC_DEVICE_MATCHES:
+            if self._mapped_device_matches_semantic(semantic_device, mapped_device):
+                return semantic_device
+        return str(mapped_device.get("name") or mapped_device.get("id") or "").strip()
+
+    def _floor_plan_device_by_identifier(self, device_id: str) -> dict | None:
+        key = str(device_id or "").strip()
+        if not key:
+            return None
+        for device in self._floor_plan_devices():
+            if key in {
+                str(device.get("id") or ""),
+                str(device.get("name") or ""),
+                str(device.get("entity_id") or ""),
+            }:
+                return device
+        return None
+
+    def _spatial_targets_for_device(self, semantic_device: str, text: str = "") -> dict:
+        mapping = self._active_floor_plan_mapping()
+        if not mapping:
+            return {
+                "valid": False,
+                "reason": "no_floor_plan_mapping",
+                "message": "\u8bf7\u5148\u4e0a\u4f20 SVG \u6237\u578b\u56fe\u5e76\u7ed1\u5b9a\u8bbe\u5907\u6620\u5c04\uff0c\u7136\u540e\u518d\u6267\u884c\u8bbe\u5907\u63a7\u5236\u3002",
+                "targets": [],
+                "area": "",
+            }
+        devices = self._floor_plan_devices()
+        area = self._area_filter_from_text(text)
+        matches = [
+            device for device in devices
+            if self._mapped_device_matches_semantic(semantic_device, device)
+            and (not area or device.get("area") == area)
+        ]
+        if matches:
+            return {"valid": True, "reason": "mapped_device_found", "targets": matches, "area": area, "message": ""}
+        area_label = area or "\u5f53\u524d\u6237\u578b\u56fe"
+        return {
+            "valid": False,
+            "reason": "device_not_in_floor_plan",
+            "message": f"\u5f53\u524d SVG \u6237\u578b\u56fe\u7684\u8bbe\u5907\u8868\u91cc\u6ca1\u6709\u53ef\u63a7\u7684\u201c{area_label}{semantic_device}\u201d\uff0c\u5df2\u62e6\u622a\u6267\u884c\u3002",
+            "targets": [],
+            "area": area,
+        }
+
+    def _validate_spatial_device_command(self, command: dict, text: str = "") -> dict:
+        if command.get("action") != "\u8bbe\u5907\u63a7\u5236":
+            return {"valid": True, "reason": "not_device_control", "message": "", "targets": []}
+        device = str(command.get("device") or "").strip()
+        if not device:
+            return {"valid": True, "reason": "no_device", "message": "", "targets": []}
+        return self._spatial_targets_for_device(device, text=text)
+
+    def _execute_device_with_spatial_gate(self, command: dict, text: str, route: str) -> dict:
+        spatial = self._validate_spatial_device_command(command, text=text)
+        if not spatial["valid"]:
+            self.session_store.update_clarification(spatial["message"])
+            return {
+                "status": "unsupported",
+                "response_type": "clarification",
+                "action": "unsupported",
+                "target": command.get("device", ""),
+                "response": spatial["message"],
+                "message": spatial["message"],
+                "route": "unsupported",
+                "route_reason": spatial["reason"],
+                "spatial": spatial,
+            }
+        device = command.get("device", "")
+        device_action = command.get("device_action", "")
+        params = command.get("params", {})
+        message = self.device_control.execute(device, device_action, params)
+        target_names = [target.get("name") or target.get("id") for target in spatial.get("targets", [])]
+        if target_names:
+            message = f"{message}\u6620\u5c04\u8bbe\u5907\uff1a{', '.join(target_names)}\u3002"
+        self.session_store.update_from_decision(command, route=route, result=message)
+        self.preference_store.record_action_accept(command, self.context)
+        return {
+            "status": "success",
+            "response_type": "execution_result",
+            "action": f"{device}_{device_action}",
+            "device": device,
+            "device_action": device_action,
+            "params": params,
+            "response": message,
+            "message": message,
+            "spatial": spatial,
+        }
+
+    def _execute_scene_with_spatial_gate(self, scene: str, route: str = "local") -> dict:
+        config = self.scene_store.get_scene(scene)
+        if config is None:
+            message = f"\u4e0d\u652f\u6301\u7684\u573a\u666f: {scene}"
+            self.session_store.update_clarification(message)
+            return {"status": "unsupported", "response": message, "message": message, "route_reason": "scene_not_found"}
+        executed = []
+        skipped = []
+        for device, cmd in config.items():
+            command = {
+                "action": "\u8bbe\u5907\u63a7\u5236",
+                "device": device,
+                "scene": "",
+                "device_action": cmd.get("action", ""),
+                "params": cmd.get("params", {}),
+                "confidence": 1.0,
+                "reasoning": f"scene {scene}",
+            }
+            spatial = self._validate_spatial_device_command(command)
+            if not spatial["valid"]:
+                skipped.append(device)
+                continue
+            result = self.device_control.execute(device, command["device_action"], command["params"])
+            executed.append(result)
+        if not executed:
+            message = f"\u5f53\u524d SVG \u6237\u578b\u56fe\u7684\u8bbe\u5907\u8868\u4e0d\u652f\u6301\u6267\u884c\u201c{scene}\u201d\u4e2d\u7684\u4efb\u4f55\u8bbe\u5907\u52a8\u4f5c\uff0c\u5df2\u62e6\u622a\u573a\u666f\u5207\u6362\u3002"
+            self.session_store.update_clarification(message)
+            return {
+                "status": "unsupported",
+                "response": message,
+                "message": message,
+                "route_reason": "scene_devices_not_in_floor_plan",
+                "skipped_devices": skipped,
+            }
+        self.context.current_scene = scene
+        self.context.last_scene = SCENE_INDEX_MAP.get(scene, -1)
+        self.session_store.update_scene(scene)
+        decision = {
+            "action": "\u573a\u666f\u5207\u6362",
+            "device": "",
+            "scene": scene,
+            "device_action": "",
+            "params": {},
+            "confidence": 1.0,
+            "reasoning": "scene execution with spatial gate",
+        }
+        message = f"\u5df2\u5207\u6362\u5230{scene}\u3002" + " ".join(executed)
+        if skipped:
+            message += f"\u672a\u5728\u6237\u578b\u8bbe\u5907\u8868\u4e2d\u627e\u5230\u7684\u8bbe\u5907\u5df2\u8df3\u8fc7\uff1a{', '.join(skipped)}\u3002"
+        self.session_store.update_from_decision(decision, route=route, result=message)
+        self.preference_store.record_action_accept(decision, self.context)
+        return {
+            "status": "success",
+            "response_type": "execution_result",
+            "action": "scene_switch",
+            "scene": scene,
+            "response": message,
+            "message": message,
+            "skipped_devices": skipped,
+        }
+
+    def _ensure_device_states(self, registry: list) -> None:
+        for item in registry:
+            self.device_control.add_device(item["name"], _default_device_state(item.get("type", "")))
+
+    def _device_registry_map(self) -> dict:
+        return {item["id"]: item for item in self._device_registry()}
+
+    def _format_device_state(self, raw: dict) -> dict:
+        raw = raw or {}
+        is_on = raw.get("status") == "开"
+        return {
+            "is_on": is_on,
+            **{k: v for k, v in raw.items() if k != "status"}
+        }
+
+    def _has_device_identifier(self, device_id: str) -> bool:
+        if not device_id:
+            return False
+        if self._floor_plan_device_by_identifier(device_id):
+            return True
+        registry = self._device_registry()
+        if any(item["id"] == device_id or item["name"] == device_id for item in registry):
+            return True
+        return False
+
+    def list_devices(self) -> list:
+        registry = self._device_registry()
+        raw_states = self.device_control.get_all_state()
+        return [
+            {
+                **item,
+                "state": self._format_device_state(raw_states.get(item["name"], {})),
+            }
+            for item in registry
+        ]
+
+    def create_device(self, payload: dict) -> dict:
+        raw_name = str(payload.get("name") or "").strip()
+        area_name = str(payload.get("areaName") or payload.get("roomName") or "").strip()
+        name = _spatial_device_name(raw_name, area_name)
+        if not name:
+            raise ValueError("name is required")
+        device_id = _safe_device_id(payload.get("id") or payload.get("deviceId"), name)
+        registry = self._device_registry()
+        if any(item["id"] == device_id for item in registry):
+            raise KeyError("device id already exists")
+        if any(item["name"] == name for item in registry):
+            raise KeyError("device name already exists")
+        item = {
+            "id": device_id,
+            "name": name,
+            "type": str(payload.get("type") or "switch").strip() or "switch",
+            "protocol": "simulated",
+        }
+        area = str(payload.get("area") or payload.get("room") or "").strip()
+        if area:
+            item["area"] = area
+        if area_name:
+            item["areaName"] = area_name
+        registry.append(item)
+        _save_device_registry(registry)
+        self.device_control.add_device(item["name"], _default_device_state(item["type"]))
+        return item
+
+    def update_device(self, device_id: str, payload: dict) -> dict:
+        registry = self._device_registry()
+        for index, item in enumerate(registry):
+            if item["id"] != device_id:
+                continue
+            if payload.get("id") and payload.get("id") != device_id:
+                raise ValueError("device id cannot be changed")
+            immutable_fields = sorted(field for field in IMMUTABLE_DEVICE_UPDATE_FIELDS if field in payload)
+            if immutable_fields:
+                raise ValueError(f"device runtime fields cannot be changed: {', '.join(immutable_fields)}")
+            old_name = item["name"]
+            next_area_name = str(payload.get("areaName") or payload.get("roomName") or item.get("areaName") or "").strip()
+            next_name = _spatial_device_name(
+                str(payload.get("name") or item["name"]).strip() or item["name"],
+                next_area_name,
+            )
+            if any(other["id"] != device_id and other.get("name") == next_name for other in registry):
+                raise ValueError("device name already exists")
+            updated = {
+                **item,
+                "name": next_name,
+                "type": str(payload.get("type") or item.get("type") or "switch").strip() or "switch",
+                "protocol": "simulated",
+            }
+            if "area" in payload or "room" in payload:
+                area = str(payload.get("area") or payload.get("room") or "").strip()
+                if area:
+                    updated["area"] = area
+                else:
+                    updated.pop("area", None)
+            if "areaName" in payload or "roomName" in payload:
+                area_name = str(payload.get("areaName") or payload.get("roomName") or "").strip()
+                if area_name:
+                    updated["areaName"] = area_name
+                else:
+                    updated.pop("areaName", None)
+            registry[index] = updated
+            _save_device_registry(registry)
+            self.device_control.update_device(old_name, updated["name"], _default_device_state(updated["type"]))
+            return updated
+        raise LookupError("device not found")
+
+    def delete_device(self, device_id: str) -> dict:
+        registry = self._device_registry()
+        for index, item in enumerate(registry):
+            if item["id"] != device_id:
+                continue
+            removed = registry.pop(index)
+            _save_device_registry(registry)
+            self.device_control.delete_device(removed["name"])
+            return removed
+        raise LookupError("device not found")
+
     def get_all_states(self) -> dict:
         """获取所有状态，返回前端统一的设备格式"""
         raw_states = self.device_control.get_all_state()
         storage_status = get_encrypted_storage().status()
         devices = {}
-        for dev_id, dev_name in self.DEVICE_ID_MAP.items():
-            raw = raw_states.get(dev_name, {})
-            is_on = raw.get("status") == "开"
-            devices[dev_id] = {
-                "is_on": is_on,
-                **{k: v for k, v in raw.items() if k != "status"}
-            }
+        for item in self._device_registry():
+            raw = raw_states.get(item["name"], {})
+            devices[item["id"]] = self._format_device_state(raw)
         return {
             "context": {
                 "scene": self.context.current_scene,
@@ -1334,7 +2449,11 @@ class HomeMindWebAgent:
     
     def _resolve_device(self, device_id: str) -> str:
         """将英文设备ID解析为中文设备名"""
-        return self.DEVICE_ID_MAP.get(device_id, device_id)
+        mapped = self._floor_plan_device_by_identifier(device_id)
+        if mapped:
+            return self._semantic_device_for_mapped_device(mapped)
+        item = self._device_registry_map().get(device_id)
+        return item["name"] if item else device_id
     
     def process_query(self, query: str) -> dict:
         """处理自然语言查询（供 API 调用）"""
@@ -1550,6 +2669,18 @@ class HomeMindWebAgent:
 def _webagent_run_llm_first_query(self: HomeMindWebAgent, raw_text: str, normalized_text: str) -> dict:
     if not self.llm:
         return {"status": "no_action", "message": "AI 模块未加载", "_debug": {}}
+
+    pre_unsupported = self._detect_unsupported_request(raw_text, normalized_text=normalized_text)
+    if pre_unsupported:
+        return {
+            "status": "unsupported",
+            "response_type": "clarification",
+            "target": pre_unsupported["target"],
+            "response": pre_unsupported["message"],
+            "route": pre_unsupported["route"],
+            "route_reason": pre_unsupported["reason"],
+            "_debug": {"intent_plan": {"intent_type": "unsupported_or_ambiguous_command", "route": "unsupported"}},
+        }
 
     intent_plan = self.llm.plan_intent(raw_text, normalized_query=normalized_text, context=self.context)
     self.last_route_info = {
@@ -1768,9 +2899,14 @@ def _webagent_run_llm_first_query(self: HomeMindWebAgent, raw_text: str, normali
     }
 
     if action_type == "设备控制" and device and device_action:
-        message = self.device_control.execute(device, device_action, params)
-        self.session_store.update_from_decision(decision, route=route_info["route"], result=message)
-        self.preference_store.record_action_accept(decision, self.context)
+        execution = self._execute_device_with_spatial_gate(
+            decision,
+            text=" ".join(part for part in [raw_text, normalized_text, goal_query] if part),
+            route=route_info["route"],
+        )
+        if execution.get("status") != "success":
+            return {**execution, "_debug": debug_payload}
+        message = execution.get("response", "")
         interaction = self._build_message_metadata(
             "execution",
             raw_text,
@@ -1791,11 +2927,10 @@ def _webagent_run_llm_first_query(self: HomeMindWebAgent, raw_text: str, normali
         }
 
     if action_type == "场景切换" and scene:
-        message = self.scene_switcher.execute(scene)
-        self.context.current_scene = scene
-        self.context.last_scene = SCENE_INDEX_MAP.get(scene, -1)
-        self.session_store.update_from_decision(decision, route=route_info["route"], result=message)
-        self.preference_store.record_action_accept(decision, self.context)
+        execution = self._execute_scene_with_spatial_gate(scene, route=route_info["route"])
+        if execution.get("status") != "success":
+            return {**execution, "_debug": debug_payload}
+        message = execution.get("response", "")
         interaction = self._build_message_metadata(
             "execution",
             raw_text,
@@ -1827,14 +2962,158 @@ def _webagent_run_llm_first_query(self: HomeMindWebAgent, raw_text: str, normali
     }
 
 
+def _webagent_device_from_text(self: HomeMindWebAgent, text: str) -> str:
+    aliases = {
+        "\u7a7a\u8c03": ("\u7a7a\u8c03", "ac", "air conditioner"),
+        "\u706f\u5149": ("\u706f", "\u706f\u5149", "light"),
+        "\u7535\u89c6": ("\u7535\u89c6", "tv", "television"),
+        "\u97f3\u54cd": ("\u97f3\u54cd", "\u5587\u53ed", "speaker"),
+        "\u98ce\u6247": ("\u98ce\u6247", "fan"),
+        "\u7a97\u6237": ("\u7a97\u6237", "\u7a97", "window"),
+        "\u70ed\u6c34\u5668": ("\u70ed\u6c34\u5668",),
+    }
+    lowered = str(text or "").strip().lower()
+    for device, tokens in aliases.items():
+        if any(token in lowered for token in tokens):
+            return device
+    return ""
+
+
+def _webagent_action_from_text(self: HomeMindWebAgent, text: str, device: str = "") -> tuple[str, dict]:
+    value = str(text or "").strip().lower()
+    if any(token in value for token in ("\u5173\u95ed", "\u5173\u6389", "\u5173\u4e86", "off")):
+        return ("close", {}) if device == "\u7a97\u6237" else ("off", {})
+    if any(token in value for token in ("\u6253\u5f00", "\u5f00\u542f", "\u6253\u5f00\u4e00\u4e0b", "\u5f00", "on")):
+        params = {}
+        if device == "\u7a7a\u8c03":
+            params = {"temperature": 26}
+        elif device == "\u706f\u5149":
+            params = {"brightness": 100}
+        elif device == "\u97f3\u54cd":
+            params = {"volume": 30}
+        elif device == "\u70ed\u6c34\u5668":
+            params = {"temperature": 45}
+        return ("open", {}) if device == "\u7a97\u6237" else ("on", params)
+    if device == "\u7a7a\u8c03":
+        if any(token in value for token in ("\u8c03\u9ad8", "\u6696", "\u70ed\u4e00\u70b9")):
+            return "adjust", {"temperature": 28}
+        if any(token in value for token in ("\u8c03\u4f4e", "\u51c9", "\u51b7\u4e00\u70b9")):
+            return "adjust", {"temperature": 24}
+    if device == "\u706f\u5149":
+        if any(token in value for token in ("\u8c03\u4eae", "\u4eae\u4e00\u70b9")):
+            return "adjust", {"brightness": 100}
+        if any(token in value for token in ("\u8c03\u6697", "\u6697\u4e00\u70b9")):
+            return "adjust", {"brightness": 30}
+    return "", {}
+
+
+def _webagent_execution_result(self: HomeMindWebAgent, command: dict, raw_text: str, normalized_text: str) -> dict:
+    executed = self._execute_structured_command(command, route="local")
+    if executed.get("status") == "unsupported":
+        return {
+            "status": "unsupported",
+            "response_type": "clarification",
+            "target": executed.get("target", command.get("device", "")),
+            "response": executed.get("response", executed.get("message", "")),
+            "route": executed.get("route", "unsupported"),
+            "route_reason": executed.get("route_reason", "device_not_in_floor_plan"),
+        }
+    if executed.get("status") != "success":
+        question = "\u8bf7\u95ee\u4f60\u60f3\u6253\u5f00\u3001\u5173\u95ed\u8fd8\u662f\u8c03\u8282\u8fd9\u4e2a\u8bbe\u5907\uff1f"
+        self.session_store.update_clarification(question)
+        return {"status": "clarification", "response_type": "clarification", "question": question, "route": "clarify", "route_reason": "pending_clarification_incomplete"}
+    interaction = self._build_message_metadata(
+        "execution",
+        raw_text,
+        normalized_text,
+        decision_snapshot=command,
+    )
+    return {
+        "status": "success",
+        "response_type": "execution_result",
+        "message_id": interaction["message_id"],
+        "action": executed.get("action", ""),
+        "response": executed.get("response", ""),
+        "confidence": command.get("confidence", 0.95),
+        "route": "local",
+        "route_reason": "pending_clarification_resolved",
+        "feedback_target": {"message_id": interaction["message_id"], "target_type": "execution"},
+    }
+
+
+def _webagent_resolve_pending_clarification(self: HomeMindWebAgent, raw_text: str, normalized_text: str) -> dict | None:
+    pending = self.session_store.get_pending_clarification()
+    if not pending:
+        return None
+
+    payload = dict(pending.get("payload", {}) or {})
+    text = str(normalized_text or raw_text or "").strip()
+    device = self._device_from_text(text) or payload.get("device", "")
+    action, params = self._action_from_text(text, device)
+
+    if device and action:
+        self.session_store.clear_pending_clarification()
+        command = {
+            "action": "\u8bbe\u5907\u63a7\u5236",
+            "device": device,
+            "scene": "",
+            "device_action": action,
+            "params": params,
+            "confidence": 0.95,
+            "reasoning": "pending clarification resolved by follow-up",
+        }
+        return self._execution_result(command, raw_text, normalized_text)
+
+    if device:
+        question = f"\u4f60\u60f3\u5bf9{device}\u6267\u884c\u6253\u5f00\u3001\u5173\u95ed\u8fd8\u662f\u8c03\u8282\uff1f"
+        self.session_store.update_clarification(question)
+        self.session_store.set_pending_clarification("device_action", {"device": device})
+        return {
+            "status": "clarification",
+            "response_type": "clarification",
+            "question": question,
+            "candidates": [f"\u6253\u5f00{device}", f"\u5173\u95ed{device}"],
+            "route": "clarify",
+            "route_reason": "pending_clarification_device_only",
+        }
+
+    return None
+
+
 def _webagent_process_query(self: HomeMindWebAgent, query: str) -> dict:
     self.context.hour = datetime.now().hour
     normalized = self.language_normalizer.normalize(query)
     query_for_ai = normalized.normalized or query
     self._record_query_context(query, query_for_ai)
+    automation_update = self._update_pending_automation_trigger(query, query_for_ai)
+    if automation_update is not None:
+        return {
+            "status": "success",
+            "response_type": "automation_proposal",
+            "message_id": automation_update["message_id"],
+            "response": automation_update["summary"],
+            "proposal": automation_update,
+            "route": "automation",
+            "route_reason": "pending_automation_trigger_updated",
+            "normalized_query": normalized.to_dict(),
+            "feedback_target": {"message_id": automation_update["message_id"], "target_type": "automation_proposal"},
+        }
+    pending_result = self._resolve_pending_clarification(query, query_for_ai)
+    if pending_result is not None:
+        pending_result["normalized_query"] = normalized.to_dict()
+        return pending_result
     result = self._run_llm_first_query(query, query_for_ai)
     debug = result.pop("_debug", None)
     result["normalized_query"] = normalized.to_dict()
+    if result.get("status") == "clarification":
+        self.session_store.set_pending_clarification(
+            "query",
+            {
+                "query": query,
+                "normalized": query_for_ai,
+                "candidates": result.get("candidates", []),
+            },
+        )
     if debug:
         self.last_route_info = self.last_route_info or {}
     return result
@@ -1865,8 +3144,33 @@ def _webagent_process_user_input(self: HomeMindWebAgent, data: dict):
     }
     socketio.emit("pipeline_update", {"type": "pipeline_start", "data": pipeline})
 
-    result = self._run_llm_first_query(user_text, query_text)
+    automation_update = self._update_pending_automation_trigger(user_text, query_text)
+    if automation_update is not None:
+        result = {
+            "status": "success",
+            "response_type": "automation_proposal",
+            "message_id": automation_update["message_id"],
+            "response": automation_update["summary"],
+            "proposal": automation_update,
+            "route": "automation",
+            "route_reason": "pending_automation_trigger_updated",
+            "feedback_target": {"message_id": automation_update["message_id"], "target_type": "automation_proposal"},
+            "_debug": {"intent_plan": {"intent_type": "automation_request", "route": "automation"}},
+        }
+    else:
+        result = self._resolve_pending_clarification(user_text, query_text)
+    if result is None:
+        result = self._run_llm_first_query(user_text, query_text)
     debug = result.pop("_debug", {}) or {}
+    if result.get("status") == "clarification":
+        self.session_store.set_pending_clarification(
+            "query",
+            {
+                "query": user_text,
+                "normalized": query_text,
+                "candidates": result.get("candidates", []),
+            },
+        )
     intent_plan = debug.get("intent_plan", {})
 
     pipeline["steps"]["llm"] = {
@@ -1946,6 +3250,10 @@ def _webagent_process_user_input(self: HomeMindWebAgent, data: dict):
 
 
 HomeMindWebAgent._run_llm_first_query = _webagent_run_llm_first_query
+HomeMindWebAgent._device_from_text = _webagent_device_from_text
+HomeMindWebAgent._action_from_text = _webagent_action_from_text
+HomeMindWebAgent._execution_result = _webagent_execution_result
+HomeMindWebAgent._resolve_pending_clarification = _webagent_resolve_pending_clarification
 HomeMindWebAgent.process_query = _webagent_process_query
 HomeMindWebAgent._process_user_input = _webagent_process_user_input
 
@@ -1993,6 +3301,56 @@ def interaction_feedback():
         return jsonify({"status": "error", "error": str(exc)}), 400
 
 
+@app.route("/api/devices", methods=["GET"])
+def list_devices():
+    """Device switch registry and current states."""
+    if not agent:
+        return jsonify({"error": "Agent æœªåˆå§‹åŒ–"}), 500
+    return jsonify({"status": "success", "devices": agent.list_devices()})
+
+
+@app.route("/api/devices", methods=["POST"])
+def create_device():
+    """Create a switchable device."""
+    data = request.get_json(silent=True) or {}
+    if not agent:
+        return jsonify({"error": "Agent æœªåˆå§‹åŒ–"}), 500
+    try:
+        device = agent.create_device(data)
+        return jsonify({"status": "success", "device": {**device, "state": agent._get_device_state(device["id"])}})
+    except KeyError as exc:
+        return jsonify({"status": "error", "error": str(exc).strip("'")}), 409
+    except ValueError as exc:
+        return jsonify({"status": "error", "error": str(exc)}), 400
+
+
+@app.route("/api/devices/<device>", methods=["PUT"])
+def update_device(device):
+    """Update switchable device metadata."""
+    data = request.get_json(silent=True) or {}
+    if not agent:
+        return jsonify({"error": "Agent æœªåˆå§‹åŒ–"}), 500
+    try:
+        updated = agent.update_device(device, data)
+        return jsonify({"status": "success", "device": {**updated, "state": agent._get_device_state(updated["id"])}})
+    except LookupError as exc:
+        return jsonify({"status": "error", "error": str(exc)}), 404
+    except ValueError as exc:
+        return jsonify({"status": "error", "error": str(exc)}), 400
+
+
+@app.route("/api/devices/<device>", methods=["DELETE"])
+def delete_device(device):
+    """Delete a switchable device."""
+    if not agent:
+        return jsonify({"error": "Agent æœªåˆå§‹åŒ–"}), 500
+    try:
+        removed = agent.delete_device(device)
+        return jsonify({"status": "success", "device": removed})
+    except LookupError as exc:
+        return jsonify({"status": "error", "error": str(exc)}), 404
+
+
 @app.route("/api/devices/<device>/control", methods=["POST"])
 def control_device(device):
     """设备控制接口"""
@@ -2001,6 +3359,8 @@ def control_device(device):
     params = data.get("params", {})
     
     if agent:
+        if not agent._has_device_identifier(device):
+            return jsonify({"status": "error", "error": "device not found"}), 404
         dev_name = agent._resolve_device(device)
         result = agent.device_control.execute(dev_name, action, params)
         return jsonify({
@@ -2017,7 +3377,16 @@ def control_device(device):
 def list_scenes():
     """场景列表接口"""
     if agent:
-        return jsonify({"status": "success", "scenes": agent.scene_store.list_scenes()})
+        names = agent.scene_store.list_scenes()
+        items = [
+            {
+                "id": agent._scene_id_from_name(name),
+                "name": name,
+                "config": agent.scene_store.get_scene(name) or {},
+            }
+            for name in names
+        ]
+        return jsonify({"status": "success", "scenes": names, "items": items})
     return jsonify({"error": "Agent 未初始化"}), 500
 
 
@@ -2029,7 +3398,10 @@ def create_scene():
         return jsonify({"status": "error", "error": "name is required"}), 400
     if agent:
         try:
-            scene = agent.scene_store.add_scene(data["name"], data.get("config", {}))
+            config = data.get("config", {})
+            if not isinstance(config, dict):
+                return jsonify({"status": "error", "error": "config must be an object"}), 400
+            scene = agent.scene_store.add_scene(data["name"], config)
         except ValueError as exc:
             return jsonify({"status": "error", "error": str(exc)}), 400
         return jsonify({"status": "success", "name": data["name"], "scene": scene})
@@ -2065,7 +3437,10 @@ def update_scene(scene_name):
     """场景更新接口"""
     data = request.get_json(silent=True) or {}
     if agent:
-        scene = agent.scene_store.update_scene(scene_name, data.get("config", {}))
+        config = data.get("config", {})
+        if not isinstance(config, dict):
+            return jsonify({"status": "error", "error": "config must be an object"}), 400
+        scene = agent.scene_store.update_scene(scene_name, config)
         if scene is None:
             return jsonify({"status": "error", "error": "场景不存在"}), 404
         return jsonify({"status": "success", "name": scene_name, "scene": scene})
@@ -2088,16 +3463,15 @@ def switch_scene(scene):
     """场景切换接口"""
     if agent:
         scene_name = agent.SCENE_ID_MAP.get(scene, scene)
-        result = agent.scene_switcher.execute(scene_name)
-        agent.context.current_scene = scene
-        agent.context.last_scene = SCENE_INDEX_MAP.get(scene_name, -1)
-        agent.session_store.update_scene(scene_name)
+        result_payload = agent._execute_scene_with_spatial_gate(scene_name, route="local")
+        status_code = 200 if result_payload.get("status") == "success" else 404
         return jsonify({
-            "status": "success",
+            "status": result_payload.get("status", "success"),
             "scene": scene,
-            "result": result,
+            "result": result_payload.get("response", result_payload.get("message", "")),
+            "skipped_devices": result_payload.get("skipped_devices", []),
             "devices": agent.get_all_states()["devices"]
-        })
+        }), status_code
     
     return jsonify({"error": "Agent 未初始化"}), 500
 
@@ -2126,6 +3500,15 @@ def dqn_recommend():
         if action_idx != 5:
             scene_name = SCENE_NAMES.get(action_idx, "")
             recommended_scene = agent._scene_id_from_name(scene_name)
+            recommendation = {
+                "id": f"dqn_{action_idx}",
+                "scene": recommended_scene,
+                "scene_name": scene_name,
+                "reason": f"DQN recommends {scene_name} from current context",
+                "confidence": confidence,
+            }
+            agent._record_dqn_recommendation_memory(recommendation, action_idx, source="api")
+            return jsonify({"status": "success", "recommendation": recommendation})
             
             return jsonify({
                 "status": "success",
@@ -2149,6 +3532,10 @@ def dqn_feedback():
     rec_id = data.get("id")
     response = data.get("response")
     
+    if agent and agent.dqn:
+        action = agent._parse_dqn_action(rec_id)
+        return jsonify(agent._record_dqn_feedback(action, response, source="api"))
+
     if agent and agent.dqn_fb:
         action = 5
         parts = str(rec_id or "").rsplit("_", 1)
@@ -2334,6 +3721,168 @@ def gateway_status():
         "status": "success",
         "gateway": {"connected": False, "mode": "simulated"}
     })
+
+
+@app.route("/api/floor-plans", methods=["GET"])
+def list_floor_plans():
+    """List uploaded SVG floor plans with metadata."""
+    plans = _read_json_list(FLOOR_PLAN_STORE_PATH)
+    return jsonify({"status": "success", "success": True, "floorPlans": plans, "files": plans})
+
+
+@app.route("/api/floor-plans", methods=["POST"])
+def upload_floor_plan():
+    """Upload a validated SVG floor plan and persist metadata."""
+    uploaded = request.files.get("floorPlan") or request.files.get("svg") or request.files.get("file")
+    if not uploaded:
+        return jsonify({"status": "error", "error": "svg file is required"}), 400
+
+    result = _save_floor_plan_svg(
+        uploaded,
+        name=request.form.get("name", ""),
+        description=request.form.get("description", ""),
+    )
+    if result.get("status") != "success":
+        return jsonify(result), 400
+    return jsonify({**result, "success": True})
+
+
+@app.route("/api/floor-plans/<plan_id>", methods=["GET"])
+def get_floor_plan(plan_id):
+    plan = _find_floor_plan(plan_id)
+    if not plan:
+        return jsonify({"status": "error", "error": "floor plan not found"}), 404
+    return jsonify({"status": "success", "success": True, "floorPlan": plan})
+
+
+@app.route("/api/floor-plans/<plan_id>", methods=["PUT"])
+def update_floor_plan(plan_id):
+    plans = _read_json_list(FLOOR_PLAN_STORE_PATH)
+    for index, plan in enumerate(plans):
+        if plan.get("id") != plan_id:
+            continue
+        data = request.get_json(silent=True) or {}
+        updated = dict(plan)
+        for key in ("name", "description"):
+            if key in data:
+                updated[key] = str(data.get(key, "") or "").strip()
+        updated["updatedAt"] = datetime.now().astimezone().isoformat()
+        plans[index] = updated
+        _write_json_list(FLOOR_PLAN_STORE_PATH, plans)
+        return jsonify({"status": "success", "success": True, "floorPlan": updated})
+    return jsonify({"status": "error", "error": "floor plan not found"}), 404
+
+
+@app.route("/api/floor-plans/<plan_id>/activate", methods=["POST"])
+def activate_floor_plan(plan_id):
+    plan = _set_active_floor_plan(plan_id)
+    if not plan:
+        return jsonify({"status": "error", "error": "floor plan not found"}), 404
+    return jsonify({"status": "success", "success": True, "floorPlan": plan})
+
+
+@app.route("/api/floor-plans/<plan_id>", methods=["DELETE"])
+def delete_floor_plan(plan_id):
+    plans = _read_json_list(FLOOR_PLAN_STORE_PATH)
+    kept = []
+    removed = None
+    for plan in plans:
+        if plan.get("id") == plan_id:
+            removed = plan
+        else:
+            kept.append(plan)
+    if not removed:
+        return jsonify({"status": "error", "error": "floor plan not found"}), 404
+
+    _write_json_list(FLOOR_PLAN_STORE_PATH, kept)
+    file_path = Path(removed.get("filePath", ""))
+    try:
+        if file_path.exists() and file_path.resolve().parent == FLOOR_PLAN_UPLOAD_DIR.resolve():
+            file_path.unlink()
+    except Exception:
+        pass
+
+    mappings = [item for item in _read_json_list(FLOOR_PLAN_DEVICE_STORE_PATH) if item.get("floorPlanId") != plan_id]
+    _write_json_list(FLOOR_PLAN_DEVICE_STORE_PATH, mappings)
+    return jsonify({"status": "success", "success": True, "message": "floor plan deleted"})
+
+
+@app.route("/api/floor-plans/<plan_id>/svg", methods=["GET"])
+def get_floor_plan_svg(plan_id):
+    plan = _find_floor_plan(plan_id)
+    if not plan:
+        return jsonify({"status": "error", "error": "floor plan not found"}), 404
+    file_path = Path(plan.get("filePath", ""))
+    try:
+        content = file_path.read_text(encoding="utf-8")
+    except Exception:
+        return jsonify({"status": "error", "error": "svg file not found"}), 404
+    return app.response_class(content, mimetype="image/svg+xml")
+
+
+@app.route("/api/floor-plans/<plan_id>/devices", methods=["GET"])
+def get_floor_plan_devices(plan_id):
+    mapping = next((item for item in _read_json_list(FLOOR_PLAN_DEVICE_STORE_PATH) if item.get("floorPlanId") == plan_id), None)
+    if not mapping:
+        return jsonify({"status": "success", "success": True, "deviceMapping": None, "devices": []})
+    return jsonify({"status": "success", "success": True, "deviceMapping": mapping, "devices": mapping.get("devices", [])})
+
+
+@app.route("/api/floor-plans/<plan_id>/devices", methods=["POST"])
+def save_floor_plan_devices(plan_id):
+    plan = _find_floor_plan(plan_id)
+    if not plan:
+        return jsonify({"status": "error", "error": "floor plan not found"}), 404
+    data = request.get_json(silent=True) or {}
+    raw_input = data.get("devices") if "devices" in data else data.get("deviceMapping")
+    ok, error, tuples = _normalize_device_mapping_to_tuples(raw_input)
+    if not ok:
+        return jsonify({"status": "error", "error": error}), 400
+    nested_mapping = raw_input if isinstance(raw_input, dict) else {}
+    custom_rooms = data.get("customRooms") if isinstance(data.get("customRooms"), dict) else nested_mapping.get("customRooms")
+    custom_rooms = custom_rooms if isinstance(custom_rooms, dict) else None
+    area_names = _area_names_from_payload(data, tuples)
+    devices = _compute_device_positions(tuples, plan, custom_rooms=custom_rooms)
+    for device in devices:
+        if not device.get("areaName"):
+            device["areaName"] = area_names.get(device.get("area", ""), "")
+    mappings = _read_json_list(FLOOR_PLAN_DEVICE_STORE_PATH)
+    existing = next((item for item in mappings if item.get("floorPlanId") == plan_id), None)
+    entry = {
+        "floorPlanId": plan_id,
+        "devices": devices,
+        "rawDevices": tuples,
+        "customRooms": custom_rooms,
+        "areaNames": area_names,
+        "updatedAt": datetime.now().astimezone().isoformat(),
+    }
+    if existing:
+        entry["createdAt"] = existing.get("createdAt", entry["updatedAt"])
+        mappings = [entry if item.get("floorPlanId") == plan_id else item for item in mappings]
+    else:
+        entry["createdAt"] = entry["updatedAt"]
+        mappings.append(entry)
+    _write_json_list(FLOOR_PLAN_DEVICE_STORE_PATH, mappings)
+    return jsonify({"status": "success", "success": True, "deviceMapping": entry, "devices": devices, "deviceCount": len(devices)})
+
+
+@app.route("/api/floor-plans/<plan_id>/devices", methods=["DELETE"])
+def delete_floor_plan_devices(plan_id):
+    mappings = _read_json_list(FLOOR_PLAN_DEVICE_STORE_PATH)
+    kept = [item for item in mappings if item.get("floorPlanId") != plan_id]
+    if len(kept) == len(mappings):
+        return jsonify({"status": "error", "error": "device mapping not found"}), 404
+    _write_json_list(FLOOR_PLAN_DEVICE_STORE_PATH, kept)
+    return jsonify({"status": "success", "success": True, "message": "device mapping deleted"})
+
+
+@app.route("/uploads/floor-plans/<path:filename>", methods=["GET"])
+def serve_floor_plan_svg(filename):
+    """Serve uploaded SVG floor plans as static assets."""
+    safe_name = _safe_svg_filename(filename)
+    if safe_name != filename:
+        return jsonify({"status": "error", "error": "invalid filename"}), 400
+    return send_from_directory(FLOOR_PLAN_UPLOAD_DIR, safe_name, mimetype="image/svg+xml")
 
 
 
