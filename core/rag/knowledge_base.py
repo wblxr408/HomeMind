@@ -16,6 +16,8 @@ logger = logging.getLogger(__name__)
 
 DATA_DIR = "data"
 os.makedirs(DATA_DIR, exist_ok=True)
+DEFAULT_COLLECTION_NAME = "homemind_kb"
+DEFAULT_BACKUP_PATH = os.path.join(DATA_DIR, "kb_backup.enc")
 
 CHROMA_AVAILABLE = False
 try:
@@ -36,6 +38,7 @@ class KnowledgeBase:
         max_records: int = 500,
     ):
         self.persist_dir = persist_dir
+        os.makedirs(self.persist_dir, exist_ok=True)
         self.embedding_fn = embedding_fn
         self.max_records = max(1, int(max_records))
         self.preference_store = None
@@ -43,6 +46,7 @@ class KnowledgeBase:
         self.memory_store: List[Dict] = []
         self._client = None
         self._collection = None
+        self._collection_name = DEFAULT_COLLECTION_NAME
         self._init_chroma()
 
         from core.security import get_encrypted_storage
@@ -56,7 +60,7 @@ class KnowledgeBase:
         try:
             self._client = chromadb.PersistentClient(path=self.persist_dir)
             self._collection = self._client.get_or_create_collection(
-                name="homemind_kb",
+                name=self._collection_name,
                 metadata={"description": "HomeMind RAG knowledge base"},
             )
             logger.info("ChromaDB initialized: %s", self.persist_dir)
@@ -184,13 +188,40 @@ class KnowledgeBase:
                 return record
         return None
 
+    def _ensure_record_id(self, record: Dict[str, Any]) -> str:
+        record_id = str(record.get("record_id") or record.get("memory_key") or "").strip()
+        if not record_id:
+            record_id = f"user_{datetime.now().timestamp()}"
+            record["record_id"] = record_id
+        return record_id
+
+    def _collection_count(self) -> int:
+        if self._collection is None:
+            return 0
+        try:
+            return int(self._collection.count())
+        except Exception as exc:
+            logger.warning("ChromaDB count failed: %s", exc)
+            return 0
+
+    def get_status(self) -> Dict[str, Any]:
+        return {
+            "chromadb_importable": CHROMA_AVAILABLE,
+            "chromadb_enabled": self._collection is not None,
+            "collection_name": self._collection_name,
+            "persist_dir": self.persist_dir,
+            "collection_count": self._collection_count(),
+            "memory_store_count": len(self.memory_store),
+            "preset_count": len(self.preset_knowledge),
+        }
+
     def _upsert_collection_record(self, record: Dict[str, Any]) -> None:
         if self._collection is None:
             return
         try:
             emb = self._get_embedding(record["content"])
             payload = dict(record)
-            record_id = payload.get("record_id") or f"user_{datetime.now().timestamp()}"
+            record_id = self._ensure_record_id(payload)
             if hasattr(self._collection, "upsert"):
                 self._collection.upsert(
                     embeddings=[emb],
@@ -210,7 +241,30 @@ class KnowledgeBase:
                     ids=[record_id],
                 )
         except Exception as exc:
-            logger.warning("ChromaDB add failed: %s", exc)
+            logger.warning("ChromaDB add failed for record_id=%s: %s", record.get("record_id"), exc)
+
+    def _rehydrate_collection(self, records: Optional[List[Dict[str, Any]]] = None, clear_existing: bool = False) -> int:
+        if self._collection is None:
+            return 0
+        records = list(records if records is not None else self.memory_store)
+        if not records:
+            return 0
+        ids = []
+        for record in records:
+            record_id = self._ensure_record_id(record)
+            if record_id:
+                ids.append(record_id)
+        if clear_existing and ids:
+            try:
+                self._collection.delete(ids=ids)
+            except Exception as exc:
+                logger.warning("ChromaDB rehydrate delete failed: %s", exc)
+        restored = 0
+        for record in records:
+            self._upsert_collection_record(record)
+            restored += 1
+        logger.info("Knowledge base rehydrated into ChromaDB, records=%s", restored)
+        return restored
 
     def _prune_memory_store(self) -> None:
         if len(self.memory_store) <= self.max_records:
@@ -271,6 +325,7 @@ class KnowledgeBase:
             "record_id": metadata.get("record_id") or memory_key or f"user_{datetime.now().timestamp()}",
             **metadata,
         }
+        self._ensure_record_id(record)
 
         self.memory_store.append(record)
         self._upsert_collection_record(record)
@@ -323,7 +378,7 @@ class KnowledgeBase:
 
     def backup(self, path: str = None) -> bool:
         if path is None:
-            path = os.path.join(DATA_DIR, "kb_backup.enc")
+            path = DEFAULT_BACKUP_PATH
         data = {
             "memory_store": self.memory_store,
             "timestamp": datetime.now().isoformat(),
@@ -335,12 +390,15 @@ class KnowledgeBase:
 
     def restore(self, path: str = None) -> bool:
         if path is None:
-            path = os.path.join(DATA_DIR, "kb_backup.enc")
+            path = DEFAULT_BACKUP_PATH
         data = self._storage.load_pickle(path)
         if data and "memory_store" in data:
-            self.memory_store = data["memory_store"]
+            self.memory_store = list(data["memory_store"])
             self._prune_memory_store()
+            restored_to_collection = self._rehydrate_collection(clear_existing=True)
             logger.info("Knowledge base restored, records=%s", len(self.memory_store))
+            if self._collection is not None:
+                logger.info("Knowledge base ChromaDB sync complete, collection_records=%s", restored_to_collection)
             return True
         logger.warning("Knowledge base restore failed or backup missing: %s", path)
         return False

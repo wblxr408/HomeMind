@@ -1215,10 +1215,12 @@
                     }).join("")
                 }</div>`;
                 body.querySelectorAll(".toggle").forEach((toggle) => {
-                    toggle.addEventListener("click", () => {
+                    toggle.addEventListener("click", async (event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
                         const id = toggle.dataset.deviceId;
                         const state = devices[id] || {};
-                        controlDevice(id, state.is_on ? "off" : "on");
+                        await controlDevice(id, state.is_on ? "off" : "on");
                     });
                 });
             } else if (type === "rules") {
@@ -1406,14 +1408,47 @@
             }
         }
 
-        function switchScene(scene) {
-            socket.emit("message", { type: "scene_switch", data: { scene } });
-            currentScene = scene;
+        async function switchScene(scene) {
+            const data = await apiJson(`/api/scenes/${encodeURIComponent(scene)}/switch`, "POST", {});
+            if (data.status !== "success") {
+                showToast(data.error || "场景切换失败");
+                return;
+            }
+            currentScene = data.scene || scene;
+            updateDevices(data.devices || {});
+            addMsg("system", data.result || `已切换到${getSceneName(currentScene)}`, "场景切换");
+            loadStatus();
+            loadMemorySummary();
+            if (currentModal === "scene") {
+                renderModal("scene");
+            }
             addLog("场景", getSceneName(scene));
         }
 
-        function controlDevice(deviceId, action) {
-            socket.emit("message", { type: "device_control", data: { device: deviceId, action, params: {} } });
+        async function controlDevice(deviceId, action) {
+            if (socket && socket.connected) {
+                socket.emit("message", { type: "device_control", data: { device: deviceId, action, params: {} } });
+                return;
+            }
+
+            try {
+                const data = await apiJson(`/api/devices/${encodeURIComponent(deviceId)}/control`, "POST", {
+                    action,
+                    params: {},
+                });
+                if (data.status !== "success") {
+                    showToast(data.error || "设备控制失败");
+                    return;
+                }
+
+                updateDeviceState(deviceId, data.state || {});
+                addLog(getDeviceName(deviceId), buildDeviceStatus(deviceId, data.state || {}));
+                if (currentModal === "device") {
+                    renderModal("device");
+                }
+            } catch (error) {
+                showToast("设备控制失败");
+            }
         }
 
         function closeModal(e) {
@@ -1934,6 +1969,27 @@
             const text = data.message || data.question || "我需要更多信息";
             addMsg("ai", text, "系统响应");
             addLog("系统", text);
+        }
+
+        async function switchScene(scene) {
+            try {
+                const data = await apiJson(`/api/scenes/${encodeURIComponent(scene)}/switch`, "POST", {});
+                if (data.status !== "success") {
+                    showToast(data.error || "场景切换失败");
+                    return;
+                }
+                currentScene = data.scene || scene;
+                updateDevices(data.devices || {});
+                addLog("场景", getSceneName(currentScene));
+                addMsg("system", data.result || `已切换到${getSceneName(currentScene)}`, "场景切换");
+                loadStatus();
+                loadMemorySummary();
+                if (currentModal === "scene") {
+                    renderModal("scene");
+                }
+            } catch (error) {
+                showToast("场景切换失败");
+            }
         }
 
         function handleMessage(msg) {

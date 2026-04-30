@@ -312,6 +312,16 @@ class WebApiSystemTests(unittest.TestCase):
         self.assertEqual(payload["response_type"], "automation_proposal")
         self.assertEqual(payload["proposal"]["rule_preview"]["trigger"]["at"], "19:00")
 
+    def test_scene_switch_endpoint_updates_scene_and_devices(self):
+        response = self.client.post("/api/scenes/sleep/switch")
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.get_json()
+        self.assertEqual(payload["status"], "success")
+        self.assertEqual(payload["scene"], "sleep")
+        self.assertIn("睡眠模式", payload["result"])
+        self.assertEqual(self.web_server.agent.session_store.get_current_scene(), "睡眠模式")
+
     def test_accepting_automation_proposal_creates_rule(self):
         proposal_response = self.client.post("/api/query", json={"query": "晚上7:00打开空调"})
         proposal = proposal_response.get_json()
