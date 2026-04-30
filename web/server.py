@@ -129,6 +129,20 @@ DEFAULT_DEVICE_REGISTRY = [
     {"id": "speaker", "name": "音响", "type": "speaker"},
     {"id": "window", "name": "窗户", "type": "cover"},
 ]
+IMMUTABLE_DEVICE_UPDATE_FIELDS = {
+    "state",
+    "status",
+    "is_on",
+    "isOn",
+    "runtime",
+    "current_state",
+    "currentState",
+    "last_state",
+    "lastState",
+    "createdAt",
+    "updatedAt",
+}
+
 DEFAULT_ROOM_AREAS = {
     "living_room": {"coordinates": [{"x": 23, "y": 108}, {"x": 195, "y": 298}]},
     "bedroom": {"coordinates": [{"x": 284, "y": 132}, {"x": 406, "y": 296}]},
@@ -136,6 +150,48 @@ DEFAULT_ROOM_AREAS = {
     "bathroom1": {"coordinates": [{"x": 344, "y": 431}, {"x": 406, "y": 544}]},
     "bathroom2": {"coordinates": [{"x": 495, "y": 335}, {"x": 591, "y": 424}]},
     "dining_room": {"coordinates": [{"x": 118, "y": 368}, {"x": 232, "y": 513}]},
+}
+DEFAULT_AREA_ALIASES = {
+    "living_room": ["\u5ba2\u5385", "\u8d77\u5c45\u5ba4", "living room", "living_room"],
+    "bedroom": ["\u5367\u5ba4", "\u4e3b\u5367", "bedroom"],
+    "bedroom2": ["\u6b21\u5367", "\u5367\u5ba42", "bedroom2"],
+    "kitchen": ["\u53a8\u623f", "kitchen"],
+    "bathroom1": ["\u536b\u751f\u95f4", "\u4e3b\u536b", "bathroom1"],
+    "bathroom2": ["\u6b21\u536b", "\u536b\u751f\u95f42", "bathroom2"],
+    "dining_room": ["\u9910\u5385", "dining room", "dining_room"],
+    "study": ["\u4e66\u623f", "study"],
+    "balcony": ["\u9633\u53f0", "balcony"],
+    "entrance": ["\u7384\u5173", "\u5165\u6237", "entrance"],
+}
+SEMANTIC_DEVICE_MATCHES = {
+    "\u706f\u5149": {
+        "types": {"light"},
+        "tokens": {"light", "lamp", "\u706f", "\u706f\u5149"},
+    },
+    "\u7a7a\u8c03": {
+        "types": {"climate", "air_conditioner", "hvac"},
+        "tokens": {"climate", "air_conditioner", "air conditioner", "ac", "\u7a7a\u8c03"},
+    },
+    "\u7535\u89c6": {
+        "types": {"tv", "television", "media_player"},
+        "tokens": {"tv", "television", "\u7535\u89c6"},
+    },
+    "\u70ed\u6c34\u5668": {
+        "types": {"water_heater"},
+        "tokens": {"water_heater", "water heater", "\u70ed\u6c34\u5668"},
+    },
+    "\u98ce\u6247": {
+        "types": {"fan"},
+        "tokens": {"fan", "\u98ce\u6247"},
+    },
+    "\u97f3\u54cd": {
+        "types": {"speaker", "audio", "media_player"},
+        "tokens": {"speaker", "audio", "sound", "\u97f3\u54cd", "\u5587\u53ed"},
+    },
+    "\u7a97\u6237": {
+        "types": {"cover", "window", "curtain"},
+        "tokens": {"window", "curtain", "cover", "\u7a97", "\u7a97\u6237", "\u7a97\u5e18"},
+    },
 }
 
 
@@ -279,6 +335,87 @@ def _find_floor_plan(plan_id: str) -> dict | None:
     return None
 
 
+def _set_active_floor_plan(plan_id: str) -> dict | None:
+    plans = _read_json_list(FLOOR_PLAN_STORE_PATH)
+    updated_plan = None
+    for index, plan in enumerate(plans):
+        updated = dict(plan)
+        updated["active"] = plan.get("id") == plan_id
+        if updated["active"]:
+            updated["updatedAt"] = datetime.now().astimezone().isoformat()
+            updated_plan = updated
+        plans[index] = updated
+    if updated_plan:
+        _write_json_list(FLOOR_PLAN_STORE_PATH, plans)
+    return updated_plan
+
+
+def _normalize_area_name(raw: str) -> str:
+    return re.sub(r"[\s_\-]+", "", str(raw or "").strip().lower())
+
+
+def _extract_device_mapping_item(item) -> dict | None:
+    if isinstance(item, list) and len(item) >= 2:
+        entity_id = str(item[0] or "").strip()
+        area = str(item[1] or "").strip()
+        device_type = str(item[2] if len(item) >= 3 and item[2] is not None else "light").strip() or "light"
+        device_name = str(item[3] if len(item) >= 4 and item[3] is not None else "").strip()
+        area_name = str(item[4] if len(item) >= 5 and item[4] is not None else "").strip()
+    elif isinstance(item, dict):
+        entity_id = str(item.get("entity_id") or item.get("entityId") or item.get("id") or item.get("entity") or "").strip()
+        area = str(item.get("area") or item.get("room") or item.get("zone") or "").strip()
+        device_type = str(item.get("device_type") or item.get("deviceType") or item.get("type") or "light").strip() or "light"
+        device_name = str(item.get("name") or item.get("displayName") or item.get("deviceName") or "").strip()
+        area_name = str(
+            item.get("areaName")
+            or item.get("area_name")
+            or item.get("roomName")
+            or item.get("room_name")
+            or item.get("displayArea")
+            or item.get("display_area")
+            or ""
+        ).strip()
+    else:
+        return None
+
+    if not entity_id or not area:
+        return None
+    if not device_name:
+        device_name = entity_id.split(".", 1)[-1].replace("_", " ")
+    return {
+        "entity_id": entity_id,
+        "area": area,
+        "device_type": device_type,
+        "name": device_name,
+        "area_name": area_name,
+    }
+
+
+def _area_names_from_payload(data: dict, device_items: list) -> dict:
+    area_names = {}
+    nested = data.get("devices") if isinstance(data.get("devices"), dict) else {}
+    raw_area_names = data.get("areaNames") or data.get("roomNames") or nested.get("areaNames") or nested.get("roomNames") or {}
+    if isinstance(raw_area_names, dict):
+        for area, name in raw_area_names.items():
+            area = str(area or "").strip()
+            name = str(name or "").strip()
+            if area and name:
+                area_names[area] = name
+    custom_rooms = data.get("customRooms") if isinstance(data.get("customRooms"), dict) else nested.get("customRooms", {})
+    for area, room in custom_rooms.items():
+        if not isinstance(room, dict):
+            continue
+        name = str(room.get("name") or room.get("displayName") or room.get("areaName") or "").strip()
+        if str(area or "").strip() and name:
+            area_names[str(area).strip()] = name
+    for item in device_items:
+        area = item.get("area", "")
+        area_name = item.get("area_name", "")
+        if area and area_name:
+            area_names[area] = area_name
+    return area_names
+
+
 def _normalize_device_mapping_to_tuples(raw_input) -> tuple[bool, str, list]:
     if isinstance(raw_input, str):
         try:
@@ -297,18 +434,9 @@ def _normalize_device_mapping_to_tuples(raw_input) -> tuple[bool, str, list]:
 
     tuples = []
     for item in items:
-        if isinstance(item, list) and len(item) >= 2:
-            entity_id = str(item[0] or "").strip()
-            area = str(item[1] or "").strip()
-            device_type = str(item[2] if len(item) >= 3 and item[2] is not None else "light").strip() or "light"
-        elif isinstance(item, dict):
-            entity_id = str(item.get("entity_id") or item.get("entityId") or item.get("id") or item.get("entity") or "").strip()
-            area = str(item.get("area") or item.get("room") or item.get("zone") or "").strip()
-            device_type = str(item.get("device_type") or item.get("deviceType") or item.get("type") or "light").strip() or "light"
-        else:
-            continue
-        if entity_id and area:
-            tuples.append([entity_id, area, device_type])
+        normalized = _extract_device_mapping_item(item)
+        if normalized:
+            tuples.append(normalized)
 
     if not tuples and items:
         return False, "no valid devices found", []
@@ -320,8 +448,12 @@ def _compute_device_positions(device_mapping: list, plan: dict, custom_rooms: di
     width = float(plan.get("width") or DEFAULT_SVG_WIDTH)
     height = float(plan.get("height") or DEFAULT_SVG_HEIGHT)
     grouped = {}
-    for entity_id, area, device_type in device_mapping:
-        grouped.setdefault(area, []).append({"entity_id": entity_id, "device_type": device_type or "sensor"})
+    for item in device_mapping:
+        normalized = _extract_device_mapping_item(item)
+        if not normalized:
+            continue
+        area = normalized["area"]
+        grouped.setdefault(area, []).append(normalized)
 
     devices = []
     for area, room_devices in grouped.items():
@@ -349,12 +481,12 @@ def _compute_device_positions(device_mapping: list, plan: dict, custom_rooms: di
             abs_x = room_x + margin_x + (usable_width / (cols + 1)) * (col + 1)
             abs_y = room_y + margin_y + (usable_height / (rows + 1)) * (row + 1)
             entity_id = device["entity_id"]
-            name = entity_id.split(".", 1)[-1].replace("_", " ")
             devices.append({
                 "id": entity_id,
-                "name": name,
+                "name": device.get("name") or entity_id.split(".", 1)[-1].replace("_", " "),
                 "type": device["device_type"],
                 "area": area,
+                "areaName": device.get("area_name") or "",
                 "x": round(max(0.0, min(100.0, abs_x / width * 100)), 2),
                 "y": round(max(0.0, min(100.0, abs_y / height * 100)), 2),
                 "icon": device["device_type"],
@@ -809,28 +941,13 @@ class HomeMindWebAgent:
         params = normalized.get("params", {})
 
         if action_type == "设备控制" and device and device_action:
-            message = self.device_control.execute(device, device_action, params)
-            self.session_store.update_from_decision(normalized, route=route, result=message)
-            self.preference_store.record_action_accept(normalized, self.context)
-            return {
-                "status": "success",
-                "action": f"{device}_{device_action}",
-                "response": message,
-                "command": normalized,
-            }
+            result = self._execute_device_with_spatial_gate(normalized, text="", route=route)
+            result["command"] = normalized
+            return result
         if action_type == "场景切换" and scene:
-            message = self.scene_switcher.execute(scene)
-            self.context.current_scene = scene
-            self.context.last_scene = SCENE_INDEX_MAP.get(scene, -1)
-            self.session_store.update_scene(scene)
-            self.session_store.update_from_decision(normalized, route=route, result=message)
-            self.preference_store.record_action_accept(normalized, self.context)
-            return {
-                "status": "success",
-                "action": "scene_switch",
-                "response": message,
-                "command": normalized,
-            }
+            result = self._execute_scene_with_spatial_gate(scene, route=route)
+            result["command"] = normalized
+            return result
         if action_type == "信息查询":
             result = self.info_query.execute(normalized.get("query_type", "status"), params)
             return {
@@ -1701,9 +1818,8 @@ class HomeMindWebAgent:
         if self.bsr:
             self.bsr.recall(f"切换到{scene}场景", self.context)
         
-        self.scene_switcher.execute(scene)
-        self.context.current_scene = scene_id
-        self.session_store.update_scene(scene)
+        result_payload = self._execute_scene_with_spatial_gate(scene, route="local")
+        result = result_payload.get("response", result_payload.get("message", ""))
         
         socketio.emit("message", {
             "type": "scene_update",
@@ -1711,6 +1827,18 @@ class HomeMindWebAgent:
                 "scene": scene_id,
                 "devices": self.get_all_states()["devices"]
             }
+        })
+        socketio.emit("message", {
+            "type": "agent_response",
+            "data": {
+                "action": "scene_switch",
+                "result": result,
+                "status": "success",
+                "response_type": "execution_result",
+                "scene": scene_id,
+                "route": "local",
+                "route_reason": "scene_switch_event",
+            },
         })
     
     def _handle_dqn_response(self, data: dict):
@@ -1778,6 +1906,227 @@ class HomeMindWebAgent:
         self._ensure_device_states(registry)
         return registry
 
+    def _active_floor_plan_mapping(self) -> dict | None:
+        mappings = _read_json_list(FLOOR_PLAN_DEVICE_STORE_PATH)
+        if not mappings:
+            return None
+        plans = _read_json_list(FLOOR_PLAN_STORE_PATH)
+        active_plan = next((plan for plan in plans if plan.get("active")), None)
+        if active_plan:
+            active_id = active_plan.get("id")
+            matched = next((item for item in mappings if item.get("floorPlanId") == active_id), None)
+            if matched:
+                return matched
+        if plans:
+            plan_ids = {plan.get("id") for plan in plans}
+            matched = next((item for item in mappings if item.get("floorPlanId") in plan_ids), None)
+            if matched:
+                return matched
+        return mappings[0]
+
+    def _floor_plan_devices(self) -> list:
+        mapping = self._active_floor_plan_mapping()
+        if not mapping:
+            return []
+        return [device for device in mapping.get("devices", []) if isinstance(device, dict)]
+
+    def _floor_plan_area_aliases(self) -> dict:
+        mapping = self._active_floor_plan_mapping() or {}
+        aliases = {area: list(values) for area, values in DEFAULT_AREA_ALIASES.items()}
+        for area, name in (mapping.get("areaNames") or {}).items():
+            area = str(area or "").strip()
+            name = str(name or "").strip()
+            if area and name:
+                aliases.setdefault(area, []).append(name)
+        for device in mapping.get("devices", []):
+            area = str(device.get("area") or "").strip()
+            name = str(device.get("areaName") or "").strip()
+            if area and name:
+                aliases.setdefault(area, []).append(name)
+            if area:
+                aliases.setdefault(area, []).append(area)
+        return aliases
+
+    def _area_filter_from_text(self, text: str) -> str:
+        normalized_text = _normalize_area_name(text)
+        if not normalized_text:
+            return ""
+        candidates = []
+        for area, aliases in self._floor_plan_area_aliases().items():
+            for alias in aliases:
+                alias_key = _normalize_area_name(alias)
+                if alias_key:
+                    candidates.append((len(alias_key), area, alias_key))
+        for _, area, alias_key in sorted(candidates, reverse=True):
+            if alias_key in normalized_text:
+                return area
+        return ""
+
+    def _mapped_device_matches_semantic(self, semantic_device: str, mapped_device: dict) -> bool:
+        rule = SEMANTIC_DEVICE_MATCHES.get(semantic_device)
+        if not rule:
+            return False
+        device_type = str(mapped_device.get("type") or mapped_device.get("device_type") or "").strip().lower()
+        haystack = " ".join(
+            str(mapped_device.get(key) or "").lower()
+            for key in ("id", "name", "type", "area", "areaName")
+        )
+        if device_type in rule["types"]:
+            return True
+        return any(token.lower() in haystack for token in rule["tokens"])
+
+    def _semantic_device_for_mapped_device(self, mapped_device: dict) -> str:
+        for semantic_device in SEMANTIC_DEVICE_MATCHES:
+            if self._mapped_device_matches_semantic(semantic_device, mapped_device):
+                return semantic_device
+        return str(mapped_device.get("name") or mapped_device.get("id") or "").strip()
+
+    def _floor_plan_device_by_identifier(self, device_id: str) -> dict | None:
+        key = str(device_id or "").strip()
+        if not key:
+            return None
+        for device in self._floor_plan_devices():
+            if key in {
+                str(device.get("id") or ""),
+                str(device.get("name") or ""),
+                str(device.get("entity_id") or ""),
+            }:
+                return device
+        return None
+
+    def _spatial_targets_for_device(self, semantic_device: str, text: str = "") -> dict:
+        mapping = self._active_floor_plan_mapping()
+        if not mapping:
+            return {
+                "valid": False,
+                "reason": "no_floor_plan_mapping",
+                "message": "\u8bf7\u5148\u4e0a\u4f20 SVG \u6237\u578b\u56fe\u5e76\u7ed1\u5b9a\u8bbe\u5907\u6620\u5c04\uff0c\u7136\u540e\u518d\u6267\u884c\u8bbe\u5907\u63a7\u5236\u3002",
+                "targets": [],
+                "area": "",
+            }
+        devices = self._floor_plan_devices()
+        area = self._area_filter_from_text(text)
+        matches = [
+            device for device in devices
+            if self._mapped_device_matches_semantic(semantic_device, device)
+            and (not area or device.get("area") == area)
+        ]
+        if matches:
+            return {"valid": True, "reason": "mapped_device_found", "targets": matches, "area": area, "message": ""}
+        area_label = area or "\u5f53\u524d\u6237\u578b\u56fe"
+        return {
+            "valid": False,
+            "reason": "device_not_in_floor_plan",
+            "message": f"\u5f53\u524d SVG \u6237\u578b\u56fe\u7684\u8bbe\u5907\u8868\u91cc\u6ca1\u6709\u53ef\u63a7\u7684\u201c{area_label}{semantic_device}\u201d\uff0c\u5df2\u62e6\u622a\u6267\u884c\u3002",
+            "targets": [],
+            "area": area,
+        }
+
+    def _validate_spatial_device_command(self, command: dict, text: str = "") -> dict:
+        if command.get("action") != "\u8bbe\u5907\u63a7\u5236":
+            return {"valid": True, "reason": "not_device_control", "message": "", "targets": []}
+        device = str(command.get("device") or "").strip()
+        if not device:
+            return {"valid": True, "reason": "no_device", "message": "", "targets": []}
+        return self._spatial_targets_for_device(device, text=text)
+
+    def _execute_device_with_spatial_gate(self, command: dict, text: str, route: str) -> dict:
+        spatial = self._validate_spatial_device_command(command, text=text)
+        if not spatial["valid"]:
+            self.session_store.update_clarification(spatial["message"])
+            return {
+                "status": "unsupported",
+                "response_type": "clarification",
+                "action": "unsupported",
+                "target": command.get("device", ""),
+                "response": spatial["message"],
+                "message": spatial["message"],
+                "route": "unsupported",
+                "route_reason": spatial["reason"],
+                "spatial": spatial,
+            }
+        device = command.get("device", "")
+        device_action = command.get("device_action", "")
+        params = command.get("params", {})
+        message = self.device_control.execute(device, device_action, params)
+        target_names = [target.get("name") or target.get("id") for target in spatial.get("targets", [])]
+        if target_names:
+            message = f"{message}\u6620\u5c04\u8bbe\u5907\uff1a{', '.join(target_names)}\u3002"
+        self.session_store.update_from_decision(command, route=route, result=message)
+        self.preference_store.record_action_accept(command, self.context)
+        return {
+            "status": "success",
+            "response_type": "execution_result",
+            "action": f"{device}_{device_action}",
+            "device": device,
+            "device_action": device_action,
+            "params": params,
+            "response": message,
+            "message": message,
+            "spatial": spatial,
+        }
+
+    def _execute_scene_with_spatial_gate(self, scene: str, route: str = "local") -> dict:
+        config = self.scene_store.get_scene(scene)
+        if config is None:
+            message = f"\u4e0d\u652f\u6301\u7684\u573a\u666f: {scene}"
+            self.session_store.update_clarification(message)
+            return {"status": "unsupported", "response": message, "message": message, "route_reason": "scene_not_found"}
+        executed = []
+        skipped = []
+        for device, cmd in config.items():
+            command = {
+                "action": "\u8bbe\u5907\u63a7\u5236",
+                "device": device,
+                "scene": "",
+                "device_action": cmd.get("action", ""),
+                "params": cmd.get("params", {}),
+                "confidence": 1.0,
+                "reasoning": f"scene {scene}",
+            }
+            spatial = self._validate_spatial_device_command(command)
+            if not spatial["valid"]:
+                skipped.append(device)
+                continue
+            result = self.device_control.execute(device, command["device_action"], command["params"])
+            executed.append(result)
+        if not executed:
+            message = f"\u5f53\u524d SVG \u6237\u578b\u56fe\u7684\u8bbe\u5907\u8868\u4e0d\u652f\u6301\u6267\u884c\u201c{scene}\u201d\u4e2d\u7684\u4efb\u4f55\u8bbe\u5907\u52a8\u4f5c\uff0c\u5df2\u62e6\u622a\u573a\u666f\u5207\u6362\u3002"
+            self.session_store.update_clarification(message)
+            return {
+                "status": "unsupported",
+                "response": message,
+                "message": message,
+                "route_reason": "scene_devices_not_in_floor_plan",
+                "skipped_devices": skipped,
+            }
+        self.context.current_scene = scene
+        self.context.last_scene = SCENE_INDEX_MAP.get(scene, -1)
+        self.session_store.update_scene(scene)
+        decision = {
+            "action": "\u573a\u666f\u5207\u6362",
+            "device": "",
+            "scene": scene,
+            "device_action": "",
+            "params": {},
+            "confidence": 1.0,
+            "reasoning": "scene execution with spatial gate",
+        }
+        message = f"\u5df2\u5207\u6362\u5230{scene}\u3002" + " ".join(executed)
+        if skipped:
+            message += f"\u672a\u5728\u6237\u578b\u8bbe\u5907\u8868\u4e2d\u627e\u5230\u7684\u8bbe\u5907\u5df2\u8df3\u8fc7\uff1a{', '.join(skipped)}\u3002"
+        self.session_store.update_from_decision(decision, route=route, result=message)
+        self.preference_store.record_action_accept(decision, self.context)
+        return {
+            "status": "success",
+            "response_type": "execution_result",
+            "action": "scene_switch",
+            "scene": scene,
+            "response": message,
+            "message": message,
+            "skipped_devices": skipped,
+        }
+
     def _ensure_device_states(self, registry: list) -> None:
         for item in registry:
             self.device_control.add_device(item["name"], _default_device_state(item.get("type", "")))
@@ -1796,10 +2145,12 @@ class HomeMindWebAgent:
     def _has_device_identifier(self, device_id: str) -> bool:
         if not device_id:
             return False
+        if self._floor_plan_device_by_identifier(device_id):
+            return True
         registry = self._device_registry()
         if any(item["id"] == device_id or item["name"] == device_id for item in registry):
             return True
-        return device_id in self.device_control.state
+        return False
 
     def list_devices(self) -> list:
         registry = self._device_registry()
@@ -1837,6 +2188,9 @@ class HomeMindWebAgent:
                 continue
             if payload.get("id") and payload.get("id") != device_id:
                 raise ValueError("device id cannot be changed")
+            immutable_fields = sorted(field for field in IMMUTABLE_DEVICE_UPDATE_FIELDS if field in payload)
+            if immutable_fields:
+                raise ValueError(f"device runtime fields cannot be changed: {', '.join(immutable_fields)}")
             old_name = item["name"]
             updated = {
                 **item,
@@ -1893,6 +2247,9 @@ class HomeMindWebAgent:
     
     def _resolve_device(self, device_id: str) -> str:
         """将英文设备ID解析为中文设备名"""
+        mapped = self._floor_plan_device_by_identifier(device_id)
+        if mapped:
+            return self._semantic_device_for_mapped_device(mapped)
         item = self._device_registry_map().get(device_id)
         return item["name"] if item else device_id
     
@@ -2111,6 +2468,18 @@ def _webagent_run_llm_first_query(self: HomeMindWebAgent, raw_text: str, normali
     if not self.llm:
         return {"status": "no_action", "message": "AI 模块未加载", "_debug": {}}
 
+    pre_unsupported = self._detect_unsupported_request(raw_text, normalized_text=normalized_text)
+    if pre_unsupported:
+        return {
+            "status": "unsupported",
+            "response_type": "clarification",
+            "target": pre_unsupported["target"],
+            "response": pre_unsupported["message"],
+            "route": pre_unsupported["route"],
+            "route_reason": pre_unsupported["reason"],
+            "_debug": {"intent_plan": {"intent_type": "unsupported_or_ambiguous_command", "route": "unsupported"}},
+        }
+
     intent_plan = self.llm.plan_intent(raw_text, normalized_query=normalized_text, context=self.context)
     self.last_route_info = {
         "intent_type": intent_plan.get("intent_type", ""),
@@ -2328,9 +2697,14 @@ def _webagent_run_llm_first_query(self: HomeMindWebAgent, raw_text: str, normali
     }
 
     if action_type == "设备控制" and device and device_action:
-        message = self.device_control.execute(device, device_action, params)
-        self.session_store.update_from_decision(decision, route=route_info["route"], result=message)
-        self.preference_store.record_action_accept(decision, self.context)
+        execution = self._execute_device_with_spatial_gate(
+            decision,
+            text=" ".join(part for part in [raw_text, normalized_text, goal_query] if part),
+            route=route_info["route"],
+        )
+        if execution.get("status") != "success":
+            return {**execution, "_debug": debug_payload}
+        message = execution.get("response", "")
         interaction = self._build_message_metadata(
             "execution",
             raw_text,
@@ -2351,11 +2725,10 @@ def _webagent_run_llm_first_query(self: HomeMindWebAgent, raw_text: str, normali
         }
 
     if action_type == "场景切换" and scene:
-        message = self.scene_switcher.execute(scene)
-        self.context.current_scene = scene
-        self.context.last_scene = SCENE_INDEX_MAP.get(scene, -1)
-        self.session_store.update_from_decision(decision, route=route_info["route"], result=message)
-        self.preference_store.record_action_accept(decision, self.context)
+        execution = self._execute_scene_with_spatial_gate(scene, route=route_info["route"])
+        if execution.get("status") != "success":
+            return {**execution, "_debug": debug_payload}
+        message = execution.get("response", "")
         interaction = self._build_message_metadata(
             "execution",
             raw_text,
@@ -2387,14 +2760,145 @@ def _webagent_run_llm_first_query(self: HomeMindWebAgent, raw_text: str, normali
     }
 
 
+def _webagent_device_from_text(self: HomeMindWebAgent, text: str) -> str:
+    aliases = {
+        "\u7a7a\u8c03": ("\u7a7a\u8c03", "ac", "air conditioner"),
+        "\u706f\u5149": ("\u706f", "\u706f\u5149", "light"),
+        "\u7535\u89c6": ("\u7535\u89c6", "tv", "television"),
+        "\u97f3\u54cd": ("\u97f3\u54cd", "\u5587\u53ed", "speaker"),
+        "\u98ce\u6247": ("\u98ce\u6247", "fan"),
+        "\u7a97\u6237": ("\u7a97\u6237", "\u7a97", "window"),
+        "\u70ed\u6c34\u5668": ("\u70ed\u6c34\u5668",),
+    }
+    lowered = str(text or "").strip().lower()
+    for device, tokens in aliases.items():
+        if any(token in lowered for token in tokens):
+            return device
+    return ""
+
+
+def _webagent_action_from_text(self: HomeMindWebAgent, text: str, device: str = "") -> tuple[str, dict]:
+    value = str(text or "").strip().lower()
+    if any(token in value for token in ("\u5173\u95ed", "\u5173\u6389", "\u5173\u4e86", "off")):
+        return ("close", {}) if device == "\u7a97\u6237" else ("off", {})
+    if any(token in value for token in ("\u6253\u5f00", "\u5f00\u542f", "\u6253\u5f00\u4e00\u4e0b", "\u5f00", "on")):
+        params = {}
+        if device == "\u7a7a\u8c03":
+            params = {"temperature": 26}
+        elif device == "\u706f\u5149":
+            params = {"brightness": 100}
+        elif device == "\u97f3\u54cd":
+            params = {"volume": 30}
+        elif device == "\u70ed\u6c34\u5668":
+            params = {"temperature": 45}
+        return ("open", {}) if device == "\u7a97\u6237" else ("on", params)
+    if device == "\u7a7a\u8c03":
+        if any(token in value for token in ("\u8c03\u9ad8", "\u6696", "\u70ed\u4e00\u70b9")):
+            return "adjust", {"temperature": 28}
+        if any(token in value for token in ("\u8c03\u4f4e", "\u51c9", "\u51b7\u4e00\u70b9")):
+            return "adjust", {"temperature": 24}
+    if device == "\u706f\u5149":
+        if any(token in value for token in ("\u8c03\u4eae", "\u4eae\u4e00\u70b9")):
+            return "adjust", {"brightness": 100}
+        if any(token in value for token in ("\u8c03\u6697", "\u6697\u4e00\u70b9")):
+            return "adjust", {"brightness": 30}
+    return "", {}
+
+
+def _webagent_execution_result(self: HomeMindWebAgent, command: dict, raw_text: str, normalized_text: str) -> dict:
+    executed = self._execute_structured_command(command, route="local")
+    if executed.get("status") == "unsupported":
+        return {
+            "status": "unsupported",
+            "response_type": "clarification",
+            "target": executed.get("target", command.get("device", "")),
+            "response": executed.get("response", executed.get("message", "")),
+            "route": executed.get("route", "unsupported"),
+            "route_reason": executed.get("route_reason", "device_not_in_floor_plan"),
+        }
+    if executed.get("status") != "success":
+        question = "\u8bf7\u95ee\u4f60\u60f3\u6253\u5f00\u3001\u5173\u95ed\u8fd8\u662f\u8c03\u8282\u8fd9\u4e2a\u8bbe\u5907\uff1f"
+        self.session_store.update_clarification(question)
+        return {"status": "clarification", "response_type": "clarification", "question": question, "route": "clarify", "route_reason": "pending_clarification_incomplete"}
+    interaction = self._build_message_metadata(
+        "execution",
+        raw_text,
+        normalized_text,
+        decision_snapshot=command,
+    )
+    return {
+        "status": "success",
+        "response_type": "execution_result",
+        "message_id": interaction["message_id"],
+        "action": executed.get("action", ""),
+        "response": executed.get("response", ""),
+        "confidence": command.get("confidence", 0.95),
+        "route": "local",
+        "route_reason": "pending_clarification_resolved",
+        "feedback_target": {"message_id": interaction["message_id"], "target_type": "execution"},
+    }
+
+
+def _webagent_resolve_pending_clarification(self: HomeMindWebAgent, raw_text: str, normalized_text: str) -> dict | None:
+    pending = self.session_store.get_pending_clarification()
+    if not pending:
+        return None
+
+    payload = dict(pending.get("payload", {}) or {})
+    text = str(normalized_text or raw_text or "").strip()
+    device = self._device_from_text(text) or payload.get("device", "")
+    action, params = self._action_from_text(text, device)
+
+    if device and action:
+        self.session_store.clear_pending_clarification()
+        command = {
+            "action": "\u8bbe\u5907\u63a7\u5236",
+            "device": device,
+            "scene": "",
+            "device_action": action,
+            "params": params,
+            "confidence": 0.95,
+            "reasoning": "pending clarification resolved by follow-up",
+        }
+        return self._execution_result(command, raw_text, normalized_text)
+
+    if device:
+        question = f"\u4f60\u60f3\u5bf9{device}\u6267\u884c\u6253\u5f00\u3001\u5173\u95ed\u8fd8\u662f\u8c03\u8282\uff1f"
+        self.session_store.update_clarification(question)
+        self.session_store.set_pending_clarification("device_action", {"device": device})
+        return {
+            "status": "clarification",
+            "response_type": "clarification",
+            "question": question,
+            "candidates": [f"\u6253\u5f00{device}", f"\u5173\u95ed{device}"],
+            "route": "clarify",
+            "route_reason": "pending_clarification_device_only",
+        }
+
+    return None
+
+
 def _webagent_process_query(self: HomeMindWebAgent, query: str) -> dict:
     self.context.hour = datetime.now().hour
     normalized = self.language_normalizer.normalize(query)
     query_for_ai = normalized.normalized or query
     self._record_query_context(query, query_for_ai)
+    pending_result = self._resolve_pending_clarification(query, query_for_ai)
+    if pending_result is not None:
+        pending_result["normalized_query"] = normalized.to_dict()
+        return pending_result
     result = self._run_llm_first_query(query, query_for_ai)
     debug = result.pop("_debug", None)
     result["normalized_query"] = normalized.to_dict()
+    if result.get("status") == "clarification":
+        self.session_store.set_pending_clarification(
+            "query",
+            {
+                "query": query,
+                "normalized": query_for_ai,
+                "candidates": result.get("candidates", []),
+            },
+        )
     if debug:
         self.last_route_info = self.last_route_info or {}
     return result
@@ -2425,8 +2929,19 @@ def _webagent_process_user_input(self: HomeMindWebAgent, data: dict):
     }
     socketio.emit("pipeline_update", {"type": "pipeline_start", "data": pipeline})
 
-    result = self._run_llm_first_query(user_text, query_text)
+    result = self._resolve_pending_clarification(user_text, query_text)
+    if result is None:
+        result = self._run_llm_first_query(user_text, query_text)
     debug = result.pop("_debug", {}) or {}
+    if result.get("status") == "clarification":
+        self.session_store.set_pending_clarification(
+            "query",
+            {
+                "query": user_text,
+                "normalized": query_text,
+                "candidates": result.get("candidates", []),
+            },
+        )
     intent_plan = debug.get("intent_plan", {})
 
     pipeline["steps"]["llm"] = {
@@ -2506,6 +3021,10 @@ def _webagent_process_user_input(self: HomeMindWebAgent, data: dict):
 
 
 HomeMindWebAgent._run_llm_first_query = _webagent_run_llm_first_query
+HomeMindWebAgent._device_from_text = _webagent_device_from_text
+HomeMindWebAgent._action_from_text = _webagent_action_from_text
+HomeMindWebAgent._execution_result = _webagent_execution_result
+HomeMindWebAgent._resolve_pending_clarification = _webagent_resolve_pending_clarification
 HomeMindWebAgent.process_query = _webagent_process_query
 HomeMindWebAgent._process_user_input = _webagent_process_user_input
 
@@ -2629,7 +3148,16 @@ def control_device(device):
 def list_scenes():
     """场景列表接口"""
     if agent:
-        return jsonify({"status": "success", "scenes": agent.scene_store.list_scenes()})
+        names = agent.scene_store.list_scenes()
+        items = [
+            {
+                "id": agent._scene_id_from_name(name),
+                "name": name,
+                "config": agent.scene_store.get_scene(name) or {},
+            }
+            for name in names
+        ]
+        return jsonify({"status": "success", "scenes": names, "items": items})
     return jsonify({"error": "Agent 未初始化"}), 500
 
 
@@ -2641,7 +3169,10 @@ def create_scene():
         return jsonify({"status": "error", "error": "name is required"}), 400
     if agent:
         try:
-            scene = agent.scene_store.add_scene(data["name"], data.get("config", {}))
+            config = data.get("config", {})
+            if not isinstance(config, dict):
+                return jsonify({"status": "error", "error": "config must be an object"}), 400
+            scene = agent.scene_store.add_scene(data["name"], config)
         except ValueError as exc:
             return jsonify({"status": "error", "error": str(exc)}), 400
         return jsonify({"status": "success", "name": data["name"], "scene": scene})
@@ -2677,7 +3208,10 @@ def update_scene(scene_name):
     """场景更新接口"""
     data = request.get_json(silent=True) or {}
     if agent:
-        scene = agent.scene_store.update_scene(scene_name, data.get("config", {}))
+        config = data.get("config", {})
+        if not isinstance(config, dict):
+            return jsonify({"status": "error", "error": "config must be an object"}), 400
+        scene = agent.scene_store.update_scene(scene_name, config)
         if scene is None:
             return jsonify({"status": "error", "error": "场景不存在"}), 404
         return jsonify({"status": "success", "name": scene_name, "scene": scene})
@@ -2700,16 +3234,15 @@ def switch_scene(scene):
     """场景切换接口"""
     if agent:
         scene_name = agent.SCENE_ID_MAP.get(scene, scene)
-        result = agent.scene_switcher.execute(scene_name)
-        agent.context.current_scene = scene
-        agent.context.last_scene = SCENE_INDEX_MAP.get(scene_name, -1)
-        agent.session_store.update_scene(scene_name)
+        result_payload = agent._execute_scene_with_spatial_gate(scene_name, route="local")
+        status_code = 200 if result_payload.get("status") == "success" else 404
         return jsonify({
-            "status": "success",
+            "status": result_payload.get("status", "success"),
             "scene": scene,
-            "result": result,
+            "result": result_payload.get("response", result_payload.get("message", "")),
+            "skipped_devices": result_payload.get("skipped_devices", []),
             "devices": agent.get_all_states()["devices"]
-        })
+        }), status_code
     
     return jsonify({"error": "Agent 未初始化"}), 500
 
@@ -3011,6 +3544,14 @@ def update_floor_plan(plan_id):
     return jsonify({"status": "error", "error": "floor plan not found"}), 404
 
 
+@app.route("/api/floor-plans/<plan_id>/activate", methods=["POST"])
+def activate_floor_plan(plan_id):
+    plan = _set_active_floor_plan(plan_id)
+    if not plan:
+        return jsonify({"status": "error", "error": "floor plan not found"}), 404
+    return jsonify({"status": "success", "success": True, "floorPlan": plan})
+
+
 @app.route("/api/floor-plans/<plan_id>", methods=["DELETE"])
 def delete_floor_plan(plan_id):
     plans = _read_json_list(FLOOR_PLAN_STORE_PATH)
@@ -3068,8 +3609,14 @@ def save_floor_plan_devices(plan_id):
     ok, error, tuples = _normalize_device_mapping_to_tuples(raw_input)
     if not ok:
         return jsonify({"status": "error", "error": error}), 400
-    custom_rooms = data.get("customRooms") if isinstance(data.get("customRooms"), dict) else None
+    nested_mapping = raw_input if isinstance(raw_input, dict) else {}
+    custom_rooms = data.get("customRooms") if isinstance(data.get("customRooms"), dict) else nested_mapping.get("customRooms")
+    custom_rooms = custom_rooms if isinstance(custom_rooms, dict) else None
+    area_names = _area_names_from_payload(data, tuples)
     devices = _compute_device_positions(tuples, plan, custom_rooms=custom_rooms)
+    for device in devices:
+        if not device.get("areaName"):
+            device["areaName"] = area_names.get(device.get("area", ""), "")
     mappings = _read_json_list(FLOOR_PLAN_DEVICE_STORE_PATH)
     existing = next((item for item in mappings if item.get("floorPlanId") == plan_id), None)
     entry = {
@@ -3077,6 +3624,7 @@ def save_floor_plan_devices(plan_id):
         "devices": devices,
         "rawDevices": tuples,
         "customRooms": custom_rooms,
+        "areaNames": area_names,
         "updatedAt": datetime.now().astimezone().isoformat(),
     }
     if existing:

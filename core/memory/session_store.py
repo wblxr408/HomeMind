@@ -31,6 +31,7 @@ class SessionStore:
             "last_normalized_input": "",
             "last_action": {},
             "last_clarification": {},
+            "pending_clarification": {},
             "pending_confirmation": {},
             "pending_action_type": "",
             "pending_payload": {},
@@ -101,6 +102,22 @@ class SessionStore:
             "question": str(question or "").strip(),
             "answer": str(answer or "").strip(),
         }
+        self.append_turn("assistant", question)
+        self.save()
+
+    def set_pending_clarification(self, kind: str, payload: Optional[Dict[str, Any]] = None) -> None:
+        self.data["pending_clarification"] = {
+            "kind": str(kind or "").strip(),
+            "payload": deepcopy(payload or {}),
+            "created_at": datetime.now().astimezone().isoformat(),
+        }
+        self.save()
+
+    def get_pending_clarification(self) -> Dict[str, Any]:
+        return deepcopy(self.data.get("pending_clarification", {}) or {})
+
+    def clear_pending_clarification(self) -> None:
+        self.data["pending_clarification"] = {}
         self.save()
 
     def set_pending_confirmation(self, action_type: str, payload: Dict[str, Any], feedback_target: Optional[Dict[str, Any]] = None) -> None:

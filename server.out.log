@@ -1,0 +1,36 @@
+==================================================
+  HomeMind 中央指令器
+  Web 控制面板 + 智能家居协议支持
+==================================================
+[初始化] Agent 模式: simulated reason=unspecified force_reinit=False call=1
+[初始化] HomeMind Web Agent 组件 instance=web_agent_1777519763859 ...
+[初始化][web_agent_1777519763859] session_preference_and_router: 3.33ms
+[初始化][web_agent_1777519763859] context: 0.01ms
+[初始化][web_agent_1777519763859] device_simulator: 0.01ms
+[初始化][web_agent_1777519763859] tools: 0.02ms
+[初始化][web_agent_1777519763859] embedding_model: 2.23ms
+[初始化][web_agent_1777519763859] knowledge_base: 0.79ms
+[初始化] 知识库已加载
+[初始化][web_agent_1777519763859] bsr: 0.02ms
+[初始化] BSR 召回模块已加载
+[初始化][web_agent_1777519763859] lsr: 0.03ms
+[初始化] LSR 精排模块已加载
+[初始化][web_agent_1777519763859] llm: 0.04ms
+[初始化] LLM 决策模块已加载
+[初始化][web_agent_1777519763859] dqn: 2.81ms
+[初始化] DQN 策略模块已加载
+[初始化][web_agent_1777519763859] restore_state: 0.06ms
+[初始化] 完成!
+[初始化][web_agent_1777519763859] agent_loop: 1.31ms
+[初始化][web_agent_1777519763859] scheduler_loop: 1.02ms
+[初始化] Web Agent 就绪 instance=web_agent_1777519763859 total=11.91ms
+[初始化] Agent 初始化完成 instance=web_agent_1777519763859 total=11.95ms
+
+[启动] Web 服务运行在 http://localhost:5000
+[启动] API 文档: http://localhost:5000/api/status
+[启动] 控制面板: 打开 web/client/index.html
+
+按 Ctrl+C 停止服务
+
+ * Serving Flask app 'server'
+ * Debug mode: on

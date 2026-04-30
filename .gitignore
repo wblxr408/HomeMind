@@ -5,6 +5,8 @@ gcm-diagnose.log
 .pytest_cache/
 .mypy_cache/
 
+reports/
+
 data/scenes.json
 data/preferences.json
 data/session_state.json

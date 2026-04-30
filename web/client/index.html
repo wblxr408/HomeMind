@@ -279,6 +279,37 @@
             border-color: rgba(29, 158, 117, 0.35);
         }
 
+        .inline-correction {
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            gap: 6px;
+            margin-top: 8px;
+            align-items: center;
+        }
+
+        .inline-correction input {
+            min-width: 0;
+            height: 30px;
+            border: 0.5px solid var(--border-light);
+            border-radius: 6px;
+            padding: 0 8px;
+            font-size: 12px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            outline: none;
+        }
+
+        .inline-correction input:focus {
+            border-color: rgba(29, 158, 117, 0.45);
+            box-shadow: 0 0 0 2px rgba(29, 158, 117, 0.10);
+        }
+
+        .inline-correction button {
+            border-radius: 6px;
+            padding: 5px 9px;
+        }
+
         .chat-input-wrap {
             border-top: 0.5px solid var(--border-light);
             padding: 10px 12px;
@@ -1012,7 +1043,7 @@
     </div>
 
     <script>
-        const scenes = [
+        let scenes = [
             { id: "sleep", name: "睡眠模式", desc: "关闭灯光、调节温度、安防布控" },
             { id: "entertainment", name: "观影模式", desc: "调暗灯光、启动电视、音响就绪" },
             { id: "work", name: "工作模式", desc: "明亮环境、关闭娱乐设备" },
@@ -1112,6 +1143,23 @@
             }).join("");
         }
 
+        function sceneConfigText(config) {
+            try {
+                return JSON.stringify(config || {}, null, 2);
+            } catch (e) {
+                return "{}";
+            }
+        }
+
+        function sceneSummary(config) {
+            const entries = Object.entries(config || {});
+            if (!entries.length) return "暂无动作";
+            return entries.map(([device, command]) => {
+                const action = command && command.action ? command.action : "-";
+                return `${device} ${action}`;
+            }).join(" · ");
+        }
+
         function buildFeedbackButtons(options = {}) {
             const target = options.feedbackTarget || {};
             const correctionPrompt = escapeHtml(options.correctionPrompt || "请输入你期望的正确理解");
@@ -1125,6 +1173,24 @@
             buttons.push(`<button onclick="sendInteractionFeedback('${target.message_id}', '${target.target_type}', 'reject')">Reject</button>`);
             return `<div class="voice-feedback">${buttons.join("")}</div>`;
         }
+
+        function buildFeedbackButtonsInline(options = {}) {
+            const target = options.feedbackTarget || {};
+            if (!target.message_id || !target.target_type) return "";
+            const messageId = escapeAttr(target.message_id || "");
+            const targetType = escapeAttr(target.target_type || "");
+            const correctionPrompt = escapeAttr(options.correctionPrompt || "\u8bf7\u8f93\u5165\u4f60\u671f\u671b\u7684\u6b63\u786e\u7406\u89e3");
+            const allowAccept = options.allowAccept !== false;
+            const buttons = [];
+            if (allowAccept) {
+                buttons.push(`<button onclick="sendInteractionFeedback('${messageId}', '${targetType}', 'accept')">Accept</button>`);
+            }
+            buttons.push(`<button onclick="openInlineCorrection(this, '${messageId}', '${targetType}', '${correctionPrompt}')">Change</button>`);
+            buttons.push(`<button onclick="sendInteractionFeedback('${messageId}', '${targetType}', 'reject')">Reject</button>`);
+            return `<div class="voice-feedback">${buttons.join("")}</div>`;
+        }
+
+        buildFeedbackButtons = buildFeedbackButtonsInline;
 
         function addMsg(role, html, tag, options = {}) {
             const el = document.createElement("div");
@@ -1201,8 +1267,12 @@
         }
 
         function getSceneName(id) {
-            const match = scenes.find((item) => item.id === id);
+            const match = scenes.find((item) => item.id === id || item.name === id);
             return match ? match.name : id;
+        }
+
+        function isSceneActive(scene) {
+            return currentScene === scene.id || currentScene === scene.name;
         }
 
         function updateContext(ctx) {
@@ -1313,6 +1383,85 @@
             }
         }
 
+        async function loadScenes(rerender = true) {
+            try {
+                const data = await apiGet("/api/scenes");
+                if (data.status !== "success") {
+                    showToast(data.error || "场景加载失败");
+                    return;
+                }
+                scenes = (data.items || []).map((scene) => ({
+                    id: scene.id || scene.name,
+                    name: scene.name,
+                    desc: sceneSummary(scene.config || {}),
+                    config: scene.config || {}
+                }));
+                if (rerender && currentModal === "scene") renderModal("scene");
+            } catch (e) {
+                showToast("场景加载失败");
+            }
+        }
+
+        function parseSceneConfigInput(inputRef) {
+            const input = typeof inputRef === "string" ? document.getElementById(inputRef) : inputRef;
+            if (!input) throw new Error("scene config input not found");
+            const raw = input.value.trim();
+            if (!raw) return {};
+            return JSON.parse(raw);
+        }
+
+        async function createSceneFromForm() {
+            const name = document.getElementById("new-scene-name").value.trim();
+            if (!name) {
+                showToast("请输入场景名称");
+                return;
+            }
+            try {
+                const config = parseSceneConfigInput("new-scene-config");
+                const data = await apiJson("/api/scenes", "POST", { name, config });
+                if (data.status !== "success") {
+                    showToast(data.error || "场景保存失败");
+                    return;
+                }
+                showToast("场景已保存");
+                await loadScenes();
+            } catch (e) {
+                showToast("场景配置 JSON 无效");
+            }
+        }
+
+        async function updateSceneFromCard(sceneName) {
+            try {
+                const input = Array.from(document.querySelectorAll("[data-scene-config]")).find((el) => el.dataset.sceneConfig === sceneName);
+                const config = parseSceneConfigInput(input);
+                const data = await apiJson(`/api/scenes/${encodeURIComponent(sceneName)}`, "PUT", { config });
+                if (data.status !== "success") {
+                    showToast(data.error || "场景更新失败");
+                    return;
+                }
+                showToast("场景已更新");
+                await loadScenes();
+            } catch (e) {
+                showToast("场景配置 JSON 无效");
+            }
+        }
+
+        async function deleteSceneFromCard(sceneName) {
+            if (!sceneName || !confirm("删除这个场景？")) return;
+            try {
+                const response = await fetch(`/api/scenes/${encodeURIComponent(sceneName)}`, { method: "DELETE" });
+                const data = await response.json();
+                if (!response.ok || data.status !== "success") {
+                    showToast(data.error || "场景删除失败");
+                    return;
+                }
+                showToast("场景已删除");
+                await loadScenes();
+            } catch (e) {
+                showToast("场景删除失败");
+            }
+        }
+
         async function sendQuery(query) {
             if (socket && socket.connected) {
                 socket.emit("user_input", { text: query });
@@ -1373,9 +1522,10 @@
         function openModal(type) {
             currentModal = type;
             const modal = document.querySelector(".modal");
-            modal.classList.toggle("wide", ["device", "rules", "memory", "privacy", "floorplan"].includes(type));
+            modal.classList.toggle("wide", ["scene", "device", "rules", "memory", "privacy", "floorplan"].includes(type));
             renderModal(type);
             document.getElementById("overlay").classList.add("open");
+            if (type === "scene") loadScenes();
             if (type === "rules") loadRules();
             if (type === "rules") loadSchedulerStatus();
             if (type === "device") loadDevices();
@@ -1389,22 +1539,66 @@
             const body = document.getElementById("modalBody");
             if (type === "scene") {
                 title.textContent = "场景模式";
-                body.innerHTML = `<div class="card-grid">${
-                    scenes.map((scene) => `
-                        <div class="scene-card ${currentScene === scene.id ? "active" : ""}" data-scene-id="${scene.id}">
-                            <div class="scene-card-name">${scene.name}</div>
-                            <div class="scene-card-desc">${scene.desc}</div>
+                body.innerHTML = `
+                    <div class="summary-card">
+                        <div class="summary-head">
+                            <div>
+                                <div class="summary-title">新增场景</div>
+                                <div class="summary-meta">场景配置以设备名为键，动作对象包含 action 和 params；切换场景时仍会经过 SVG 设备表校验。</div>
+                            </div>
+                            <button class="mini-btn" id="refresh-scenes-btn">刷新</button>
                         </div>
-                    `).join("")
-                }</div>`;
+                        <div class="form-grid">
+                            <div class="field full">
+                                <label>场景名称</label>
+                                <input id="new-scene-name" placeholder="阅读模式">
+                            </div>
+                            <div class="field full">
+                                <label>场景配置 JSON</label>
+                                <textarea id="new-scene-config" rows="5" placeholder='{"灯光":{"action":"adjust","params":{"brightness":60}},"音响":{"action":"on","params":{"volume":20}}}'></textarea>
+                            </div>
+                            <div class="field full">
+                                <button class="mini-btn" id="create-scene-btn">保存场景</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-grid" style="margin-top: 10px;">${
+                        scenes.map((scene) => `
+                            <div class="scene-card ${isSceneActive(scene) ? "active" : ""}" data-scene-id="${escapeAttr(scene.id)}">
+                                <div class="scene-card-name">${escapeHtml(scene.name)}</div>
+                                <div class="scene-card-desc">${escapeHtml(scene.desc || sceneSummary(scene.config || {}))}</div>
+                                <div class="field full" style="margin-top: 8px;">
+                                    <label>配置 JSON</label>
+                                    <textarea data-scene-config="${escapeAttr(scene.name)}" rows="5">${escapeHtml(sceneConfigText(scene.config || {}))}</textarea>
+                                </div>
+                                <div class="mini-actions">
+                                    <button class="mini-btn" data-scene-switch="${escapeAttr(scene.id)}">切换</button>
+                                    <button class="mini-btn" data-scene-save="${escapeAttr(scene.name)}">保存</button>
+                                    <button class="mini-btn" data-scene-delete="${escapeAttr(scene.name)}">删除</button>
+                                </div>
+                            </div>
+                        `).join("")
+                    }</div>`;
+                document.getElementById("refresh-scenes-btn").onclick = loadScenes;
+                document.getElementById("create-scene-btn").onclick = createSceneFromForm;
                 body.querySelectorAll(".scene-card").forEach((card) => {
-                    card.addEventListener("click", () => {
-                        const sceneId = card.dataset.sceneId;
-                        switchScene(sceneId);
-                        closeOverlay();
+                    card.addEventListener("click", (event) => {
+                        if (event.target.closest("textarea") || event.target.closest("button")) return;
+                        switchScene(card.dataset.sceneId);
                     });
                 });
-            } else if (type === "device") {
+                body.querySelectorAll("[data-scene-switch]").forEach((btn) => {
+                    btn.onclick = () => switchScene(btn.dataset.sceneSwitch);
+                });
+                body.querySelectorAll("[data-scene-save]").forEach((btn) => {
+                    btn.onclick = () => updateSceneFromCard(btn.dataset.sceneSave);
+                });
+                body.querySelectorAll("[data-scene-delete]").forEach((btn) => {
+                    btn.onclick = () => deleteSceneFromCard(btn.dataset.sceneDelete);
+                });
+                return;
+            }
+            if (type === "device") {
                 title.textContent = "设备控制";
                 body.innerHTML = `
                     <div class="summary-card">
@@ -1608,10 +1802,10 @@
                     </div>
                     <div class="summary-card" style="margin-top: 10px;">
                         <div class="summary-title">设备映射</div>
-                        <div class="summary-meta">格式支持 [["light.bedroom","bedroom","light"]] 或 {"devices":[{"entity_id":"light.bedroom","area":"bedroom","type":"light"}]}。</div>
+                        <div class="summary-meta">格式支持 [["light.bedroom","bedroom","light","卧室灯","主卧"]] 或 {"areaNames":{"bedroom":"主卧"},"devices":[{"entity_id":"light.bedroom","area":"bedroom","type":"light","name":"卧室灯","areaName":"主卧"}]}。</div>
                         <div class="form-grid">
                             <div class="field full">
-                                <textarea id="device-mapping-json" rows="5" placeholder='[["light.living_room","living_room","light"]]'></textarea>
+                                <textarea id="device-mapping-json" rows="5" placeholder='{"areaNames":{"living_room":"客厅"},"devices":[{"entity_id":"light.living_room","area":"living_room","type":"light","name":"客厅灯","areaName":"客厅"}]}'></textarea>
                             </div>
                             <div class="field full">
                                 <button class="mini-btn" id="save-device-mapping-btn" ${selected ? "" : "disabled"}>保存设备映射</button>
@@ -1733,7 +1927,34 @@
             }
         }
 
+        async function switchSceneThroughApi(scene) {
+            try {
+                const data = await apiJson(`/api/scenes/${encodeURIComponent(scene)}/switch`, "POST", {});
+                if (data.status !== "success") {
+                    showToast(data.error || "\u573a\u666f\u5207\u6362\u5931\u8d25");
+                    return;
+                }
+                currentScene = data.scene || scene;
+                updateDevices(data.devices || {});
+                renderAgentMessage({
+                    status: "success",
+                    response_type: "execution_result",
+                    action: "scene_switch",
+                    response: data.result || `\u5df2\u5207\u6362\u5230${getSceneName(scene)}`
+                }, "\u6267\u884c\u5b8c\u6210");
+                addLog("\u573a\u666f", getSceneName(currentScene));
+                if (currentModal === "scene") renderModal("scene");
+                loadStatus();
+                loadMemorySummary();
+                loadPrivacyStatus();
+            } catch (e) {
+                showToast("\u573a\u666f\u5207\u6362\u5931\u8d25");
+            }
+        }
+
         function switchScene(scene) {
+            switchSceneThroughApi(scene);
+            return;
             socket.emit("message", { type: "scene_switch", data: { scene } });
             currentScene = scene;
             addLog("场景", getSceneName(scene));
@@ -1869,6 +2090,7 @@
         async function selectFloorPlan(planId) {
             const plan = floorPlanUploads.find((item) => item.id === planId);
             if (!plan) return;
+            await apiJson(`/api/floor-plans/${encodeURIComponent(plan.id)}/activate`, "POST", {});
             selectedFloorPlan = plan;
             await loadFloorPlanDevices(plan.id, false);
             if (currentModal === "floorplan") renderModal("floorplan");
@@ -2244,6 +2466,87 @@
                 showToast("反馈提交失败");
             }
         }
+
+        function openInlineCorrection(button, messageId, targetType, correctionPrompt = "") {
+            const container = button.closest(".voice-feedback");
+            if (!container) return;
+            container.querySelector(".inline-correction")?.remove();
+            const form = document.createElement("div");
+            form.className = "inline-correction";
+            form.innerHTML = `
+                <input type="text" placeholder="${escapeAttr(correctionPrompt || "\u8bf7\u8f93\u5165\u7ea0\u6b63\u540e\u7684\u7406\u89e3")}" aria-label="\u7ea0\u6b63\u540e\u7684\u7406\u89e3">
+                <button type="button">\u63d0\u4ea4</button>
+                <button type="button">\u53d6\u6d88</button>
+            `;
+            const input = form.querySelector("input");
+            const submit = form.querySelectorAll("button")[0];
+            const cancel = form.querySelectorAll("button")[1];
+            submit.addEventListener("click", () => submitInlineCorrection(form, messageId, targetType));
+            cancel.addEventListener("click", () => form.remove());
+            input.addEventListener("keydown", (event) => {
+                if (event.key === "Enter") submitInlineCorrection(form, messageId, targetType);
+                if (event.key === "Escape") form.remove();
+            });
+            container.appendChild(form);
+            input.focus();
+            document.getElementById("messages").scrollTop = document.getElementById("messages").scrollHeight;
+        }
+
+        function submitInlineCorrection(form, messageId, targetType) {
+            const input = form.querySelector("input");
+            const correction = (input?.value || "").trim();
+            if (!correction) {
+                showToast("\u8bf7\u8f93\u5165\u4fee\u6539\u5185\u5bb9");
+                input?.focus();
+                return;
+            }
+            sendInteractionFeedback(messageId, targetType, "change", correction);
+            form.remove();
+        }
+
+        async function sendInteractionFeedbackInline(messageId, targetType, feedbackType, correctionValue = "") {
+            const correction = feedbackType === "change" ? String(correctionValue || "").trim() : "";
+            if (feedbackType === "change" && !correction) {
+                showToast("\u8bf7\u8f93\u5165\u4fee\u6539\u5185\u5bb9");
+                return;
+            }
+            try {
+                const data = await apiJson("/api/interaction/feedback", "POST", {
+                    message_id: messageId,
+                    target_type: targetType,
+                    feedback_type: feedbackType,
+                    correction
+                });
+                if (data.status !== "success") {
+                    showToast(data.error || "\u53cd\u9988\u63d0\u4ea4\u5931\u8d25");
+                    return;
+                }
+                if (feedbackType === "change") {
+                    addMsg("user", correction);
+                    addLog("\u7528\u6237", correction);
+                }
+                if (data.response_type === "automation_proposal" && data.proposal) {
+                    addMsg("ai", data.message || data.proposal.summary, "\u5f85\u786e\u8ba4\u4efb\u52a1", {
+                        feedbackTarget: { message_id: data.proposal.message_id, target_type: "automation_proposal" },
+                        correctionPrompt: "\u8bf7\u8f93\u5165\u4fee\u6b63\u540e\u7684\u5b9a\u65f6\u4efb\u52a1\u63cf\u8ff0",
+                    });
+                } else if (data.response_type === "automation_created") {
+                    addMsg("ai", data.response || "\u5df2\u521b\u5efa\u5b9a\u65f6\u4efb\u52a1", "\u4efb\u52a1\u5df2\u521b\u5efa");
+                } else if (feedbackType === "change") {
+                    addMsg("ai", data.message || "\u4fee\u6539\u53cd\u9988\u5df2\u8bb0\u5f55\uff0c\u4f60\u53ef\u4ee5\u7ee7\u7eed\u8f93\u5165\u6216\u518d\u6b21\u4fee\u6539\u3002", "\u53cd\u9988\u5df2\u8bb0\u5f55");
+                    addLog("\u7cfb\u7edf", data.message || "\u4fee\u6539\u53cd\u9988\u5df2\u8bb0\u5f55");
+                } else if (feedbackType === "accept" || feedbackType === "reject") {
+                    addMsg("ai", data.message || "\u53cd\u9988\u5df2\u8bb0\u5f55", "\u53cd\u9988\u5df2\u8bb0\u5f55");
+                }
+                showToast(data.message || "\u53cd\u9988\u5df2\u8bb0\u5f55");
+                loadMemorySummary();
+                loadPrivacyStatus();
+            } catch (e) {
+                showToast("\u53cd\u9988\u63d0\u4ea4\u5931\u8d25");
+            }
+        }
+
+        sendInteractionFeedback = sendInteractionFeedbackInline;
 
         function handlePipelineUpdate(msg) {
             const { type, data } = msg;

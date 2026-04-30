@@ -47,6 +47,9 @@ class LSRecify:
 
     def _explicit_scene_target(self, query: str) -> str:
         scene_action_map = {
+            "\u5de5\u4f5c\u6a21\u5f0f": "\u5207\u6362\u5de5\u4f5c\u6a21\u5f0f",
+            "\u65e9\u5b89\u6a21\u5f0f": "\u5207\u6362\u65e9\u5b89\u6a21\u5f0f",
+            "\u665a\u5f52\u6a21\u5f0f": "\u5207\u6362\u665a\u5f52\u6a21\u5f0f",
             "离家模式": "切换离家模式",
             "回家模式": "切换回家模式",
             "睡眠模式": "切换睡眠模式",
@@ -97,7 +100,23 @@ class LSRecify:
         return self._infer_device_from_action(last_normalized)
 
     def _explicit_device_target(self, query: str, session_store=None) -> str:
+        last_device = self._last_device_from_session(session_store)
+        if any(token in query for token in ("\u5173\u6389\u5b83", "\u5173\u4e86\u5b83", "\u628a\u5b83\u5173\u6389")):
+            follow_up_close = {
+                "\u97f3\u54cd": "\u5173\u95ed\u97f3\u54cd",
+                "\u7535\u89c6": "\u5173\u95ed\u7535\u89c6",
+                "\u7a7a\u8c03": "\u5173\u95ed\u7a7a\u8c03",
+                "\u706f\u5149": "\u5173\u95ed\u706f\u5149",
+                "\u98ce\u6247": "\u5173\u95ed\u98ce\u6247",
+                "\u70ed\u6c34\u5668": "\u5173\u95ed\u70ed\u6c34\u5668",
+            }
+            if last_device in follow_up_close:
+                return follow_up_close[last_device]
         direct_action_map = {
+            "\u6253\u5f00\u97f3\u54cd": "\u6253\u5f00\u97f3\u54cd",
+            "\u5173\u95ed\u97f3\u54cd": "\u5173\u95ed\u97f3\u54cd",
+            "\u6253\u5f00\u70ed\u6c34\u5668": "\u6253\u5f00\u70ed\u6c34\u5668",
+            "\u5173\u95ed\u70ed\u6c34\u5668": "\u5173\u95ed\u70ed\u6c34\u5668",
             "打开灯光": "打开灯光",
             "关闭灯光": "关闭灯光",
             "调亮灯光": "调亮灯光",

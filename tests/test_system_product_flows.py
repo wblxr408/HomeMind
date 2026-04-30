@@ -122,8 +122,13 @@ class DefaultFloorPlanFixtureTests(unittest.TestCase):
 
         self.assertTrue(svg_path.exists())
         self.assertEqual(floor_plans[0]["id"], "floorPlan-sample.svg")
+        self.assertTrue(floor_plans[0].get("active"))
         self.assertEqual(devices[0]["floorPlanId"], "floorPlan-sample.svg")
         self.assertGreater(len(devices[0]["devices"]), 0)
+        mapped_types = {item.get("type") for item in devices[0]["devices"]}
+        self.assertTrue(
+            {"light", "air_conditioner", "tv", "speaker", "fan", "window", "water_heater"}.issubset(mapped_types)
+        )
 
 
 class WebApiSystemTests(unittest.TestCase):
@@ -154,6 +159,7 @@ class WebApiSystemTests(unittest.TestCase):
         self.web_server.FLOOR_PLAN_DEVICE_STORE_PATH = floor_plan_root / "data" / "devices.json"
         self.web_server.DEVICE_REGISTRY_PATH = floor_plan_root / "data" / "device-registry.json"
         self.web_server.FLOOR_PLAN_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+        self._seed_floor_plan_mapping()
         self.web_server.agent.tap_rule_store.rules = []
         self.web_server.agent.tap_rule_store.save()
         self.web_server.agent.last_cloud_context = {}
@@ -170,6 +176,43 @@ class WebApiSystemTests(unittest.TestCase):
         self.web_server.language_normalizer = LanguageNormalizer(
             feedback_store=self.web_server.voice_feedback_store
         )
+
+    def _seed_floor_plan_mapping(self):
+        plan_id = "test-floor-plan.svg"
+        svg_path = self.web_server.FLOOR_PLAN_UPLOAD_DIR / plan_id
+        svg_path.write_text(
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 660"><rect width="640" height="660"/></svg>',
+            encoding="utf-8",
+        )
+        self.web_server.FLOOR_PLAN_STORE_PATH.parent.mkdir(parents=True, exist_ok=True)
+        self.web_server.FLOOR_PLAN_DEVICE_STORE_PATH.parent.mkdir(parents=True, exist_ok=True)
+        floor_plan = {
+            "id": plan_id,
+            "name": "Test Plan",
+            "description": "seeded for spatial execution tests",
+            "filePath": str(svg_path),
+            "url": f"/uploads/floor-plans/{plan_id}",
+            "width": 640,
+            "height": 660,
+            "active": True,
+        }
+        devices = [
+            {"id": "light.living_room_main", "name": "\u5ba2\u5385\u706f", "type": "light", "area": "living_room", "areaName": "\u5ba2\u5385", "x": 12, "y": 20},
+            {"id": "climate.living_room_ac", "name": "\u5ba2\u5385\u7a7a\u8c03", "type": "air_conditioner", "area": "living_room", "areaName": "\u5ba2\u5385", "x": 18, "y": 20},
+            {"id": "media.living_room_tv", "name": "\u5ba2\u5385\u7535\u89c6", "type": "tv", "area": "living_room", "areaName": "\u5ba2\u5385", "x": 24, "y": 20},
+            {"id": "speaker.living_room", "name": "\u5ba2\u5385\u97f3\u54cd", "type": "speaker", "area": "living_room", "areaName": "\u5ba2\u5385", "x": 30, "y": 20},
+            {"id": "fan.bedroom", "name": "\u5367\u5ba4\u98ce\u6247", "type": "fan", "area": "bedroom", "areaName": "\u4e3b\u5367", "x": 50, "y": 30},
+            {"id": "water_heater.bathroom", "name": "\u70ed\u6c34\u5668", "type": "water_heater", "area": "bathroom1", "areaName": "\u4e3b\u536b", "x": 58, "y": 72},
+            {"id": "cover.bedroom_window", "name": "\u5367\u5ba4\u7a97\u6237", "type": "window", "area": "bedroom", "areaName": "\u4e3b\u5367", "x": 55, "y": 30},
+        ]
+        mapping = {
+            "floorPlanId": plan_id,
+            "devices": devices,
+            "rawDevices": devices,
+            "areaNames": {"living_room": "\u5ba2\u5385", "bedroom": "\u4e3b\u5367", "bathroom1": "\u4e3b\u536b"},
+        }
+        self.web_server.FLOOR_PLAN_STORE_PATH.write_text(json.dumps([floor_plan], ensure_ascii=False), encoding="utf-8")
+        self.web_server.FLOOR_PLAN_DEVICE_STORE_PATH.write_text(json.dumps([mapping], ensure_ascii=False), encoding="utf-8")
 
     def tearDown(self):
         self.web_server.voice_feedback_store = self.original_voice_feedback_store
@@ -260,6 +303,130 @@ class WebApiSystemTests(unittest.TestCase):
         self.assertIn("亮度", payload["response"])
         self.assertNotIn("空调", payload["response"])
 
+    def test_query_regression_device_action_mapping_uses_explicit_target(self):
+        cases = [
+            ("\u5173\u95ed\u97f3\u54cd", "\u97f3\u54cd_off"),
+            ("\u6253\u5f00\u70ed\u6c34\u5668", "\u70ed\u6c34\u5668_on"),
+            ("\u5173\u95ed\u70ed\u6c34\u5668", "\u70ed\u6c34\u5668_off"),
+        ]
+
+        for query, expected_action in cases:
+            with self.subTest(query=query):
+                response = self.client.post("/api/query", json={"query": query})
+                self.assertEqual(response.status_code, 200)
+                payload = response.get_json()
+                self.assertEqual(payload["status"], "success")
+                self.assertEqual(payload["action"], expected_action)
+
+    def test_query_regression_natural_comfort_and_scene_coverage(self):
+        cases = [
+            ("\u6709\u70b9\u51b7", "\u7a7a\u8c03_on"),
+            ("\u5c4b\u91cc\u95f7\u5f97\u5f88", "\u7a7a\u8c03_on"),
+            ("\u5207\u6362\u5230\u5de5\u4f5c\u6a21\u5f0f", "scene_switch"),
+            ("\u5207\u6362\u5230\u665a\u5f52\u6a21\u5f0f", "scene_switch"),
+        ]
+
+        for query, expected_action in cases:
+            with self.subTest(query=query):
+                response = self.client.post("/api/query", json={"query": query})
+                self.assertEqual(response.status_code, 200)
+                payload = response.get_json()
+                self.assertEqual(payload["status"], "success")
+                self.assertEqual(payload["action"], expected_action)
+
+    def test_query_regression_unsupported_device_targets(self):
+        for query, expected_target in [
+            ("\u6253\u5f00\u51b0\u7bb1", "\u51b0\u7bb1"),
+            ("\u6253\u5f00\u5496\u5561\u673a", "\u5496\u5561\u673a"),
+            ("\u6253\u5f00\u6295\u5f71\u4eea", "\u6295\u5f71\u4eea"),
+        ]:
+            with self.subTest(query=query):
+                response = self.client.post("/api/query", json={"query": query})
+                self.assertEqual(response.status_code, 200)
+                payload = response.get_json()
+                self.assertEqual(payload["status"], "unsupported")
+                self.assertEqual(payload["target"], expected_target)
+
+    def test_query_requires_device_in_active_floor_plan_mapping(self):
+        mapping = json.loads(self.web_server.FLOOR_PLAN_DEVICE_STORE_PATH.read_text(encoding="utf-8"))
+        mapping[0]["devices"] = [
+            {"id": "light.living_room_main", "name": "\u5ba2\u5385\u706f", "type": "light", "area": "living_room", "areaName": "\u5ba2\u5385", "x": 12, "y": 20}
+        ]
+        self.web_server.FLOOR_PLAN_DEVICE_STORE_PATH.write_text(
+            json.dumps(mapping, ensure_ascii=False),
+            encoding="utf-8",
+        )
+
+        response = self.client.post("/api/query", json={"query": "\u6709\u70b9\u70ed"})
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.get_json()
+        self.assertEqual(payload["status"], "unsupported")
+        self.assertEqual(payload["route_reason"], "device_not_in_floor_plan")
+        self.assertIn("SVG", payload["response"])
+
+    def test_query_uses_custom_area_name_from_floor_plan_mapping(self):
+        plan_id = "test-floor-plan.svg"
+        response = self.client.post(
+            f"/api/floor-plans/{plan_id}/devices",
+            json={
+                "areaNames": {"living_room": "\u5f71\u97f3\u533a"},
+                "devices": [
+                    {
+                        "entity_id": "light.media_zone",
+                        "area": "living_room",
+                        "type": "light",
+                        "name": "\u5f71\u97f3\u533a\u706f",
+                        "areaName": "\u5f71\u97f3\u533a",
+                    }
+                ],
+            },
+        )
+        query = self.client.post("/api/query", json={"query": "\u6253\u5f00\u5f71\u97f3\u533a\u706f"})
+
+        self.assertEqual(response.status_code, 200)
+        payload = query.get_json()
+        self.assertEqual(payload["status"], "success")
+        self.assertEqual(payload["action"], "\u706f\u5149_on")
+        self.assertIn("\u5f71\u97f3\u533a\u706f", payload["response"])
+
+    def test_query_regression_multi_turn_clarification_and_pronoun(self):
+        first = self.client.post("/api/query", json={"query": "\u5e2e\u6211\u5f04\u4e00\u4e0b"})
+        second = self.client.post("/api/query", json={"query": "\u7a7a\u8c03"})
+        third = self.client.post("/api/query", json={"query": "\u6253\u5f00"})
+
+        self.assertEqual(first.get_json()["status"], "clarification")
+        self.assertEqual(second.get_json()["status"], "clarification")
+        self.assertEqual(third.get_json()["status"], "success")
+        self.assertEqual(third.get_json()["action"], "\u7a7a\u8c03_on")
+
+        light = self.client.post("/api/query", json={"query": "\u628a\u706f\u8c03\u6697\u4e00\u70b9"})
+        darker = self.client.post("/api/query", json={"query": "\u518d\u6697\u4e00\u70b9"})
+        speaker = self.client.post("/api/query", json={"query": "\u6253\u5f00\u97f3\u54cd"})
+        close_it = self.client.post("/api/query", json={"query": "\u5173\u6389\u5b83"})
+
+        self.assertEqual(light.get_json()["action"], "\u706f\u5149_adjust")
+        self.assertEqual(darker.get_json()["action"], "\u706f\u5149_adjust")
+        self.assertEqual(speaker.get_json()["action"], "\u97f3\u54cd_on")
+        self.assertEqual(close_it.get_json()["action"], "\u97f3\u54cd_off")
+
+    def test_query_regression_multiple_clarification_sessions(self):
+        first = self.client.post("/api/query", json={"query": "\u5e2e\u6211\u5f04\u4e00\u4e0b"})
+        first_target = self.client.post("/api/query", json={"query": "\u7a7a\u8c03"})
+        first_action = self.client.post("/api/query", json={"query": "\u6253\u5f00"})
+        second = self.client.post("/api/query", json={"query": "\u518d\u5e2e\u6211\u5f04\u4e00\u4e0b"})
+        second_target = self.client.post("/api/query", json={"query": "\u706f\u5149"})
+        second_action = self.client.post("/api/query", json={"query": "\u5173\u95ed"})
+
+        self.assertEqual(first.get_json()["status"], "clarification")
+        self.assertEqual(first_target.get_json()["status"], "clarification")
+        self.assertEqual(first_action.get_json()["status"], "success")
+        self.assertEqual(first_action.get_json()["action"], "\u7a7a\u8c03_on")
+        self.assertEqual(second.get_json()["status"], "clarification")
+        self.assertEqual(second_target.get_json()["status"], "clarification")
+        self.assertEqual(second_action.get_json()["status"], "success")
+        self.assertEqual(second_action.get_json()["action"], "\u706f\u5149_off")
+
     def test_query_close_ac_is_not_overridden_by_temperature_preference(self):
         self.web_server.agent.preference_store.data["devices"] = {
             "空调": {"preferred_temperature": 24}
@@ -316,6 +483,21 @@ class WebApiSystemTests(unittest.TestCase):
         self.assertEqual(turned_on.status_code, 200)
         self.assertTrue(turned_on.get_json()["state"]["is_on"])
 
+        rejected_state_update = self.client.put(
+            "/api/devices/desk_lamp",
+            json={"name": "\u9605\u8bfb\u706f", "state": {"is_on": False}},
+        )
+        self.assertEqual(rejected_state_update.status_code, 400)
+        self.assertIn("runtime fields", rejected_state_update.get_json()["error"])
+        self.assertTrue(self.client.get("/api/devices").get_json()["devices"][-1]["state"]["is_on"])
+
+        rejected_id_update = self.client.put(
+            "/api/devices/desk_lamp",
+            json={"id": "renamed_lamp", "name": "\u9605\u8bfb\u706f"},
+        )
+        self.assertEqual(rejected_id_update.status_code, 400)
+        self.assertIn("device id cannot be changed", rejected_id_update.get_json()["error"])
+
         updated = self.client.put(
             "/api/devices/desk_lamp",
             json={"name": "\u9605\u8bfb\u706f", "type": "switch"},
@@ -341,6 +523,41 @@ class WebApiSystemTests(unittest.TestCase):
 
         self.assertEqual(created.status_code, 409)
         self.assertEqual(renamed.status_code, 400)
+
+    def test_scene_crud_endpoints_manage_custom_scene_configs(self):
+        scene_name = "\u9605\u8bfb\u6a21\u5f0f"
+        config = {
+            "\u706f\u5149": {"action": "adjust", "params": {"brightness": 55}},
+            "\u97f3\u54cd": {"action": "on", "params": {"volume": 15}},
+        }
+
+        created = self.client.post("/api/scenes", json={"name": scene_name, "config": config})
+        listed = self.client.get("/api/scenes")
+        detail = self.client.get(f"/api/scenes/{scene_name}")
+        updated = self.client.put(
+            f"/api/scenes/{scene_name}",
+            json={"config": {"\u706f\u5149": {"action": "off", "params": {}}}},
+        )
+        deleted = self.client.delete(f"/api/scenes/{scene_name}")
+        missing = self.client.get(f"/api/scenes/{scene_name}")
+
+        self.assertEqual(created.status_code, 200)
+        self.assertEqual(created.get_json()["scene"], config)
+        self.assertEqual(listed.status_code, 200)
+        self.assertIn(scene_name, listed.get_json()["scenes"])
+        self.assertIn("items", listed.get_json())
+        self.assertEqual(detail.status_code, 200)
+        self.assertEqual(updated.status_code, 200)
+        self.assertEqual(updated.get_json()["scene"]["\u706f\u5149"]["action"], "off")
+        self.assertEqual(deleted.status_code, 200)
+        self.assertEqual(missing.status_code, 404)
+
+    def test_scene_crud_rejects_non_object_config(self):
+        created = self.client.post("/api/scenes", json={"name": "\u574f\u573a\u666f", "config": []})
+        updated = self.client.put("/api/scenes/\u7761\u7720\u6a21\u5f0f", json={"config": []})
+
+        self.assertEqual(created.status_code, 400)
+        self.assertEqual(updated.status_code, 400)
 
     def test_voice_feedback_requires_source_text(self):
         response = self.client.post("/api/voice/feedback", json={"feedback": "accepted"})
@@ -396,7 +613,7 @@ class WebApiSystemTests(unittest.TestCase):
         self.assertEqual(plan["height"], 10.0)
         self.assertTrue((self.web_server.FLOOR_PLAN_UPLOAD_DIR / plan["id"]).exists())
         self.assertEqual(listed.status_code, 200)
-        self.assertEqual(len(listed.get_json()["floorPlans"]), 1)
+        self.assertIn(plan["id"], [item["id"] for item in listed.get_json()["floorPlans"]])
 
         svg_response = self.client.get(f"/api/floor-plans/{plan['id']}/svg")
         self.assertEqual(svg_response.status_code, 200)

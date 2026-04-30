@@ -13,6 +13,8 @@ class InferenceRouter:
         "我目前支持灯光、空调、电视、音响、风扇、窗户，以及回家、离家、睡眠、观影、起床、早安、晚归等场景模式。"
     )
     UNSUPPORTED_TARGETS = {
+        "\u51b0\u7bb1": "",
+        "\u6295\u5f71\u4eea": "",
         "闹钟": "如果你是想早上提醒，我可以先帮你切换到起床模式。",
         "洗衣机": "",
         "扫地机器人": "",
@@ -65,6 +67,8 @@ class InferenceRouter:
         text = self.normalize_intent_text(text)
         if not text:
             return False
+        if "\u6696\u6c14" in text:
+            return True
         return any(pattern.search(text) for pattern in self._explicit_patterns)
 
     def is_chat_reply(self, text: str) -> bool:
