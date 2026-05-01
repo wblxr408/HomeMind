@@ -1,15 +1,16 @@
-"""
-RAG knowledge base.
+"""Source-aware local knowledge base for HomeMind RAG."""
 
-Uses ChromaDB when available and falls back to in-memory storage with keyword or
-embedding search. It supports BSR history recall and LLM context prompts.
-"""
+from __future__ import annotations
 
 import logging
 import os
+import re
+import uuid
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
+from core.config import RAG_CONFIG
+from core.rag.semantic_compressor import SemanticCompressor
 from core.utils.embedding import encode, get_model
 
 logger = logging.getLogger(__name__)
@@ -29,7 +30,26 @@ except ImportError:
 
 
 class KnowledgeBase:
-    """Local knowledge base with ChromaDB and in-memory fallback."""
+    """Local KB with source buckets, trust scoring, conflicts, and time-series summaries."""
+
+    DEFAULT_TRUST = {
+        "设备说明书": 0.98,
+        "场景规则": 0.90,
+        "时序摘要": 0.88,
+        "用户习惯": 0.72,
+        "用户反馈": 0.68,
+        "健康建议": 0.60,
+        "纠正记录": 0.85,
+    }
+
+    CATEGORY_TO_BUCKET = {
+        "健康建议": "manuals",
+        "场景规则": "rules",
+        "用户习惯": "preferences",
+        "用户反馈": "feedback",
+        "纠正记录": "corrections",
+        "时序摘要": "timeseries",
+    }
 
     def __init__(
         self,
@@ -44,8 +64,10 @@ class KnowledgeBase:
         self.max_records = max(1, int(max_records))
         self.backup_path = backup_path or os.getenv("HOMEMIND_KB_BACKUP_PATH", DEFAULT_BACKUP_PATH)
         self.preference_store = None
+        self.semantic_compressor = SemanticCompressor()
         self.preset_knowledge = self._init_preset_kb()
-        self.memory_store: List[Dict] = []
+        self.memory_store: List[Dict[str, Any]] = []
+        self.time_series_store: List[Dict[str, Any]] = []
         self._client = None
         self._collection = None
         self._collection_name = DEFAULT_COLLECTION_NAME
@@ -55,7 +77,7 @@ class KnowledgeBase:
 
         self._storage = get_encrypted_storage()
 
-    def _init_chroma(self):
+    def _init_chroma(self) -> None:
         if not CHROMA_AVAILABLE:
             logger.warning("ChromaDB not installed; using in-memory knowledge store")
             return
@@ -71,131 +93,76 @@ class KnowledgeBase:
             self._client = None
             self._collection = None
 
-    def _init_preset_kb(self) -> List[Dict]:
+    def _init_preset_kb(self) -> List[Dict[str, Any]]:
+        raw = [
+            ("preset_01", "室内温度超过28°C时，打开空调降温效果最好", "健康建议"),
+            ("preset_02", "湿度超过70%时人会感到闷热不适，应开启除湿或制冷", "健康建议"),
+            ("preset_03", "晚上22:00后大多数家庭成员进入睡眠，应切换睡眠模式", "场景规则"),
+            ("preset_04", "有客人来访时应调亮灯光、调节空调温度至舒适范围、播放背景音乐", "场景规则"),
+            ("preset_05", "用户离开家时应关闭所有不必要的电器，节能安全", "场景规则"),
+            ("preset_06", "观影模式：灯光调暗至30%以下，空调调至舒适温度，电视开启", "场景规则"),
+            ("preset_07", "起床模式：灯光渐亮，窗帘打开，背景音乐轻柔播放", "场景规则"),
+            ("preset_08", "夏天室内闷热主要原因是温度和湿度偏高，开空调最有效", "健康建议"),
+            ("preset_09", "晚上觉得灯光太亮时应调暗而非直接关闭，以保持基本照明", "健康建议"),
+            ("preset_10", "“有点闷”在温度28°C以上时，优先推荐开空调降温", "用户习惯"),
+        ]
         return [
-            {"id": "preset_01", "content": "室内温度超过28°C时，打开空调降温效果最好", "category": "健康建议", "accepted": True},
-            {"id": "preset_02", "content": "湿度超过70%时人会感到闷热不适，应开启除湿或制冷", "category": "健康建议", "accepted": True},
-            {"id": "preset_03", "content": "晚上22:00后大多数家庭成员进入睡眠，应切换睡眠模式", "category": "场景规则", "accepted": True},
-            {"id": "preset_04", "content": "有客人来访时应调亮灯光、调节空调温度至舒适范围、播放背景音乐", "category": "场景规则", "accepted": True},
-            {"id": "preset_05", "content": "用户离开家时应关闭所有不必要的电器，节能安全", "category": "场景规则", "accepted": True},
-            {"id": "preset_06", "content": "观影模式：灯光调暗至30%以下，空调调至舒适温度，电视开启", "category": "场景规则", "accepted": True},
-            {"id": "preset_07", "content": "起床模式：灯光渐亮，窗帘打开，背景音乐轻柔播放", "category": "场景规则", "accepted": True},
-            {"id": "preset_08", "content": "夏天室内闷热主要原因是温度和湿度偏高，开空调最有效", "category": "健康建议", "accepted": True},
-            {"id": "preset_09", "content": "晚上觉得灯光太亮时应调暗而非直接关闭，以保持基本照明", "category": "健康建议", "accepted": True},
-            {"id": "preset_10", "content": "\"有点闷\" 在温度28°C以上时，优先推荐开空调降温", "category": "用户习惯", "accepted": True},
+            self._normalize_record(
+                {
+                    "record_id": record_id,
+                    "content": content,
+                    "category": category,
+                    "accepted": True,
+                    "source_name": "preset",
+                }
+            )
+            for record_id, content, category in raw
         ]
 
-    def query(self, text: str, top_k: int = 3, category: Optional[str] = None) -> List[Dict]:
-        results = []
+    def _source_bucket_for(self, category: str, metadata: Dict[str, Any]) -> str:
+        explicit = str(metadata.get("source_bucket", "")).strip()
+        if explicit:
+            return explicit
+        return self.CATEGORY_TO_BUCKET.get(str(category or "").strip(), "memory")
 
-        user_results = self._search_memory(text, top_k, category)
-        results.extend(user_results)
+    def _trust_for(self, category: str, metadata: Dict[str, Any]) -> float:
+        if metadata.get("trust_score") is not None:
+            return max(0.0, min(1.0, float(metadata.get("trust_score", 0.0))))
+        return self.DEFAULT_TRUST.get(str(category or "").strip(), 0.65)
 
-        if len(results) < top_k:
-            preset_results = self._search_preset(text, top_k - len(results), category)
-            results.extend(preset_results)
+    def _trust_level(self, score: float) -> str:
+        if score >= 0.9:
+            return "high"
+        if score >= 0.75:
+            return "medium"
+        return "low"
 
-        return results[:top_k]
-
-    def _search_memory(self, text: str, top_k: int, category: Optional[str] = None) -> List[Dict]:
-        if self._collection is not None:
-            try:
-                emb = self._get_embedding(text)
-                results = self._collection.query(query_embeddings=[emb], n_results=top_k)
-                docs = results.get("documents", [[]])[0]
-                metas = results.get("metadatas", [[]])[0]
-                records = [{"content": doc, **meta} for doc, meta in zip(docs, metas)]
-                if category is not None:
-                    records = [record for record in records if record.get("category") == category]
-                return records[:top_k]
-            except Exception as exc:
-                logger.warning("ChromaDB search failed: %s", exc)
-
-        model = get_model()
-        if model is not None:
-            return self._vector_search_memory(text, top_k, category)
-        return self._keyword_search(self.memory_store, text, top_k, category)
-
-    def _vector_search_memory(self, text: str, top_k: int, category: Optional[str] = None) -> List[Dict]:
-        pool = [
-            item for item in self.memory_store
-            if category is None or item.get("category") == category
-        ]
-        return self._vector_search_pool(text, pool, top_k)
-
-    def _search_preset(self, text: str, top_k: int, category: Optional[str] = None) -> List[Dict]:
-        model = get_model()
-        pool = [
-            item for item in self.preset_knowledge
-            if category is None or item.get("category") == category
-        ]
-        if model is not None:
-            return self._vector_search_pool(text, pool, top_k)
-        return self._keyword_search(pool, text, top_k)
-
-    def _vector_search_pool(self, text: str, pool: List[Dict], top_k: int) -> List[Dict]:
-        import numpy as np
-
-        if not pool:
-            return []
-        texts = [item["content"] for item in pool]
-        query_emb = self._as_array(encode(text))
-        doc_embs = self._as_array(encode(texts))
-        if doc_embs.ndim == 1:
-            doc_embs = doc_embs.reshape(1, -1)
-
-        doc_norms = np.linalg.norm(doc_embs, axis=1, keepdims=True)
-        doc_norms[doc_norms == 0] = 1.0
-        query_norm = np.linalg.norm(query_emb)
-        if query_norm == 0:
-            return []
-
-        sims = np.dot(doc_embs / doc_norms, query_emb / query_norm)
-        top_indices = np.argsort(sims)[-top_k:][::-1]
-        return [pool[index] for index in top_indices if sims[index] > 0.1]
-
-    def _keyword_search(self, pool: List[Dict], text: str, top_k: int, category: Optional[str] = None) -> List[Dict]:
-        scored = []
-        text_lower = text.lower()
-        for item in pool:
-            if category and item.get("category") != category:
-                continue
-            score = sum(1 for char in text_lower if char in item.get("content", "").lower())
-            if score > 0:
-                scored.append((score, item))
-        scored.sort(key=lambda pair: (pair[0], id(pair[1])), reverse=True)
-        return [item for _, item in scored[:top_k]]
-
-    def _get_embedding(self, text: str) -> List[float]:
-        if self.embedding_fn is not None:
-            emb = self.embedding_fn(text)
-        else:
-            emb = encode(text)
-        if isinstance(emb, list):
-            return emb
-        return emb.tolist()
-
-    def _as_array(self, emb):
-        import numpy as np
-
-        if isinstance(emb, list):
-            return np.array(emb)
-        return emb
-
-    def _find_memory_record(self, memory_key: str) -> Optional[Dict[str, Any]]:
-        if not memory_key:
-            return None
-        for record in self.memory_store:
-            if record.get("memory_key") == memory_key:
-                return record
-        return None
-
-    def _ensure_record_id(self, record: Dict[str, Any]) -> str:
-        record_id = str(record.get("record_id") or record.get("memory_key") or "").strip()
-        if not record_id:
-            record_id = f"user_{datetime.now().timestamp()}"
-            record["record_id"] = record_id
-        return record_id
+    def _normalize_record(self, record: Dict[str, Any]) -> Dict[str, Any]:
+        item = dict(record or {})
+        now = datetime.now().isoformat()
+        category = str(item.get("category", "用户习惯")).strip() or "用户习惯"
+        source_bucket = self._source_bucket_for(category, item)
+        trust_score = self._trust_for(category, item)
+        normalized = {
+            "content": str(item.get("content", "")).strip(),
+            "category": category,
+            "accepted": bool(item.get("accepted", True)),
+            "timestamp": item.get("timestamp") or now,
+            "first_seen": item.get("first_seen") or item.get("timestamp") or now,
+            "last_seen": item.get("last_seen") or item.get("timestamp") or now,
+            "count": int(item.get("count", 1) or 1),
+            "value_score": float(item.get("value_score", 1.0) or 1.0),
+            "memory_key": str(item.get("memory_key", "") or "").strip(),
+            "record_id": str(item.get("record_id", "") or item.get("memory_key") or f"user_{uuid.uuid4().hex}"),
+            "source_bucket": source_bucket,
+            "source_name": str(item.get("source_name", source_bucket)).strip() or source_bucket,
+            "trust_score": trust_score,
+            "trust_level": self._trust_level(trust_score),
+            "conflict": bool(item.get("conflict", False)),
+            "conflict_reason": str(item.get("conflict_reason", "")).strip(),
+            **{k: v for k, v in item.items() if k not in {"content", "category", "accepted", "timestamp", "first_seen", "last_seen", "count", "value_score", "memory_key", "record_id", "source_bucket", "source_name", "trust_score", "trust_level", "conflict", "conflict_reason"}},
+        }
+        return normalized
 
     def _collection_count(self) -> int:
         if self._collection is None:
@@ -206,41 +173,38 @@ class KnowledgeBase:
             logger.warning("ChromaDB count failed: %s", exc)
             return 0
 
-    def get_status(self) -> Dict[str, Any]:
-        return {
-            "chromadb_importable": CHROMA_AVAILABLE,
-            "chromadb_enabled": self._collection is not None,
-            "collection_name": self._collection_name,
-            "persist_dir": self.persist_dir,
-            "collection_count": self._collection_count(),
-            "memory_store_count": len(self.memory_store),
-            "preset_count": len(self.preset_knowledge),
-        }
+    def _get_embedding(self, text: str) -> List[float]:
+        emb = self.embedding_fn(text) if self.embedding_fn is not None else encode(text)
+        return emb if isinstance(emb, list) else emb.tolist()
+
+    def _as_array(self, emb):
+        import numpy as np
+
+        return np.array(emb) if isinstance(emb, list) else emb
 
     def _upsert_collection_record(self, record: Dict[str, Any]) -> None:
         if self._collection is None:
             return
         try:
-            emb = self._get_embedding(record["content"])
             payload = dict(record)
-            record_id = self._ensure_record_id(payload)
+            emb = self._get_embedding(payload["content"])
             if hasattr(self._collection, "upsert"):
                 self._collection.upsert(
                     embeddings=[emb],
                     documents=[payload["content"]],
                     metadatas=[payload],
-                    ids=[record_id],
+                    ids=[payload["record_id"]],
                 )
             else:
                 try:
-                    self._collection.delete(ids=[record_id])
+                    self._collection.delete(ids=[payload["record_id"]])
                 except Exception:
                     pass
                 self._collection.add(
                     embeddings=[emb],
                     documents=[payload["content"]],
                     metadatas=[payload],
-                    ids=[record_id],
+                    ids=[payload["record_id"]],
                 )
         except Exception as exc:
             logger.warning("ChromaDB add failed for record_id=%s: %s", record.get("record_id"), exc)
@@ -249,52 +213,129 @@ class KnowledgeBase:
         if self._collection is None:
             return 0
         records = list(records if records is not None else self.memory_store)
-        if not records:
-            return 0
-        ids = []
-        for record in records:
-            record_id = self._ensure_record_id(record)
-            if record_id:
-                ids.append(record_id)
-        if clear_existing and ids:
+        if clear_existing:
             try:
-                self._collection.delete(ids=ids)
-            except Exception as exc:
-                logger.warning("ChromaDB rehydrate delete failed: %s", exc)
+                existing = self._collection.get(include=[])
+                ids = list(existing.get("ids", []) or [])
+                if ids:
+                    self._collection.delete(ids=ids)
+            except Exception:
+                pass
         restored = 0
         for record in records:
             self._upsert_collection_record(record)
             restored += 1
-        logger.info("Knowledge base rehydrated into ChromaDB, records=%s", restored)
         return restored
 
-    def get_status(self) -> Dict[str, Any]:
-        """Return runtime storage status for health checks and UI diagnostics."""
-        collection_count = 0
-        if self._collection is not None and hasattr(self._collection, "count"):
-            try:
-                collection_count = int(self._collection.count())
-            except Exception as exc:
-                logger.warning("ChromaDB count failed: %s", exc)
+    def _search_pool(self, text: str, pool: List[Dict[str, Any]], top_k: int) -> List[Dict[str, Any]]:
+        model = get_model()
+        if model is not None and pool:
+            import numpy as np
 
-        return {
-            "chromadb_importable": bool(CHROMA_AVAILABLE),
-            "chromadb_enabled": self._collection is not None,
-            "collection_name": "homemind_kb" if self._collection is not None else "",
-            "persist_dir": self.persist_dir,
-            "memory_store_count": len(self.memory_store),
-            "preset_knowledge_count": len(self.preset_knowledge),
-            "collection_count": collection_count,
-            "max_records": self.max_records,
-        }
+            texts = [item["content"] for item in pool]
+            query_emb = self._as_array(encode(text))
+            doc_embs = self._as_array(encode(texts))
+            if doc_embs.ndim == 1:
+                doc_embs = doc_embs.reshape(1, -1)
+            doc_norms = np.linalg.norm(doc_embs, axis=1, keepdims=True)
+            doc_norms[doc_norms == 0] = 1.0
+            query_norm = np.linalg.norm(query_emb)
+            if query_norm != 0:
+                sims = np.dot(doc_embs / doc_norms, query_emb / query_norm)
+                top_indices = np.argsort(sims)[-top_k:][::-1]
+                return [pool[index] for index in top_indices if sims[index] > 0.1]
+
+        scored = []
+        lowered = str(text or "").lower()
+        ascii_terms = [term for term in re.findall(r"[a-z0-9_]+", lowered) if len(term) >= 2]
+        cjk_chars = [char for char in lowered if "\u4e00" <= char <= "\u9fff"]
+        for item in pool:
+            content_lower = item.get("content", "").lower()
+            has_ascii_overlap = any(term in content_lower for term in ascii_terms)
+            has_cjk_overlap = any(char in content_lower for char in cjk_chars)
+            if (ascii_terms or cjk_chars) and not (has_ascii_overlap or has_cjk_overlap):
+                continue
+
+            score = sum(1 for term in ascii_terms if term in content_lower) * 4
+            score += sum(1 for char in cjk_chars if char in content_lower)
+            score += int(item.get("trust_score", 0.0) * 10)
+            if item.get("conflict"):
+                score -= 3
+            if score > 0:
+                scored.append((score, item))
+        scored.sort(key=lambda pair: (pair[0], pair[1].get("last_seen", "")), reverse=True)
+        return [item for _, item in scored[:top_k]]
+
+    def _selected_pool(
+        self,
+        category: Optional[str] = None,
+        source_buckets: Optional[List[str]] = None,
+        min_trust_score: float = 0.0,
+        include_conflicted: bool = True,
+    ) -> List[Dict[str, Any]]:
+        buckets = set(source_buckets or [])
+        pool = list(self.memory_store) + list(self.time_series_store) + list(self.preset_knowledge)
+        result = []
+        for item in pool:
+            if category is not None and item.get("category") != category:
+                continue
+            if buckets and item.get("source_bucket") not in buckets:
+                continue
+            if float(item.get("trust_score", 0.0) or 0.0) < min_trust_score:
+                continue
+            if not include_conflicted and item.get("conflict"):
+                continue
+            result.append(item)
+        return result
+
+    def query(
+        self,
+        text: str,
+        top_k: int = 3,
+        category: Optional[str] = None,
+        source_buckets: Optional[List[str]] = None,
+        min_trust_score: float = 0.0,
+        include_conflicted: bool = True,
+    ) -> List[Dict[str, Any]]:
+        pool = self._selected_pool(
+            category=category,
+            source_buckets=source_buckets,
+            min_trust_score=min_trust_score,
+            include_conflicted=include_conflicted,
+        )
+        if not pool:
+            return []
+        return self._search_pool(text, pool, top_k)
+
+    def _find_memory_record(self, memory_key: str) -> Optional[Dict[str, Any]]:
+        if not memory_key:
+            return None
+        for record in self.memory_store:
+            if record.get("memory_key") == memory_key:
+                return record
+        return None
+
+    def _apply_conflict_detection(self, record: Dict[str, Any]) -> None:
+        fact_key = str(record.get("fact_key", "") or "").strip()
+        fact_value = record.get("fact_value")
+        if not fact_key:
+            return
+        for existing in self.memory_store:
+            if existing.get("fact_key") != fact_key or existing.get("record_id") == record.get("record_id"):
+                continue
+            if existing.get("fact_value") != fact_value:
+                existing["conflict"] = True
+                existing["conflict_reason"] = f"fact_key={fact_key} has multiple values"
+                record["conflict"] = True
+                record["conflict_reason"] = existing["conflict_reason"]
 
     def _prune_memory_store(self) -> None:
         if len(self.memory_store) <= self.max_records:
             return
-
         ranked = sorted(
             self.memory_store,
             key=lambda item: (
+                float(item.get("trust_score", 0.0) or 0.0),
                 float(item.get("value_score", 0.0) or 0.0),
                 int(item.get("count", 1) or 1),
                 str(item.get("last_seen", item.get("timestamp", "")) or ""),
@@ -303,11 +344,7 @@ class KnowledgeBase:
         )
         kept = ranked[:self.max_records]
         removed = ranked[self.max_records:]
-        self.memory_store = sorted(
-            kept,
-            key=lambda item: str(item.get("last_seen", item.get("timestamp", "")) or ""),
-        )
-
+        self.memory_store = sorted(kept, key=lambda item: str(item.get("last_seen", "")))
         if self._collection is not None and removed:
             removed_ids = [item.get("record_id") for item in removed if item.get("record_id")]
             if removed_ids:
@@ -330,48 +367,103 @@ class KnowledgeBase:
             existing["count"] = int(existing.get("count", 1) or 1) + 1
             existing["value_score"] = max(float(existing.get("value_score", 0.0) or 0.0), value_score)
             existing.update(metadata)
+            existing["trust_score"] = self._trust_for(category, existing)
+            existing["trust_level"] = self._trust_level(existing["trust_score"])
+            self._apply_conflict_detection(existing)
             self._upsert_collection_record(existing)
             self._prune_memory_store()
             return True
 
-        record = {
-            "content": content,
-            "category": category,
-            "accepted": accepted,
-            "timestamp": now,
-            "first_seen": now,
-            "last_seen": now,
-            "count": 1,
-            "value_score": value_score,
-            "memory_key": memory_key,
-            "record_id": metadata.get("record_id") or memory_key or f"user_{datetime.now().timestamp()}",
-            **metadata,
-        }
-        self._ensure_record_id(record)
-
+        record = self._normalize_record(
+            {
+                "content": content,
+                "category": category,
+                "accepted": accepted,
+                "timestamp": now,
+                "first_seen": now,
+                "last_seen": now,
+                "count": 1,
+                "value_score": value_score,
+                "memory_key": memory_key,
+                **metadata,
+            }
+        )
+        self._apply_conflict_detection(record)
         self.memory_store.append(record)
         self._upsert_collection_record(record)
         self._prune_memory_store()
         return True
 
+    def add_timeseries_summary(
+        self,
+        summary_text: str,
+        *,
+        source_name: str = "simulator",
+        trust_score: float = 0.88,
+        metadata: Optional[Dict[str, Any]] = None,
+    ) -> bool:
+        now = datetime.now().isoformat()
+        record = self._normalize_record(
+            {
+                "content": summary_text,
+                "category": "时序摘要",
+                "accepted": True,
+                "timestamp": now,
+                "first_seen": now,
+                "last_seen": now,
+                "count": 1,
+                "value_score": 1.5,
+                "record_id": f"ts_{datetime.now().timestamp()}",
+                "source_name": source_name,
+                "source_bucket": "timeseries",
+                "trust_score": trust_score,
+                **(metadata or {}),
+            }
+        )
+        self.time_series_store.append(record)
+        if len(self.time_series_store) > 120:
+            self.time_series_store = self.time_series_store[-120:]
+        return True
+
+    def record_timeseries_summary(self, context, device_states: Optional[Dict[str, Dict[str, Any]]] = None, trigger: str = "", route: str = "") -> bool:
+        scene = getattr(context, "current_scene", "") or "无场景"
+        temp = getattr(context, "temperature", 0.0)
+        humidity = getattr(context, "humidity", 0.0)
+        device_parts = []
+        for name, state in list((device_states or {}).items())[:4]:
+            status = state.get("status", "")
+            if status:
+                device_parts.append(f"{name}:{status}")
+        summary = f"场景={scene} 温度={temp} 湿度={humidity} 触发={trigger or 'query'} 路由={route or 'local'} 设备={'/'.join(device_parts) or '无'}"
+        return self.add_timeseries_summary(summary, metadata={"trigger": trigger, "route": route})
+
     def update_feedback(self, original_query: str, action: str, feedback: str) -> bool:
-        feedback_map = {
-            "接受": "positive",
-            "忽略": "neutral",
-            "拒绝": "negative",
-            "纠正": "negative",
-        }
+        feedback_map = {"接受": "positive", "忽略": "neutral", "拒绝": "negative", "纠正": "negative"}
         sentiment = feedback_map.get(feedback, "neutral")
         content = f"用户输入「{original_query}」后执行了「{action}」，用户反馈「{feedback}」"
         self.add(content, category="用户反馈", accepted=(sentiment == "positive"), sentiment=sentiment, feedback=feedback)
-        logger.info("RAG feedback updated: %s", content)
         return True
 
     def get_context_prompt(self, user_query: str, context) -> str:
-        knowledge = self.query(user_query, top_k=3)
-        if not knowledge:
+        retrieved = self.query(
+            user_query,
+            top_k=RAG_CONFIG["top_k"],
+            include_conflicted=False,
+            min_trust_score=0.6,
+        )
+        if not retrieved:
             return ""
-        return "\n".join(f"[{item.get('category', '知识')}] {item['content']}" for item in knowledge)
+
+        live_context = {
+            "content": f"当前环境：时间={getattr(context, 'hour', 0)}点 温度={getattr(context, 'temperature', 0)} 湿度={getattr(context, 'humidity', 0)} 场景={getattr(context, 'current_scene', '') or '无'}",
+            "category": "时序摘要",
+            "source_bucket": "timeseries",
+            "source_name": "live_context",
+            "trust_score": 0.92,
+        }
+        chunks = [live_context] + retrieved
+        compressed = self.semantic_compressor.compress(chunks, max_total_chars=RAG_CONFIG["max_context_tokens"] * 4)
+        return self.semantic_compressor.to_context_string(compressed)
 
     def get_user_preference_score(self, candidate_action: str, context) -> float:
         score = 0.5
@@ -388,12 +480,27 @@ class KnowledgeBase:
 
         feedback_history = self.query(candidate_action, top_k=5, category="用户反馈")
         if feedback_history:
-            accepted_count = sum(
-                1 for item in feedback_history
-                if item.get("feedback") == "接受" or item.get("accepted")
-            )
+            accepted_count = sum(1 for item in feedback_history if item.get("feedback") == "接受" or item.get("accepted"))
             score = max(score, min(1.0, 0.5 + accepted_count * 0.15))
         return score
+
+    def list_conflicts(self) -> List[Dict[str, Any]]:
+        return [dict(item) for item in self.memory_store if item.get("conflict")]
+
+    def get_status(self) -> Dict[str, Any]:
+        return {
+            "chromadb_importable": bool(CHROMA_AVAILABLE),
+            "chromadb_enabled": self._collection is not None,
+            "collection_name": self._collection_name,
+            "persist_dir": self.persist_dir,
+            "collection_count": self._collection_count(),
+            "memory_store_count": len(self.memory_store),
+            "preset_knowledge_count": len(self.preset_knowledge),
+            "timeseries_count": len(self.time_series_store),
+            "conflict_count": len(self.list_conflicts()),
+            "source_buckets": sorted({item.get("source_bucket", "") for item in self.memory_store + self.preset_knowledge + self.time_series_store}),
+            "max_records": self.max_records,
+        }
 
     def count(self) -> int:
         return len(self.memory_store) + len(self.preset_knowledge)
@@ -403,6 +510,7 @@ class KnowledgeBase:
             path = self.backup_path
         data = {
             "memory_store": self.memory_store,
+            "time_series_store": self.time_series_store,
             "timestamp": datetime.now().isoformat(),
         }
         success = self._storage.save_pickle(data, path)
@@ -415,7 +523,8 @@ class KnowledgeBase:
             path = self.backup_path
         data = self._storage.load_pickle(path)
         if data and "memory_store" in data:
-            self.memory_store = list(data["memory_store"])
+            self.memory_store = [self._normalize_record(item) for item in list(data.get("memory_store", []) or [])]
+            self.time_series_store = [self._normalize_record(item) for item in list(data.get("time_series_store", []) or [])]
             self._prune_memory_store()
             restored_to_collection = self._rehydrate_collection(clear_existing=True)
             logger.info("Knowledge base restored, records=%s", len(self.memory_store))

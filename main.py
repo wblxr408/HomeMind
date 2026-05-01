@@ -8,6 +8,7 @@ import logging
 import os
 import sys
 import argparse
+import time
 from typing import Optional
 
 try:
@@ -29,9 +30,16 @@ from core.constants import SCENE_INDEX_MAP, SCENE_NAMES
 from core.execution import CommandValidator
 from core.language.normalizer import LanguageNormalizer
 from core.memory import PreferenceStore, SessionStore
+from core.observability import get_metrics
 from core.privacy import PrivacyRedactor
 from core.router import InferenceRouter
+from core.governance import AuditLogger, PolicyEngine
 from core.config import SECURITY_CONFIG, DQN_CONFIG, REACT_CONFIG
+from core.execution.transaction_manager import ExecutionTransactionManager
+from core.sec import InjectionDetector
+from core.sec.autonomy_manager import AutonomyManager
+from core.sec.runtime_security import RuntimeSecurityChain
+from core.tools import ToolRegistry
 from tools.device_control import DeviceController
 from tools.info_query import InfoQuery
 from tools.scene_switch import SceneSwitcher
@@ -56,6 +64,18 @@ class HomeMindAgent:
         self.preference_store = PreferenceStore()
         self.privacy_redactor = PrivacyRedactor()
         self.router = InferenceRouter()
+        self.metrics = get_metrics()
+        self.injection_detector = InjectionDetector()
+        self.audit_logger = AuditLogger()
+        self.policy_engine = PolicyEngine()
+        self.autonomy_manager = AutonomyManager(
+            success_threshold=SECURITY_CONFIG["autonomy_success_threshold"],
+            confirms_to_advance=SECURITY_CONFIG["autonomy_high_risk_confirms"],
+        )
+        self.runtime_security = RuntimeSecurityChain(
+            policy_engine=self.policy_engine,
+            autonomy_manager=self.autonomy_manager,
+        )
         self.command_validator = CommandValidator(
             scene_store=None,
             rate_limit_window_s=SECURITY_CONFIG["rate_limit_window_s"],
@@ -85,6 +105,20 @@ class HomeMindAgent:
         self.dqn_feedback = DQNFeedback(self.dqn)
         self.language_normalizer = LanguageNormalizer()
         self.nl_to_tap = NLToTAPConverter()
+        self.tool_registry = ToolRegistry()
+        self.tool_registry.bind_many(
+            {
+                "device_control": self.device_ctrl,
+                "scene_switcher": self.scene_switcher,
+                "info_query": self.info_query,
+            }
+        )
+        self.transaction_manager = ExecutionTransactionManager(
+            self.tool_registry,
+            device_controller=self.device_ctrl,
+            session_store=self.session_store,
+            context=self.context if hasattr(self, "context") else None,
+        )
 
         # 运行时注入 scene_store，解决 CommandValidator 初始化时为 None 的问题
         from core.automation.scene_store import SceneStore
@@ -93,6 +127,7 @@ class HomeMindAgent:
 
         self.context = HomeContext()
         self.context.current_scene = ""
+        self.transaction_manager.context = self.context
         self._simulator: Optional[HomeSimulator] = None
         self._last_dqn_action: Optional[int] = None
         self._restore_persisted_state()
@@ -147,6 +182,72 @@ class HomeMindAgent:
             self.context.last_scene = SCENE_INDEX_MAP.get(current_scene, -1)
         if self.kb and os.path.exists(self.kb.backup_path):
             self.kb.restore()
+
+    def _build_identity_context(self, route: str = "local"):
+        runtime = self.session_store.get_runtime_context()
+        metadata = {"route": route, "mode": "simulated"}
+        return self.runtime_security.identity_manager.issue(
+            user_id=runtime.get("user_id", "default"),
+            session_id=runtime.get("last_updated_at", "") or "session_default",
+            metadata=metadata,
+        )
+
+    def _execute_registered_command(self, decision: dict, route: str = "local") -> dict:
+        execution = self.transaction_manager.execute(decision)
+        if execution.get("status") == "success":
+            if decision.get("action") == "场景切换":
+                scene = decision.get("scene", "")
+                self._sync_scene_to_simulator(scene)
+                self.context.current_scene = scene
+                self.context.last_scene = SCENE_INDEX_MAP.get(scene, -1)
+                self.session_store.update_scene(scene)
+            elif decision.get("action") == "设备控制":
+                self._sync_devices_from_controller()
+            if self.kb:
+                self.kb.record_timeseries_summary(
+                    self.context,
+                    self.device_ctrl.get_all_state(),
+                    trigger=decision.get("action", ""),
+                    route=route,
+                )
+        return execution
+
+    def _audit_event(
+        self,
+        *,
+        trace_id: str,
+        query: str,
+        route: str,
+        routing_reason: str,
+        decision: Optional[dict] = None,
+        validation=None,
+        execution_result: str = "",
+        error: str = "",
+        started_at: float = 0.0,
+    ) -> None:
+        validation_payload = {
+            "valid": getattr(validation, "valid", True),
+            "errors": list(getattr(validation, "errors", []) or []),
+        }
+        latency_ms = round((time.time() - started_at) * 1000, 2) if started_at else 0.0
+        self.audit_logger.log(
+            trace_id=trace_id,
+            user_id=self.session_store.get_runtime_context().get("user_id", "default"),
+            query=query,
+            intent_type=str((decision or {}).get("action", "")),
+            routing_reason=routing_reason,
+            route=route,
+            decision=decision or {},
+            execution_result=execution_result,
+            execution_latency_ms=latency_ms,
+            validation=validation_payload,
+            error=error,
+            llm_backend=getattr(self.llm, "backend", ""),
+            session_id=self.session_store.get_runtime_context().get("last_updated_at", ""),
+        )
+        self.metrics.record_latency(latency_ms)
+        if error:
+            self.metrics.record_error()
 
     def process(self, user_input: str) -> str:
         """
@@ -464,6 +565,17 @@ class HomeMindAgent:
 
         return f"未知动作类型: {action}"
 
+    def _execute_command_from_dict(self, cmd: dict) -> str:
+        """Execute structured commands from TAP or future multi-step loops."""
+        try:
+            execution = self._execute_registered_command(cmd, route="tap")
+            if execution.get("status") == "success":
+                return execution.get("response", "")
+            return execution.get("error") or execution.get("response") or f"未知动作类型: {cmd.get('action', '')}"
+        except Exception as exc:
+            logger.error("TAP structured command failed: %s", exc)
+            return f"执行失败: {exc}"
+
     def _scene_to_index(self, scene: str) -> int:
         scene_map = {"睡眠模式": 0, "待客模式": 1, "离家模式": 2,
                     "观影模式": 3, "起床模式": 4, "回家模式": 1}
@@ -707,7 +819,271 @@ def _llm_first_process(self: HomeMindAgent, user_input: str) -> str:
     return result
 
 
-HomeMindAgent.process = _llm_first_process
+def _llm_first_process_v2(self: HomeMindAgent, user_input: str) -> str:
+    started_at = time.time()
+    trace_id = f"cli_{int(started_at * 1000)}"
+    if not self.llm:
+        return "AI 模块未加载"
+
+    runtime = self.session_store.get_runtime_context()
+    if not runtime.get("recent_turns"):
+        try:
+            self.command_validator._rate_limiter.reset()
+        except Exception:
+            pass
+        try:
+            self.runtime_security._ops.clear()
+        except Exception:
+            pass
+
+    if self._simulator:
+        self.context = self._simulator.get_context()
+        self.context.current_scene = self.session_store.get_current_scene()
+        self.transaction_manager.context = self.context
+
+    pending = self.session_store.get_pending_confirmation()
+    if pending:
+        pending_reply = self._handle_pending_confirmation(user_input, pending)
+        if pending_reply:
+            return pending_reply
+
+    injection = self.injection_detector.check_and_log(user_input)
+    if injection.detected:
+        self.session_store.update_clarification(injection.message)
+        self._audit_event(
+            trace_id=trace_id,
+            query=user_input,
+            route="clarify",
+            routing_reason=injection.pattern or "prompt_injection",
+            execution_result=injection.message,
+            error="prompt_injection_detected",
+            started_at=started_at,
+        )
+        return injection.message
+
+    normalized = self.language_normalizer.normalize(user_input)
+    query_for_ai = normalized.normalized or user_input
+    self.session_store.update_from_query(user_input, query_for_ai)
+    if query_for_ai != user_input:
+        self.preference_store.record_feedback(user_input, query_for_ai, "接受")
+
+    intent_plan = self.llm.plan_intent(user_input, normalized_query=query_for_ai, context=self.context)
+    if intent_plan["intent_type"] == "chat_reply":
+        message = intent_plan.get("reply_message") or "你好，我在。"
+        self.session_store.append_turn("assistant", message)
+        self.session_store.save()
+        self._audit_event(
+            trace_id=trace_id,
+            query=user_input,
+            route="reply",
+            routing_reason=intent_plan.get("reasoning", ""),
+            execution_result=message,
+            started_at=started_at,
+        )
+        return message
+
+    if intent_plan["intent_type"] == "clarification_needed":
+        message = intent_plan.get("reply_message") or "请问你是想控制设备、切换场景，还是创建定时任务？"
+        self.session_store.update_clarification(message)
+        self._audit_event(
+            trace_id=trace_id,
+            query=user_input,
+            route="clarify",
+            routing_reason=intent_plan.get("reasoning", ""),
+            execution_result=message,
+            started_at=started_at,
+        )
+        return message
+
+    if intent_plan["intent_type"] == "automation_request":
+        proposal = self._build_automation_confirmation(user_input, query_for_ai)
+        if proposal:
+            self.session_store.append_turn("assistant", proposal)
+            self.session_store.save()
+            self._audit_event(
+                trace_id=trace_id,
+                query=user_input,
+                route="automation",
+                routing_reason=intent_plan.get("reasoning", ""),
+                execution_result=proposal,
+                started_at=started_at,
+            )
+            return proposal
+        message = "我理解到你想创建定时任务，但还缺少明确的时间或动作。你可以试试“晚上7:00打开空调”。"
+        self.session_store.update_clarification(message)
+        return message
+
+    goal_query = intent_plan.get("normalized_goal") or query_for_ai
+    unsupported = self.router.detect_unsupported_request(user_input, normalized_query=goal_query)
+    if unsupported:
+        message = unsupported["message"]
+        self.session_store.update_clarification(message)
+        self._audit_event(
+            trace_id=trace_id,
+            query=user_input,
+            route=unsupported.get("route", "unsupported"),
+            routing_reason=unsupported.get("reason", "unsupported"),
+            execution_result=message,
+            started_at=started_at,
+        )
+        return message
+
+    candidates = self.bsr.recall(goal_query, self.context)
+    ranked = self.lsr.rank(
+        goal_query,
+        candidates,
+        self.context,
+        kb=self.kb,
+        session_store=self.session_store,
+    )
+    if not ranked:
+        clarification = self.llm.ask_clarification(goal_query, candidates)
+        self.session_store.update_clarification(clarification)
+        return clarification
+
+    route_info = self.router.decide_route(
+        user_input,
+        ranked,
+        normalized_query=goal_query,
+        cloud_available=self.llm.is_cloud_available(),
+    )
+    route = route_info["route"]
+    if route == "clarify":
+        clarification = self.llm.ask_clarification(goal_query, ranked)
+        self.session_store.update_clarification(clarification)
+        return clarification
+
+    rag_context = self.kb.get_context_prompt(goal_query, self.context)
+    cloud_context = self.privacy_redactor.build_cloud_context(
+        self.context,
+        ranked[:3],
+        session_store=self.session_store,
+        preference_store=self.preference_store,
+    )
+    if route == "cloud":
+        decision = self.llm.decide_cloud(
+            goal_query,
+            ranked,
+            self.context,
+            rag_context=rag_context,
+            context_summary=cloud_context,
+        )
+    else:
+        decision = self.llm.decide_local(
+            goal_query,
+            ranked,
+            self.context,
+            rag_context=rag_context,
+        )
+
+    if decision.get("confidence", 0.0) < self.confidence_threshold:
+        clarification = self.llm.ask_clarification(goal_query, ranked)
+        self.session_store.update_clarification(clarification)
+        self._audit_event(
+            trace_id=trace_id,
+            query=user_input,
+            route=route,
+            routing_reason="low_decision_confidence",
+            decision=decision,
+            execution_result=clarification,
+            started_at=started_at,
+        )
+        return clarification
+
+    validation = self.command_validator.validate(decision)
+    if not validation.valid:
+        message = "我暂时不能执行这个指令：" + ";".join(validation.errors)
+        self.session_store.update_clarification(message)
+        self._audit_event(
+            trace_id=trace_id,
+            query=user_input,
+            route=route,
+            routing_reason=route_info.get("reason", ""),
+            decision=decision,
+            validation=validation,
+            execution_result=message,
+            started_at=started_at,
+        )
+        return message
+
+    decision = validation.normalized_command
+    identity = self._build_identity_context(route=route)
+    guard = self.runtime_security.evaluate(
+        decision,
+        validation,
+        identity,
+        runtime_context={"hour": self.context.hour, "route": route},
+    )
+    if not guard.get("allowed", False):
+        message = "我暂时不能执行这个指令：" + guard.get("reason", "runtime_guard_denied")
+        self.session_store.update_clarification(message)
+        self._audit_event(
+            trace_id=trace_id,
+            query=user_input,
+            route=route,
+            routing_reason=guard.get("reason", ""),
+            decision=decision,
+            validation=validation,
+            execution_result=message,
+            error="runtime_guard_denied",
+            started_at=started_at,
+        )
+        return message
+    if guard.get("effect") == "confirm":
+        message = "这个操作需要确认后再执行。"
+        self.session_store.update_clarification(message)
+        self._audit_event(
+            trace_id=trace_id,
+            query=user_input,
+            route=route,
+            routing_reason=guard.get("reason", ""),
+            decision=decision,
+            validation=validation,
+            execution_result=message,
+            started_at=started_at,
+        )
+        return message
+
+    execution = self._execute_registered_command(decision, route=route)
+    if execution.get("status") != "success":
+        message = execution.get("error") or execution.get("response") or "执行失败"
+        self.session_store.update_clarification(message)
+        self.runtime_security.record_outcome(decision, success=False, confirmed=False)
+        self._audit_event(
+            trace_id=trace_id,
+            query=user_input,
+            route=route,
+            routing_reason=route_info.get("reason", ""),
+            decision=decision,
+            validation=validation,
+            execution_result=message,
+            error="execution_failed",
+            started_at=started_at,
+        )
+        return message
+
+    result = execution.get("response", "")
+    feedback = "接受" if decision.get("confidence", 0.0) >= 0.85 else "忽略"
+    self.session_store.update_from_decision(decision, route=route, result=result)
+    self.preference_store.record_feedback(user_input, query_for_ai, feedback)
+    if feedback == "接受":
+        self.preference_store.record_action_accept(decision, self.context)
+    self.kb_writer.write_feedback(user_input, decision, feedback)
+    self.runtime_security.record_outcome(decision, success=True, confirmed=False)
+    self._audit_event(
+        trace_id=trace_id,
+        query=user_input,
+        route=route,
+        routing_reason=route_info.get("reason", ""),
+        decision=decision,
+        validation=validation,
+        execution_result=result,
+        started_at=started_at,
+    )
+    return result
+
+
+HomeMindAgent.process = _llm_first_process_v2
 
 
 def run_cli():

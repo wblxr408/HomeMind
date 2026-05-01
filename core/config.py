@@ -42,11 +42,39 @@ def _env_bool(key: str, default: bool = False) -> bool:
 LLM_BACKEND = _env("LLM_BACKEND", "mock")  # mock | llama_cpp | openai | ollama
 
 
+EDGE_LLM_PROFILES = {
+    "qwen25_1_5b_q4": {
+        "display_name": "Qwen2.5-1.5B-Instruct-Q4_K_M",
+        "model_path": "models/Qwen2.5-1.5B-Instruct-Q4_K_M.gguf",
+        "backend": "llama_cpp",
+        "n_ctx": 2048,
+        "n_threads": 4,
+        "n_gpu_layers": 0,
+    },
+    "qwen25_3b_q4": {
+        "display_name": "Qwen2.5-3B-Instruct-Q4_K_M",
+        "model_path": "models/Qwen2.5-3B-Instruct-Q4_K_M.gguf",
+        "backend": "llama_cpp",
+        "n_ctx": 2048,
+        "n_threads": 4,
+        "n_gpu_layers": 0,
+    },
+}
+
+
+DEFAULT_EDGE_LLM_PROFILE = _env("EDGE_LLM_PROFILE", "qwen25_1_5b_q4")
+_DEFAULT_EDGE_LLM = EDGE_LLM_PROFILES.get(
+    DEFAULT_EDGE_LLM_PROFILE,
+    EDGE_LLM_PROFILES["qwen25_1_5b_q4"],
+)
+
+
 LLAMA_CPP_CONFIG = {
-    "model_path": _env("LLM_MODEL_PATH", "models/"),
-    "n_ctx": _env_int("LLAMA_N_CTX", 2048),
-    "n_threads": _env_int("LLAMA_N_THREADS", 4),
-    "n_gpu_layers": _env_int("LLAMA_N_GPU_LAYERS", 0),
+    "profile": DEFAULT_EDGE_LLM_PROFILE,
+    "model_path": _env("LLM_MODEL_PATH", _DEFAULT_EDGE_LLM["model_path"]),
+    "n_ctx": _env_int("LLAMA_N_CTX", _DEFAULT_EDGE_LLM["n_ctx"]),
+    "n_threads": _env_int("LLAMA_N_THREADS", _DEFAULT_EDGE_LLM["n_threads"]),
+    "n_gpu_layers": _env_int("LLAMA_N_GPU_LAYERS", _DEFAULT_EDGE_LLM["n_gpu_layers"]),
     "use_mlock": True,
     "kv_cache_type": _env("LLAMA_KV_CACHE_TYPE", "Q8_0"),
 }

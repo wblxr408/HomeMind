@@ -69,10 +69,17 @@ from queue import Queue
 from core.bsr.candidate_recall import BSRecall
 from core.automation import NLToTAPConverter, SceneStore, TAPEngine, TAPRuleStore
 from core.execution import CommandValidator
+from core.execution.transaction_manager import ExecutionTransactionManager
+from core.governance import AuditLogger, PolicyEngine
 from core.lsr.precision_ranking import LSRecify as PrecisionRanking
 from core.llm.decision import LLMDecider as LLMWrapper
 from core.dqn.policy import DQNPolicy
 from core.rag.knowledge_base import KnowledgeBase
+from core.observability import get_metrics
+from core.sec import InjectionDetector
+from core.sec.autonomy_manager import AutonomyManager
+from core.sec.runtime_security import RuntimeSecurityChain
+from core.tools import ToolRegistry
 from core.utils.embedding import get_model as get_embedding_model
 from core.language.normalizer import LanguageNormalizer
 from core.memory import PreferenceStore, SessionStore
@@ -81,6 +88,7 @@ from core.router import InferenceRouter
 from core.voice.vosk_asr import VoskASR
 from core.voice.feedback_store import VoiceFeedbackStore
 from core.constants import SCENE_INDEX_MAP, SCENE_NAMES
+from core.config import SECURITY_CONFIG
 from core.security import get_encrypted_storage
 from demo.context import HomeContext
 from demo.device_simulator import DeviceSimulator
@@ -613,11 +621,24 @@ class HomeMindWebAgent:
             self.preference_store = PreferenceStore()
             self.privacy_redactor = PrivacyRedactor()
             self.router = InferenceRouter()
+            self.metrics = get_metrics()
+            self.injection_detector = InjectionDetector()
+            self.audit_logger = AuditLogger()
+            self.policy_engine = PolicyEngine()
+            self.autonomy_manager = AutonomyManager(
+                success_threshold=SECURITY_CONFIG["autonomy_success_threshold"],
+                confirms_to_advance=SECURITY_CONFIG["autonomy_high_risk_confirms"],
+            )
+            self.runtime_security = RuntimeSecurityChain(
+                policy_engine=self.policy_engine,
+                autonomy_manager=self.autonomy_manager,
+            )
             self.tap_engine = TAPEngine()
             self.tap_rule_store = TAPRuleStore()
             self.scene_store = SceneStore()
             self.nl_to_tap = NLToTAPConverter()
             self.command_validator = CommandValidator(scene_store=self.scene_store)
+            self.tool_registry = ToolRegistry()
 
         self._timed_phase("session_preference_and_router", init_storage_and_routing)
         self.last_cloud_context = {}
@@ -652,6 +673,19 @@ class HomeMindWebAgent:
             self.info_query = info_query.InfoQuery()
             self.scene_switcher = scene_switch.SceneSwitcher(self.device_control, scene_store=self.scene_store)
             self.language_normalizer = language_normalizer
+            self.tool_registry.bind_many(
+                {
+                    "device_control": self.device_control,
+                    "scene_switcher": self.scene_switcher,
+                    "info_query": self.info_query,
+                }
+            )
+            self.transaction_manager = ExecutionTransactionManager(
+                self.tool_registry,
+                device_controller=self.device_control,
+                session_store=self.session_store,
+                context=self.context,
+            )
 
         self._timed_phase("tools", init_tools)
         
@@ -3627,13 +3661,395 @@ def _webagent_process_user_input(self: HomeMindWebAgent, data: dict):
         },
     })
 
+def _webagent_build_identity_context(self: HomeMindWebAgent, route: str = "local"):
+    runtime = self.session_store.get_runtime_context()
+    return self.runtime_security.identity_manager.issue(
+        user_id=runtime.get("user_id", "default"),
+        session_id=runtime.get("last_updated_at", "") or self.instance_id,
+        metadata={"route": route, "mode": "simulated", "channel": "web"},
+    )
 
-HomeMindWebAgent._run_llm_first_query = _webagent_run_llm_first_query
+
+def _webagent_audit_event(
+    self: HomeMindWebAgent,
+    *,
+    trace_id: str,
+    query: str,
+    route: str,
+    routing_reason: str,
+    decision: dict | None = None,
+    validation=None,
+    execution_result: str = "",
+    error: str = "",
+    started_at: float = 0.0,
+) -> None:
+    latency_ms = round((time.time() - started_at) * 1000, 2) if started_at else 0.0
+    self.audit_logger.log(
+        trace_id=trace_id,
+        user_id=self.session_store.get_runtime_context().get("user_id", "default"),
+        query=query,
+        intent_type=str((decision or {}).get("action", "")),
+        routing_reason=routing_reason,
+        route=route,
+        decision=decision or {},
+        execution_result=execution_result,
+        execution_latency_ms=latency_ms,
+        validation={
+            "valid": getattr(validation, "valid", True),
+            "errors": list(getattr(validation, "errors", []) or []),
+        },
+        error=error,
+        llm_backend=getattr(self.llm, "backend", ""),
+        session_id=self.instance_id,
+    )
+    self.metrics.record_latency(latency_ms)
+    if error:
+        self.metrics.record_error()
+
+
+def _webagent_execute_registered_command(
+    self: HomeMindWebAgent,
+    command: dict,
+    route: str = "local",
+    spatial: dict | None = None,
+) -> dict:
+    action = str(command.get("action", "")).strip()
+    if action == "场景切换":
+        return self._execute_scene_with_spatial_gate(command.get("scene", ""), route=route)
+
+    execution = self.transaction_manager.execute(command)
+    if execution.get("status") == "success" and action == "设备控制":
+        target_names = [target.get("name") or target.get("id") for target in (spatial or {}).get("targets", [])]
+        if target_names:
+            execution["response"] = f"{execution.get('response', '')}映射设备：{', '.join(target_names)}。"
+        self.session_store.update_from_decision(command, route=route, result=execution.get("response", ""))
+        self.preference_store.record_action_accept(command, self.context)
+        if self.kb:
+            self.kb.record_timeseries_summary(
+                self.context,
+                self.device_control.get_all_state(),
+                trigger=command.get("action", ""),
+                route=route,
+            )
+    elif execution.get("status") == "success" and action == "信息查询":
+        self.session_store.update_from_decision(command, route=route, result=execution.get("response", ""))
+    self.runtime_security.record_outcome(command, success=execution.get("status") == "success", confirmed=False)
+    return execution
+
+
+def _webagent_execute_structured_command_v2(self: HomeMindWebAgent, command: dict, route: str = "tap") -> dict:
+    validation = self._validate_decision(command)
+    if not validation.valid:
+        return {"status": "invalid", "errors": validation.errors, "command": command}
+
+    normalized = validation.normalized_command
+    identity = self._build_identity_context(route=route)
+    guard = self.runtime_security.evaluate(
+        normalized,
+        validation,
+        identity,
+        runtime_context={"hour": self.context.hour, "route": route},
+    )
+    if not guard.get("allowed", False):
+        return {"status": "invalid", "errors": [guard.get("reason", "runtime_guard_denied")], "command": normalized}
+    if guard.get("effect") == "confirm":
+        return {"status": "confirmation_required", "command": normalized}
+
+    if normalized.get("action") == "设备控制":
+        spatial = self._validate_spatial_device_command(normalized)
+        if not spatial.get("valid"):
+            self.session_store.update_clarification(spatial["message"])
+            return {
+                "status": "unsupported",
+                "response_type": "clarification",
+                "action": "unsupported",
+                "target": normalized.get("device", ""),
+                "response": spatial["message"],
+                "message": spatial["message"],
+                "route": "unsupported",
+                "route_reason": spatial["reason"],
+                "spatial": spatial,
+            }
+        execution = self._execute_registered_command(normalized, route=route, spatial=spatial)
+    else:
+        execution = self._execute_registered_command(normalized, route=route)
+
+    if execution.get("status") == "success":
+        self.runtime_security.record_outcome(normalized, success=True, confirmed=False)
+    else:
+        self.runtime_security.record_outcome(normalized, success=False, confirmed=False)
+    execution["command"] = normalized
+    return execution
+
+
+def _webagent_run_llm_first_query_v2(self: HomeMindWebAgent, raw_text: str, normalized_text: str) -> dict:
+    trace_id = f"web_{int(time.time() * 1000)}"
+    started_at = time.time()
+
+    injection = self.injection_detector.check_and_log(raw_text)
+    if injection.detected:
+        self.session_store.update_clarification(injection.message)
+        self._audit_event(
+            trace_id=trace_id,
+            query=raw_text,
+            route="clarify",
+            routing_reason=injection.pattern or "prompt_injection",
+            execution_result=injection.message,
+            error="prompt_injection_detected",
+            started_at=started_at,
+        )
+        return {
+            "status": "clarification",
+            "response_type": "clarification",
+            "question": injection.message,
+            "response": injection.message,
+            "route": "clarify",
+            "route_reason": injection.pattern or "prompt_injection",
+        }
+
+    result = _webagent_run_llm_first_query(self, raw_text, normalized_text)
+    route = result.get("route", "")
+    reason = result.get("route_reason", "")
+
+    decision = None
+    if result.get("_debug"):
+        decision = dict((result.get("_debug") or {}).get("decision", {}) or {})
+
+    self._audit_event(
+        trace_id=trace_id,
+        query=raw_text,
+        route=route or "local",
+        routing_reason=reason,
+        decision=decision,
+        execution_result=result.get("response") or result.get("question", ""),
+        started_at=started_at,
+    )
+    return result
+
+
+def _webagent_process_query_v2(self: HomeMindWebAgent, query: str) -> dict:
+    self.context.hour = datetime.now().hour
+    runtime = self.session_store.get_runtime_context()
+    if not runtime.get("recent_turns"):
+        try:
+            self.command_validator._rate_limiter.reset()
+        except Exception:
+            pass
+        try:
+            self.runtime_security._ops.clear()
+        except Exception:
+            pass
+    normalized = self.language_normalizer.normalize(query)
+    query_for_ai = normalized.normalized or query
+    self._record_query_context(query, query_for_ai)
+
+    safety = self.router.detect_safety_sensitive_request(query, normalized_query=query_for_ai)
+    if safety:
+        self.session_store.clear_pending_clarification()
+        self.session_store.clear_pending_confirmation()
+        message = safety.get("reply_message") or safety.get("message") or "这个请求涉及家庭安全设备，请先确认具体设备和安全状态。"
+        self.session_store.update_clarification(message)
+        return {
+            "status": "clarification",
+            "response_type": "clarification",
+            "question": message,
+            "response": message,
+            "route": "clarify",
+            "route_reason": safety.get("reason", "safety_sensitive_target"),
+            "target": safety.get("target", ""),
+            "normalized_query": normalized.to_dict(),
+        }
+
+    automation_update = self._update_pending_automation_trigger(query, query_for_ai)
+    if automation_update is not None:
+        return {
+            "status": "success",
+            "response_type": "automation_proposal",
+            "message_id": automation_update["message_id"],
+            "response": automation_update["summary"],
+            "proposal": automation_update,
+            "route": "automation",
+            "route_reason": "pending_automation_trigger_updated",
+            "normalized_query": normalized.to_dict(),
+            "feedback_target": {"message_id": automation_update["message_id"], "target_type": "automation_proposal"},
+        }
+
+    pending_result = self._resolve_pending_clarification(query, query_for_ai)
+    if pending_result is not None:
+        pending_result["normalized_query"] = normalized.to_dict()
+        return pending_result
+
+    result = self._run_llm_first_query(query, query_for_ai)
+    result["normalized_query"] = normalized.to_dict()
+    if result.get("status") == "clarification":
+        self.session_store.set_pending_clarification(
+            "query",
+            {
+                "query": query,
+                "normalized": query_for_ai,
+                "candidates": result.get("candidates", []),
+            },
+        )
+    return result
+
+
+def _webagent_execute_device_with_spatial_gate_v2(self: HomeMindWebAgent, command: dict, text: str, route: str) -> dict:
+    spatial = self._validate_spatial_device_command(command, text=text)
+    if not spatial["valid"]:
+        self.session_store.update_clarification(spatial["message"])
+        return {
+            "status": "unsupported",
+            "response_type": "clarification",
+            "action": "unsupported",
+            "target": command.get("device", ""),
+            "response": spatial["message"],
+            "message": spatial["message"],
+            "route": "unsupported",
+            "route_reason": spatial["reason"],
+            "spatial": spatial,
+        }
+    validation = self._validate_decision(command)
+    identity = self._build_identity_context(route=route)
+    guard = self.runtime_security.evaluate(
+        validation.normalized_command,
+        validation,
+        identity,
+        runtime_context={"hour": self.context.hour, "route": route},
+    )
+    if not guard.get("allowed", False):
+        message = "我暂时不能执行这个指令：" + guard.get("reason", "runtime_guard_denied")
+        self.session_store.update_clarification(message)
+        return {
+            "status": "clarification",
+            "response_type": "clarification",
+            "action": "clarification",
+            "response": message,
+            "message": message,
+            "route": route,
+            "route_reason": guard.get("reason", ""),
+        }
+    if guard.get("effect") == "confirm":
+        message = "这个操作需要确认后再执行。"
+        self.session_store.update_clarification(message)
+        return {
+            "status": "clarification",
+            "response_type": "clarification",
+            "action": "clarification",
+            "response": message,
+            "message": message,
+            "route": route,
+            "route_reason": guard.get("reason", ""),
+        }
+    return self._execute_registered_command(command, route=route, spatial=spatial)
+
+
+def _webagent_execute_scene_with_spatial_gate_v2(self: HomeMindWebAgent, scene: str, route: str = "local") -> dict:
+    config = self.scene_store.get_scene(scene)
+    if config is None:
+        message = f"不支持的场景: {scene}"
+        self.session_store.update_clarification(message)
+        return {"status": "unsupported", "response": message, "message": message, "route_reason": "scene_not_found"}
+
+    scene_decision = {
+        "action": "场景切换",
+        "device": "",
+        "scene": scene,
+        "device_action": "",
+        "params": {},
+        "confidence": 1.0,
+        "reasoning": "scene execution with spatial gate",
+    }
+    scene_validation = self._validate_decision(scene_decision)
+    scene_identity = self._build_identity_context(route=route)
+    scene_guard = self.runtime_security.evaluate(
+        scene_validation.normalized_command,
+        scene_validation,
+        scene_identity,
+        runtime_context={"hour": self.context.hour, "route": route},
+    )
+    if not scene_guard.get("allowed", False):
+        message = "我暂时不能执行这个指令：" + scene_guard.get("reason", "runtime_guard_denied")
+        self.session_store.update_clarification(message)
+        return {"status": "clarification", "response": message, "message": message, "route_reason": scene_guard.get("reason", "")}
+    if scene_guard.get("effect") == "confirm":
+        message = "这个操作需要确认后再执行。"
+        self.session_store.update_clarification(message)
+        return {"status": "clarification", "response": message, "message": message, "route_reason": scene_guard.get("reason", "")}
+
+    snapshot = self.transaction_manager._snapshot()
+    executed = []
+    skipped = []
+    for device, cmd in config.items():
+        command = {
+            "action": "设备控制",
+            "device": device,
+            "scene": "",
+            "device_action": cmd.get("action", ""),
+            "params": cmd.get("params", {}),
+            "confidence": 1.0,
+            "reasoning": f"scene {scene}",
+        }
+        spatial = self._validate_spatial_device_command(command)
+        if not spatial["valid"]:
+            skipped.append(device)
+            continue
+        execution = self._execute_registered_command(command, route=route, spatial=spatial)
+        if execution.get("status") != "success":
+            self.transaction_manager._restore(snapshot)
+            return execution
+        executed.append(execution.get("response", ""))
+
+    if not executed:
+        message = f"当前 SVG 户型图的设备表不支持执行“{scene}”中的任何设备动作，已拦截场景切换。"
+        self.session_store.update_clarification(message)
+        self.runtime_security.record_outcome(scene_decision, success=False, confirmed=False)
+        return {
+            "status": "unsupported",
+            "response": message,
+            "message": message,
+            "route_reason": "scene_devices_not_in_floor_plan",
+            "skipped_devices": skipped,
+        }
+
+    self.context.current_scene = scene
+    self.context.last_scene = SCENE_INDEX_MAP.get(scene, -1)
+    self.session_store.update_scene(scene)
+    message = f"已切换到{scene}。" + " ".join(executed)
+    if skipped:
+        message += f"未在户型设备表中找到的设备已跳过：{', '.join(skipped)}。"
+    self.session_store.update_from_decision(scene_decision, route=route, result=message)
+    self.preference_store.record_action_accept(scene_decision, self.context)
+    self.runtime_security.record_outcome(scene_decision, success=True, confirmed=False)
+    if self.kb:
+        self.kb.record_timeseries_summary(
+            self.context,
+            self.device_control.get_all_state(),
+            trigger=scene_decision.get("action", ""),
+            route=route,
+        )
+    return {
+        "status": "success",
+        "response_type": "execution_result",
+        "action": "scene_switch",
+        "scene": scene,
+        "response": message,
+        "message": message,
+        "skipped_devices": skipped,
+    }
+
+
+HomeMindWebAgent._build_identity_context = _webagent_build_identity_context
+HomeMindWebAgent._audit_event = _webagent_audit_event
+HomeMindWebAgent._execute_registered_command = _webagent_execute_registered_command
+HomeMindWebAgent._execute_device_with_spatial_gate = _webagent_execute_device_with_spatial_gate_v2
+HomeMindWebAgent._execute_scene_with_spatial_gate = _webagent_execute_scene_with_spatial_gate_v2
+HomeMindWebAgent._execute_structured_command = _webagent_execute_structured_command_v2
+HomeMindWebAgent._run_llm_first_query = _webagent_run_llm_first_query_v2
 HomeMindWebAgent._device_from_text = _webagent_device_from_text
 HomeMindWebAgent._action_from_text = _webagent_action_from_text
 HomeMindWebAgent._execution_result = _webagent_execution_result
 HomeMindWebAgent._resolve_pending_clarification = _webagent_resolve_pending_clarification
-HomeMindWebAgent.process_query = _webagent_process_query
+HomeMindWebAgent.process_query = _webagent_process_query_v2
 HomeMindWebAgent._process_user_input = _webagent_process_user_input
 
 
@@ -3661,6 +4077,24 @@ def query():
         return jsonify(result)
     
     return jsonify({"error": "Agent 未初始化"}), 500
+
+
+@app.route("/api/audit/logs", methods=["GET"])
+def audit_logs():
+    """Audit retrieval endpoint."""
+    if not agent:
+        return jsonify({"error": "Agent æœªåˆå§‹åŒ–"}), 500
+    try:
+        limit = int(request.args.get("limit", "50"))
+    except ValueError:
+        limit = 50
+    user_id = str(request.args.get("user_id", "") or "").strip() or None
+    since_raw = str(request.args.get("since", "") or "").strip()
+    until_raw = str(request.args.get("until", "") or "").strip()
+    since = datetime.fromisoformat(since_raw) if since_raw else None
+    until = datetime.fromisoformat(until_raw) if until_raw else None
+    records = agent.audit_logger.query(since=since, until=until, user_id=user_id, limit=max(1, min(limit, 200)))
+    return jsonify({"status": "success", "records": records, "count": len(records)})
 
 
 @app.route("/api/interaction/feedback", methods=["POST"])

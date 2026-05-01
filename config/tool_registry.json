@@ -1,0 +1,31 @@
+{
+  "tools": [
+    {
+      "name": "device_control",
+      "action_type": "设备控制",
+      "binding": "device_control",
+      "call_style": "device_control",
+      "description": "控制单个模拟设备",
+      "required_fields": ["device", "device_action"],
+      "enabled": true
+    },
+    {
+      "name": "scene_switch",
+      "action_type": "场景切换",
+      "binding": "scene_switcher",
+      "call_style": "scene_switch",
+      "description": "执行场景批量切换",
+      "required_fields": ["scene"],
+      "enabled": true
+    },
+    {
+      "name": "info_query",
+      "action_type": "信息查询",
+      "binding": "info_query",
+      "call_style": "info_query",
+      "description": "查询环境与历史信息",
+      "required_fields": ["query_type"],
+      "enabled": true
+    }
+  ]
+}

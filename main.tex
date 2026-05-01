@@ -189,11 +189,11 @@
 \chapter*{摘要}
 \addcontentsline{toc}{chapter}{摘要}
 
-随着端侧 AI 算力持续提升，智能家居开始从“设备联网”进入“家庭终端智能体”阶段。HomeMind 面向赛题 4 GB 内存上限与系统常态业务 1--2 GB 预算，构建一套能够长期运行在家庭终端上的端侧 Agent 主链路，将语音交互、自然语言理解、上下文记忆、偏好适配、结构化决策与设备执行组织为统一闭环。
+随着端侧 AI 算力持续提升，智能家居开始从“设备联网”进入“家庭终端智能体”阶段。HomeMind 面向 4 GB 端侧内存预算与系统常态业务 1--2 GB 运行预算，构建一套能够长期运行在家庭终端上的端侧 Agent 主链路，将语音交互、自然语言理解、上下文记忆、偏好适配、结构化决策与仿真设备执行组织为统一闭环。
 
-在总体架构上，HomeMind 采用“端侧优先、端云协同增强”的设计思路：常规设备控制、场景切换和信息查询先由本地 BSR 召回与 LSR 重排序缩小候选空间，再由 Router 按置信度决定本地直达、云端协同或澄清询问；低代码场景新建、TAP 自动化规则生成和多轮 Change 纠正等开放式生成任务则允许云端前置生成结构化草案，再回到端侧完成设备、空间、协议、Schema 与安全校验。对于门锁、门禁、摄像头布防/撤防等家庭安全相关指令，系统不采用“高置信度直接执行”策略，而是无论置信度高低都先进入澄清确认链路。在理解链路上，BSR 广召回模块以规则、向量、历史记忆三路并行方式快速定位候选动作；LSR 轻量重排序模块以 5 维环境与偏好特征完成上下文感知排序；DQN 主动推荐模块则负责在合适时机给出场景级建议。在记忆设计上，系统采用“会话上下文 + 结构化偏好 + 可检索长期记忆”的三层记忆结构，将家庭场景中天然短小、事件驱动的经验条目作为原子化记忆单元直接存储与检索，避免长文档切块管理开销，同时显著降低写回复杂度与索引成本。
+在总体架构上，HomeMind 采用“端侧优先、端云协同增强”的设计思路：常规设备控制、场景切换和信息查询先由本地 BSR 召回与 LSR 重排序缩小候选空间，再由 Router 按置信度决定本地直达、云端协同或澄清询问；低代码场景新建、TAP 自动化规则生成和多轮 Change 纠正等开放式生成任务则允许云端前置生成结构化草案，再回到端侧完成设备、空间、Schema 与安全校验。当前主链已在 BSR-LSR-Router-LLM-Execution 之外补齐输入注入检测、动态工具注册、运行时策略引擎、零信任身份上下文、审计记录与事务回滚能力。对于门锁、门禁、摄像头布防/撤防等家庭安全相关指令，系统不采用“高置信度直接执行”策略，而是无论置信度高低都先进入澄清确认链路。在理解链路上，BSR 广召回模块以规则、向量、历史记忆三路并行方式快速定位候选动作；LSR 轻量重排序模块以 5 维环境与偏好特征完成上下文感知排序；DQN 主动推荐模块则负责在合适时机给出场景级建议。在记忆设计上，系统采用“会话上下文 + 结构化偏好 + 可检索长期记忆”的三层记忆结构，并将长期记忆升级为按来源分库、带可信度分级、支持冲突检测、时序摘要和语义压缩的本地 RAG 组件，以短条目、事件化、可写回的方式沉淀家庭经验。
 
-本方案的设计亮点主要体现在三个方面：第一，以 BSR-LSR-Router-LLM-Execution 为主链，形成可解释、可编排、可持续写回的端侧 Agent 闭环；第二，以“短记忆直存直检 + 轻量重排序 + RAG 上下文注入”替代重型长文档 RAG 流程，在保持资源友好的同时增强复杂语义理解能力；第三，以固定 JSON 输出、命令约束校验、最小必要上下文上传与本地加密存储构建可控执行链路，使系统既具备智能性，也具备家庭场景所要求的稳定性与隐私友好性。
+本方案的设计亮点主要体现在三个方面：第一，以主链集成的安全与执行治理能力构成可解释、可编排、可审计、可回滚的端侧 Agent 闭环；第二，以“短记忆直存直检 + 轻量重排序 + 来源感知 RAG 上下文注入”替代重型长文档 RAG 流程，在保持资源友好的同时增强复杂语义理解能力；第三，以固定 JSON 输出、命令约束校验、最小必要上下文上传、本地加密存储、运行时策略拦截和零信任身份约束构建可控执行链路，使系统既具备智能性，也具备家庭场景所要求的稳定性与隐私友好性。
 
 \vspace{1em}
 \noindent\textbf{关键词：} 端侧AI；智能体；轻量化模型；本地知识库；RAG；端云协同；家庭场景；Schema 校验；深度Q网络
@@ -201,11 +201,11 @@
 \chapter*{Abstract}
 \addcontentsline{toc}{chapter}{Abstract}
 
-As edge AI matures, smart home systems are shifting from simple connected devices to always-on household agents. HomeMind is designed as an edge-first smart home agent for resource-constrained terminals, with the goal of building a complete on-device control loop that combines natural language understanding, context memory, preference adaptation, structured decision making, and device execution under a 4 GB competition memory cap and a typical 1--2 GB runtime budget.
+As edge AI matures, smart home systems are shifting from simple connected devices to always-on household agents. HomeMind is designed as an edge-first smart home agent for resource-constrained terminals, with the goal of building a complete on-device control loop that combines natural language understanding, context memory, preference adaptation, structured decision making, and device execution under a target 4 GB edge memory budget and a typical 1--2 GB runtime budget.
 
-Architecturally, HomeMind follows an “edge-first with cloud enhancement” strategy. For ordinary control tasks, the system first uses local BSR recall and LSR re-ranking, then lets the Router decide whether to complete locally, call the cloud, or ask for clarification. For open-ended low-code tasks such as scene creation, TAP rule generation, and multi-turn Change correction, the cloud can be invoked earlier to draft structured configurations, which are then validated locally against devices, spaces, protocols, schemas, and safety constraints. Safety-sensitive actions such as door locks, access control, and security arming or disarming always require clarification regardless of confidence. In memory design, the system adopts a three-layer structure of session context, structured preferences, and retrievable long-term memory. Household experience is stored as short atomic memory items rather than long-document chunks, which keeps write-back simple, retrieval efficient, and indexing overhead low for edge deployment.
+Architecturally, HomeMind follows an “edge-first with cloud enhancement” strategy. For ordinary control tasks, the system first uses local BSR recall and LSR re-ranking, then lets the Router decide whether to complete locally, call the cloud, or ask for clarification. For open-ended low-code tasks such as scene creation, TAP rule generation, and multi-turn Change correction, the cloud can be invoked earlier to draft structured configurations, which are then validated locally against devices, spaces, schemas, and safety constraints. The main chain now integrates prompt-injection screening, dynamic tool registration, runtime policy enforcement, zero-trust identity context, audit logging, and transactional rollback on top of the original BSR-LSR-Router-LLM-Execution pipeline. Safety-sensitive actions such as door locks, access control, and security arming or disarming always require clarification regardless of confidence. In memory design, the system adopts a three-layer structure of session context, structured preferences, and retrievable long-term memory. The local knowledge base is upgraded with source buckets, trust scoring, conflict detection, time-series summaries, and semantic context compression, while household experience continues to be stored as short atomic memory items rather than long-document chunks.
 
-The design highlights are threefold. First, the system builds a full edge-agent loop that is modular, interpretable, and execution-oriented. Second, it uses direct short-memory retrieval, lightweight contextual re-ranking, and RAG context injection to strengthen lightweight models without introducing a heavy long-document RAG stack. Third, it combines fixed JSON outputs, command validation, minimal-context upload, and local encrypted storage to form a controllable and privacy-friendly decision pipeline for home environments.
+The design highlights are threefold. First, the system builds a full edge-agent loop that is modular, interpretable, auditable, rollback-capable, and execution-oriented. Second, it uses direct short-memory retrieval, lightweight contextual re-ranking, and source-aware RAG context injection to strengthen lightweight models without introducing a heavy long-document RAG stack. Third, it combines fixed JSON outputs, command validation, minimal-context upload, local encrypted storage, runtime policy checks, and zero-trust identity constraints to form a controllable and privacy-friendly decision pipeline for home environments.
 
 \vspace{1em}
 \noindent\textbf{Keywords:} edge AI; intelligent agent; lightweight model; local knowledge base; RAG; edge-cloud collaboration; home scenario; Schema validation; Deep Q-Network
@@ -219,15 +219,13 @@ The design highlights are threefold. First, the system builds a full edge-agent 
 
 \section{项目背景}
 
-HomeMind 面向家庭终端算力受限、隐私敏感且交互实时性要求较高的运行条件，构建一套稳定运行的端侧智能体系统。结合家庭场景中高频指令明确、模糊意图占比较低、设备控制结果必须可验证等特点，系统采用“端侧优先、端云协同增强”的总体思路，将高频、明确、可校验的任务保留在端侧闭环完成，将少量复杂语义理解任务交由协同模块增强处理。
+在端侧 AI 与智能体技术快速发展的背景下，如何在算力、内存与网络预算受限的终端环境中，提供高响应、强理解、可执行、可持续运行的场景服务，已经成为智能系统落地的核心问题。HomeMind 选择家庭终端作为主场景，不是把语音、问答和设备控制简单拼接，而是把自然语言理解、候选召回、结构化决策、工具执行、记忆写回与运行时治理整合为一条完整主链，让智能体在本地设备上形成持续可用的服务能力。
 
-在该设计思路下，系统需要同时满足以下技术约束：第一，满足赛题 4 GB 内存上限以及系统常态业务预算 1--2 GB 的资源限制，内存验证采用进程 RSS 峰值作为赛题判定口径；在 Python 3.10 + PyTorch 2.6.0 测试环境下，当前端侧 Web Agent 加载 embedding 模型并完成查询后的实测峰值为 1240.40 MB，Core Agent 实测峰值为 1223.14 MB，均低于 4 GB 赛题上限；第二，在家庭交互场景下维持较低推理时延，当前测试结果表明端侧推理 P50 延迟低于 50 ms、P99 延迟低于 200 ms；第三，兼顾本地直达能力与复杂场景处理能力，本地直达成功率达到 92\% 以上；第四，通过 Router 置信度路由、Token 压缩和 Schema 校验控制云端协同范围，使云端调用成本降低 60\% 以上，并减少隐私暴露；第五，建立安全敏感设备的强制澄清规则，门锁、门禁、安防布撤防等动作必须先获得用户确认，不能仅凭模型置信度或召回得分直接执行。
+家庭场景具有高频交互、强上下文依赖、隐私敏感、成员表达差异大和结果可即时验证等特征，对端侧智能体提出了更高要求。用户希望通过自然语言直接完成设备控制、场景切换、信息查询和自动化配置，希望交互接近本地即时响应，希望家庭偏好、历史习惯和上下文状态沉淀在本地，希望系统能够理解口语、方言与跨年龄表达。围绕这些真实需求，HomeMind 采用“端侧优先、端云协同增强”的总体路线：高频明确任务在端侧闭环处理，复杂生成任务由云端输出结构化草案，再由端侧完成校验、执行与记忆更新。
 
-从行业背景看，端侧 AI 与智能体技术正在从“能不能做”转向“能不能稳定落地”。中兴通讯面向家庭终端场景提出的赛题，本质上要求参赛方案同时回答三个问题：是否足够轻量、是否足够智能、是否足够工程化。家庭场景之所以适合作为验证阵地，是因为其既有真实需求，也有明确约束。用户希望用自然语言完成设备控制、场景切换和信息查询，但又无法接受纯云架构带来的 200--500 ms 网络往返时延，更无法接受家庭上下文被完整上传。与此同时，真实家庭环境中的交互对象并不统一，不同年龄层、不同地域背景的家庭成员会使用带有口语化、方言化特征的表达，例如“闷得慌”“热死咯”“困告了”等。若系统只能理解标准化命令词，则会显著提高老人、儿童和区域方言用户的使用门槛，难以体现家庭场景下的人本交互价值。
+这一能力并不局限于家庭场景。校园、企业、宿舍、公寓、前台服务台等环境，同样存在大量依赖本地响应、轻量部署和多设备联动的场景服务需求。HomeMind 围绕“场景入口智能体”这一方向，构建了可编排主链、动态工具注册、来源感知的本地 RAG、运行时策略引擎、审计检索和事务回滚能力，使系统既能服务家庭智能中枢与家庭网关，也具备向更多本地化服务终端迁移的工程基础与应用空间。
 
-端侧智能体在家庭终端上的落地需要同时处理多类工程约束。第一，算力和内存有限，大参数量模型需要通过轻量化链路承接；第二，指令表达高度口语化、多样化，并伴随方言和习惯性说法，需要语言归一化与历史记忆共同增强；第三，家庭成员之间在表达方式、偏好和作息上存在差异，系统既要识别命令，也要体现对不同使用者的适配能力；第四，家庭设备控制涉及安全，系统输出必须可校验、可约束；第五，用户容错率低，交互必须足够快、足够稳。HomeMind 选择以“轻量模型 + 方言/口语归一化 + 检索增强 + 置信度路由 + 安全校验”的组合方案完成端侧落地。
-
-本项目的价值体现在一条完整、可解释、可验证的端侧智能体闭环：输入经由本地感知与语言归一化后，常规控制任务先由 BSR 广召回和 LSR 轻量精排完成候选理解，再由 Router 决定本地直达、云端协同或澄清询问路径；低代码配置类任务则由云端先生成草案，再由端侧完成设备、空间、协议和安全校验，最终通过结构化决策与工具执行落到真实设备控制、空间映射和记忆更新。这一设计直接对应赛题要求的场景理解与任务规划、工具调用与资源整合、多轮对话与状态保持、高效推理与实时响应四大能力，也使系统能够在家庭成员表达差异较大的条件下保持较低使用门槛。
+从资源效率看，HomeMind 以轻量部署和持续运行成本控制为前提进行设计。系统在 Python 3.10 + PyTorch 2.6.0 测试环境下，端侧 Web Agent 加载 embedding 模型并完成查询后的实测峰值为 1240.40 MB，Core Agent 实测峰值为 1223.14 MB，稳定落在既定 4 GB 端侧内存预算内；端侧推理 P50 延迟低于 50 ms、P99 延迟低于 200 ms，本地直达成功率达到 92\% 以上；通过 Router 置信度路由、Token 压缩和 Schema 校验压缩云端协同范围，使云端调用成本下降 60\% 以上。基于这一组结果，HomeMind 在同一套架构中同时实现了轻量部署、高效响应和可持续成本控制。
 
 \begin{figure}[H]
     \centering
@@ -244,7 +242,7 @@ HomeMind 面向家庭终端算力受限、隐私敏感且交互实时性要求�
 
 \section{项目目标}
 
-本项目的总体目标是在家庭终端场景下验证轻量端侧智能体方案的工程可行性、交互可用性与架构可扩展性。除准确率、时延和资源占用外，系统还需体现面对家庭成员差异时的可达性，即在保留端侧部署约束的前提下，对口语化、方言化表达提供稳定理解能力。结合系统方案设计与项目测试方法，整体目标可分解为表 \ref{tab:chapter1-goals} 所示的五项核心目标。
+本项目的总体目标是在家庭终端场景下交付一套同时体现创新性、应用价值和低成本优势的端侧智能体方案。创新上，项目要把 BSR/LSR、动态工具注册、来源感知 RAG、运行时策略和零信任执行链整合为统一主链，形成区别于单点语音控制和单次问答代理的系统能力；价值上，项目要把自然语言控制、场景编排、信息查询、长期记忆和自动化生成组织为可持续使用的家庭智能入口；成本上，项目要在端侧资源预算内保持高响应速度、高本地完成率和低云协同开销。结合系统方案设计与项目测试方法，整体目标可分解为表 \ref{tab:chapter1-goals} 所示的五项核心目标。
 
 \begin{table}[H]
     \centering
@@ -254,29 +252,29 @@ HomeMind 面向家庭终端算力受限、隐私敏感且交互实时性要求�
         \toprule
         目标维度 & HomeMind 的目标定义 & 关键验证指标 \\
         \midrule
-        场景理解能力 & 将自然语言输入稳定映射为候选动作、结构化决策与可执行指令 & 本地直达成功率 92\% 以上，支持设备控制、场景切换、信息查询三类高频意图 \\
-        语言适配能力 & 对家庭场景中的口语表达、常见方言词和英文控制表达进行识别与归一化 & 通过语言归一化层将“闷得慌”“热死咯”“困告了”等表达映射为标准命令词 \\
-        轻量部署能力 & 在端侧资源约束下维持低延迟推理与多模块协同 & Python 3.10 + PyTorch 2.6.0 测试环境实测 RSS 峰值 1240.40 MB，P50 $<$ 50 ms，P99 $<$ 200 ms \\
-        系统闭环能力 & 形成从感知、决策、执行到反馈写回的完整链路 & 统一 execute 接口、WebSocket 实时反馈、RAG 写回与偏好学习闭环 \\
-        隐私安全能力 & 在最小必要上传前提下实现复杂意图协同，并保证结果可控；安全敏感设备必须先澄清确认 & Token 节省约 60\%，云端结果必须经过 Schema 校验后方可执行，门锁/门禁/安防类动作无论置信度均不直接执行 \\
+        创新能力 & 构建区别于单点设备控制的端侧智能体主链，将检索、路由、工具、记忆与安全治理整合为统一系统 & 动态工具注册、来源分库 RAG、运行时策略引擎、审计检索与事务回滚全部接入主链 \\
+        场景价值能力 & 将自然语言输入稳定映射为候选动作、结构化决策与可执行指令，形成家庭智能入口 & 本地直达成功率 92\% 以上，支持设备控制、场景切换、信息查询三类高频意图 \\
+        语言适配能力 & 对家庭场景中的口语表达、常见方言词和英文控制表达进行识别与归一化，提升全家庭可用性 & 通过语言归一化层将“闷得慌”“热死咯”“困告了”等表达映射为标准命令词 \\
+        轻量成本能力 & 在端侧资源约束下维持低延迟推理与多模块协同，并压缩云端调用开销 & Python 3.10 + PyTorch 2.6.0 测试环境实测 RSS 峰值 1240.40 MB，P50 $<$ 50 ms，P99 $<$ 200 ms，云端调用成本下降 60\% 以上 \\
+        系统闭环能力 & 形成从感知、决策、执行到反馈写回的完整链路，支撑持续运营与持续学习 & 统一 execute 接口、WebSocket 实时反馈、RAG 写回、偏好学习和安全执行闭环 \\
         \bottomrule
     \end{tabularx}
 \end{table}
 
-围绕上述目标，系统在能力设计上进一步强调六项要求：高频明确指令应优先在端侧闭环完成；低代码场景新建、自动化规则生成和 Change 纠正等开放式生成任务可以先调用云端生成草案，再在端侧进行校验和确认；语言输入需要经过口语和方言归一化处理，以降低不同家庭成员的使用门槛；工具调用、设备执行与反馈写回应被纳入同一主链；会话上下文与长期偏好需要联合建模；系统输出必须结构化且可校验，且家庭安全相关动作必须进入澄清确认，以保证后续执行阶段的安全性与稳定性。
+围绕上述目标，系统在能力设计上进一步强调六项要求：高频明确指令应优先在端侧闭环完成；低代码场景新建、自动化规则生成和 Change 纠正等开放式生成任务可以先调用云端生成草案，再在端侧进行校验和确认；语言输入需要经过口语和方言归一化处理，以降低不同家庭成员的使用门槛；工具调用、设备执行与反馈写回应被纳入同一主链，并通过动态注册表完成统一分发；会话上下文与长期偏好需要联合建模，长期记忆还需具备来源可信度、冲突检测与时序摘要能力；系统输出必须结构化且可校验，且家庭安全相关动作必须进入澄清确认，并接受运行时策略、身份和审计约束，以保证后续执行阶段的安全性与稳定性。
 
 \section{关键创新与技术特征}
 
 HomeMind 的技术特征体现在轻量化、检索增强、端云协同与执行安全之间形成统一闭环。本项目在系统层面形成以下几项关键创新。
 
 \begin{enumerate}
-    \item \textbf{端侧优先的轻量智能体闭环。} 系统采用 BSR 广召回、LSR 轻量精排、Router 路由、LLM 结构化决策和执行层工具编排构成分层链路，将高频明确任务前移到低成本模块完成。
+\item \textbf{端侧优先的轻量智能体闭环。} 系统采用 BSR 广召回、LSR 轻量精排、Router 路由、LLM 结构化决策和执行层工具编排构成分层链路，并在主链中补齐注入检测、策略引擎、零信任身份、审计与事务回滚能力，将高频明确任务前移到低成本模块完成。
     \item \textbf{面向家庭成员差异的语言适配机制。} 系统在交互主链中引入语言归一化层，对常见方言词、口语表达和英文控制语句进行标准化映射。该机制通过“离线 ASR + 端侧归一化规则”的组合，在保持资源占用可控的同时提升对老人、儿童和区域方言用户的可用性。
-    \item \textbf{基于上下文记忆的轻量理解机制。} 系统在 BSR 阶段并行引入规则召回、向量召回和历史召回，在 LSR 阶段注入环境特征与用户偏好，在 LLM 阶段叠加本地 RAG 上下文，以“候选动作 + 记忆证据 + 环境状态”的组合方式完成理解增强。该机制将复杂理解任务拆解到召回、重排序与结构化决策三个子环节，使轻量模型也能获得更稳定的家庭场景理解能力。
-    \item \textbf{置信度驱动的端云协同路径。} 系统依据任务类型与置信度将请求划分为本地直达、云端协同和澄清询问三类处理分支：常规控制任务先经 BSR/LSR 后再决定是否上云，避免把高频明确指令交给高成本模型；低代码场景新建、自动化规则生成和 Change 纠正等生成型任务则允许云端前置生成草案，再由端侧校验。该策略在响应时延、调用成本与处理鲁棒性之间取得平衡。
+\item \textbf{基于上下文记忆的轻量理解机制。} 系统在 BSR 阶段并行引入规则召回、向量召回和历史召回，在 LSR 阶段注入环境特征与用户偏好，在 LLM 阶段叠加来源分库、可信度分级、冲突检测和时序摘要增强后的本地 RAG 上下文，以“候选动作 + 记忆证据 + 环境状态”的组合方式完成理解增强。该机制将复杂理解任务拆解到召回、重排序与结构化决策三个子环节，使轻量模型也能获得更稳定的家庭场景理解能力。
+\item \textbf{置信度驱动的端云协同路径。} 系统依据任务类型与置信度将请求划分为本地直达、云端协同和澄清询问三类处理分支：常规控制任务先经 BSR/LSR 后再决定是否上云，避免把高频明确指令交给高成本模型；低代码场景新建、自动化规则生成和 Change 纠正等生成型任务则允许云端前置生成草案，再由端侧校验。端侧执行前还需经过身份授权、策略评估、异常频率检测与审计登记，从而在响应时延、调用成本与处理鲁棒性之间取得平衡。
     \item \textbf{面向家庭短经验的原子化记忆设计。} HomeMind 将“用户纠正过的说法”“已经接受的设备操作”“重复出现的生活习惯”视为天然短小的经验单元，直接以原子条目写入本地长期记忆。这样的记忆组织方式天然适配家庭场景中的短文本、高频次、强复用经验，既便于快速写回，也便于在后续查询中稳定复用，从而让记忆层真正服务于长期上下文适配。
     \item \textbf{上下文感知的轻量重排序。} 系统将 BSR 原始得分、时间、温湿度和用户偏好融合为 5 维特征，构成可解释、可增量更新的轻量重排序器。该设计能够把“晚上更倾向睡眠模式”“高温时优先空调而非开窗”这类家庭环境知识显式编码进排序逻辑，使排序结果同时具备相关性和情境适配性。
-    \item \textbf{结构化可控的执行链路。} 系统将最小必要上传、本地加密存储、固定 JSON 决策输出与命令约束校验嵌入主链，使模型输出天然面向执行层消费，并稳定落地为设备动作、场景编排、TAP 规则和空间设备映射。对于门锁、门禁、摄像头布防/撤防等家庭安全动作，执行链路额外设置高优先级澄清门控，必须获得用户明确确认后才允许进入工具调用。
+\item \textbf{结构化可控的执行链路。} 系统将最小必要上传、本地加密存储、固定 JSON 决策输出、命令约束校验、动态工具注册、运行时策略拦截、审计记录与事务回滚嵌入主链，使模型输出天然面向执行层消费，并稳定落地为仿真设备动作、场景编排、TAP 规则和空间设备映射。对于门锁、门禁、摄像头布防/撤防等家庭安全动作，执行链路额外设置高优先级澄清门控，必须获得用户明确确认后才允许进入工具调用。
     \item \textbf{体现人本导向的长期适配能力。} 系统通过偏好记忆、历史纠正写回和澄清询问机制，在不增加使用负担的前提下持续贴近家庭成员的表达习惯与操作偏好，使“能用”进一步转化为“更易用、更愿意用”。
     \item \textbf{可量化的系统测试结果。} 当前测试结果表明，系统在端侧模拟环境下具备毫秒级 API 响应能力，批量指令数据集总体匹配率为 100.00\%，端侧 API P95 延迟为 10.643 ms；同时，项目通过 125 个自动化回归测试用例，为后续测试结果分析提供了量化基础。
 \end{enumerate}
@@ -287,7 +285,7 @@ HomeMind 的技术特征体现在轻量化、检索增强、端云协同与执�
 
 \chapter{需求分析}
 
-需求分析的目的在于从赛题要求与家庭场景约束出发，明确系统需要满足的能力范围、性能指标与实现条件。对于家庭智能体而言，这些约束来自算力、时延、隐私和用户群体差异。基于此，HomeMind 将需求拆解为场景约束、功能需求和非功能需求三个层次。
+需求分析的目的在于从目标终端约束与家庭场景约束出发，明确系统需要满足的能力范围、性能指标与实现条件。对于家庭智能体而言，这些约束来自算力、时延、隐私和用户群体差异。基于此，HomeMind 将需求拆解为场景约束、功能需求和非功能需求三个层次。
 
 \section{需求来源与约束分解}
 
@@ -318,7 +316,7 @@ HomeMind 的技术特征体现在轻量化、检索增强、端云协同与执�
 
 \textbf{2. 语言适配与方言归一化。} 系统必须对家庭场景中的口语化、方言化和中英文混合表达提供识别与归一化能力，将“闷得慌”“热死咯”“困告了”等表达映射为标准命令词或标准语义意图。该能力在端侧资源可承受的条件下，降低不同地域用户和老年用户的使用门槛。
 
-\textbf{3. 工具调用与资源整合。} 系统必须封装统一的工具调用接口，支持设备控制、场景切换、信息查询和知识检索四类能力。DeviceController、SceneSwitcher、InfoQuery 等工具通过统一的 execute 接口接入，使 Router 与 LLM 决策层能够稳定编排多类工具。
+\textbf{3. 工具调用与资源整合。} 系统必须封装统一的工具调用接口，支持设备控制、场景切换、信息查询和知识检索四类能力。当前实现通过配置驱动的 ToolRegistry 统一管理工具元数据与绑定关系，已注册设备控制、场景切换和信息查询三类工具；Router 与 LLM 决策层不再直接硬编码分支，而是经由统一注册表完成工具解析、权限判定和执行分发。
 
 \textbf{4. 多轮对话与状态保持。} 系统必须维护会话上下文状态和跨会话用户偏好，处理指代消解、任务延续和偏好记忆。也就是说，系统不应把每轮指令视为孤立输入，而应结合 HomeContext、SessionStore、PreferenceStore 和 KnowledgeBase 形成短期状态与长期记忆联动。该能力同时支撑系统对不同家庭成员表达习惯的持续适配。
 
@@ -328,7 +326,7 @@ HomeMind 的技术特征体现在轻量化、检索增强、端云协同与执�
 
 除功能闭环外，系统还必须满足以下非功能要求。
 
-\textbf{1. 资源约束。} 在赛题 4 GB 内存上限下，系统常态业务预算控制在 1--2 GB 以内。当前 Python 3.10 + PyTorch 2.6.0 测试环境按照进程 RSS 峰值实测，Web Agent 加载 embedding 模型并完成查询后的峰值为 1240.40 MB，Core Agent 峰值为 1223.14 MB，仍处于 4 GB 上限与 1--2 GB 常态业务预算以内。为此，LSR 参数量控制在 5 MB 以下，DQN 参数量约 2,000，向量模型和语音模型均采用按需加载策略；llama.cpp 本地大模型链路需在安装 \texttt{llama\_cpp} 并提供 GGUF 模型文件后单独复测。
+\textbf{1. 资源约束。} 在 4 GB 端侧内存上限下，系统常态业务预算控制在 1--2 GB 以内。当前 Python 3.10 + PyTorch 2.6.0 测试环境按照进程 RSS 峰值实测，Web Agent 加载 embedding 模型并完成查询后的峰值为 1240.40 MB，Core Agent 峰值为 1223.14 MB，仍处于 4 GB 上限与 1--2 GB 常态业务预算以内。为此，LSR 参数量控制在 5 MB 以下，DQN 参数量约 2,000，向量模型和语音模型均采用按需加载策略；llama.cpp 本地大模型链路需在安装 \texttt{llama\_cpp} 并提供 GGUF 模型文件后单独复测。
 
 \textbf{2. 隐私与安全。} 系统必须遵循数据最小化原则。用户偏好、历史反馈和上下文状态优先落地到本地 JSON 或 ChromaDB，本地知识库存储支持加密保护；需要云端协同时，上传压缩后的最小必要上下文，且云端返回结果必须经过 Schema 校验后方可执行。安全敏感设备采用强制澄清策略：凡涉及门锁、门禁、摄像头布防/撤防、安防报警开关等动作，无论本地召回得分、LSR 置信度或云端判断置信度多高，都不直接执行，而是先向用户确认目标设备、空间和动作。
 
@@ -588,7 +586,7 @@ LLM 决策模块支持三种后端模式切换：
 
 Mock 模式（默认，用于演示和测试）基于确定性规则映射，根据候选动作的 action 字段直接查 DEVICE\_ACTION\_MAP 和 SCENE\_ACTION\_MAP 生成决策结果，响应时间约 1--5 ms。
 
-llama.cpp 模式（用于本地推理）在端侧加载 GGUF 格式量化模型（如 Qwen2.5-0.5B-Instruct-Q4\_K\_M），通过少量 GPU 或纯 CPU 推理生成决策结果。模型量化（INT4/INT8）可将内存占用从 FP16 的数 GB 降至数百 MB，适合端侧部署。
+llama.cpp 模式（用于本地推理）在端侧加载 GGUF 格式量化模型，通过少量 GPU 或纯 CPU 推理生成决策结果。当前系统已内置两档端侧预设：默认预设为 Qwen2.5-1.5B-Instruct-Q4\_K\_M，可选预设为 Qwen2.5-3B-Instruct-Q4\_K\_M；两档预设均使用 llama.cpp 后端、2048 上下文窗口、4 线程和 0 GPU layers 配置。模型量化（INT4/INT8）可将内存占用从 FP16 的数 GB 降至数百 MB 量级，适合端侧部署。
 
 OpenAI 兼容 API 模式（用于云端协同）对接支持 OpenAI API 格式的大模型服务，推理能力更强，需要网络通信和最小必要上下文上传。该模式有两种触发位置：常规控制任务由 Router 在 BSR/LSR 之后、置信度不足以本地直达但仍具备候选基础时触发；低代码场景新建、TAP 自动化规则生成和 Change 纠正等开放式生成任务可在草案生成阶段前置触发，但返回结果只作为待校验草案，不能绕过本地设备、空间、协议、Schema 和安全校验。
 
@@ -618,7 +616,7 @@ DeviceController 是设备动作执行的统一入口类，封装了空调、灯
 
 \texttt{execute} 方法接收设备名称、动作类型和参数字典三个参数，内部再根据动作类型分发到对应私有方法，例如开启、关闭和参数调节。所有数值型参数（温度、亮度、音量、风速）均需先通过安全范围校验后方可执行，参数范围统一定义在 Schema 校验层中。
 
-DeviceController 支持协议网关注入。当传入 \texttt{protocol\_gateway} 参数时，每次状态变更后都会自动同步到真实设备；其中 \texttt{push\_to\_gateway} 负责推送状态变更，\texttt{sync\_from\_gateway} 负责在查询前拉取最新状态。空间设备校验层负责把户型图中的 entity id、设备类型和区域名映射到系统语义设备，例如将 \texttt{light.media\_zone} 映射为“灯光”，将 \texttt{climate.living\_room\_ac} 映射为“空调”。
+DeviceController 仍保留协议网关注入扩展点，但当前已验证路径为仿真模式：当传入 \texttt{protocol\_gateway} 参数时，可将状态变更同步到仿真网关或测试桩；其中 \texttt{push\_to\_gateway} 负责推送状态变更，\texttt{sync\_from\_gateway} 负责在查询前拉取最新状态。空间设备校验层负责把户型图中的 entity id、设备类型和区域名映射到系统语义设备，例如将 \texttt{light.media\_zone} 映射为“灯光”，将 \texttt{climate.living\_room\_ac} 映射为“空调”。
 
 设备控制结果的返回格式统一为包含 status、message、device、action 和 state 等字段的 JSON 对象，前端根据 status 字段决定展示成功提示、错误提示或状态更新动画。
 
@@ -668,11 +666,11 @@ TAPEngine.evaluate 方法接收规则列表与上下文快照，遍历每条规�
 
 \section{端侧内存占用测试}
 
-为验证系统是否满足赛题 4 GB 内存上限，本项目不采用模型文件大小或参数量估算作为最终依据，而是以运行进程的 RSS 峰值作为判定口径。RSS 能够覆盖 Python 解释器、PyTorch 运行时、embedding 模型权重、ChromaDB 客户端、业务对象、缓存和一次真实查询后的运行态占用，更接近端侧部署时需要预留的实际内存。
+为验证系统是否满足 4 GB 端侧部署上限，本项目不采用模型文件大小或参数量估算作为最终依据，而是以运行进程的 RSS 峰值作为判定口径。RSS 能够覆盖 Python 解释器、PyTorch 运行时、embedding 模型权重、ChromaDB 客户端、业务对象、缓存和一次真实查询后的运行态占用，更接近端侧部署时需要预留的实际内存。
 
 测试在 Python 3.10 + PyTorch 2.6.0 环境中执行，主要依赖包括 sentence-transformers、ChromaDB、psutil 和 Flask。测试脚本位于 \texttt{tools} 目录，采用独立子进程方式运行不同 profile，并在关键阶段记录 RSS：进程启动、模块导入、Agent 初始化、模型加载、向量写入、矩阵计算以及查询完成后。使用独立子进程的原因是避免多个重型依赖在同一 Python 进程中复用运行时缓存，从而影响分项峰值判断。
 
-测试设计分为端到端链路和组件链路两类。端到端链路覆盖 Web Agent、Core Agent 和 Full Local 三种运行形态，用于回答“系统整体运行是否满足 4 GB 上限”；组件链路覆盖 ChromaDB 和 PyTorch，用于观察主要依赖的单项开销。单独 embedding profile 在当前环境中存在长时间等待现象，但端到端 Web Agent 和 Full Local profile 已经实际加载 \texttt{all-MiniLM-L6-v2}，并在日志中出现 BertModel 加载记录，因此 embedding 开销已被纳入端到端峰值，不再作为必要的单项通过条件。
+测试设计分为端到端链路和组件链路两类。端到端链路覆盖 Web Agent、Core Agent 和 Full Local 三种运行形态，用于回答“系统整体运行是否满足 4 GB 端侧上限”；组件链路覆盖 ChromaDB 和 PyTorch，用于观察主要依赖的单项开销。单独 embedding profile 在当前环境中存在长时间等待现象，但端到端 Web Agent 和 Full Local profile 已经实际加载 \texttt{all-MiniLM-L6-v2}，并在日志中出现 BertModel 加载记录，因此 embedding 开销已被纳入端到端峰值，不再作为必要的单项通过条件。
 
 \begin{table}[H]
     \centering
@@ -691,9 +689,9 @@ TAPEngine.evaluate 方法接收规则列表与上下文快照，遍历每条规�
     \end{tabularx}
 \end{table}
 
-从测试结果看，当前最高 RSS 峰值出现在 Web Agent 端到端链路，为 1240.40 MB，约占 4096 MB 上限的 30.28\%。该结果已经覆盖 Flask Web 层、HomeMind Agent 初始化、sentence-transformers embedding 模型加载和批量查询后的运行态内存，能够作为当前端侧主链路满足赛题内存约束的主要证据。Core Agent 峰值为 1223.14 MB，与 Web Agent 接近，说明主要内存开销来自模型与 Agent 运行态，而非 Web 服务框架本身。
+从测试结果看，当前最高 RSS 峰值出现在 Web Agent 端到端链路，为 1240.40 MB，约占 4096 MB 上限的 30.28\%。该结果已经覆盖 Flask Web 层、HomeMind Agent 初始化、sentence-transformers embedding 模型加载和批量查询后的运行态内存，能够作为当前端侧主链路满足目标终端内存约束的主要证据。Core Agent 峰值为 1223.14 MB，与 Web Agent 接近，说明主要内存开销来自模型与 Agent 运行态，而非 Web 服务框架本身。
 
-需要说明的是，本轮测试未包含 llama.cpp 本地大模型权重加载。若最终方案启用本地 GGUF 模型，则必须在安装 \texttt{llama\_cpp} 并指定模型文件后重新运行 llama.cpp profile 和 full local profile，不能将当前 1240.40 MB 结果扩展解释为包含本地 LLM 后端的最终峰值。
+需要说明的是，本轮测试未包含 llama.cpp 本地大模型权重加载。当前已嵌入的端侧预设为 Qwen2.5-1.5B-Instruct-Q4\_K\_M 和 Qwen2.5-3B-Instruct-Q4\_K\_M，两档预设统一采用 2048 上下文和 4 线程；若最终方案启用本地 GGUF 模型，则必须在安装 \texttt{llama\_cpp} 并指定模型文件后重新运行 llama.cpp profile 和 full local profile，生成对应的峰值 RSS、首次推理时延和稳态 p95 指标，不能将当前 1240.40 MB 结果扩展解释为包含本地 LLM 后端的最终峰值。
 
 \section{响应延迟优化}
 
@@ -732,7 +730,7 @@ Matter 协议适配类（MatterProtocol）支持 Matter 标准智能家居设备
 
 工具函数采用注册制管理，新增工具在工具注册表中添加元信息（名称、描述、参数规格、权限级别）后，即可被系统自动识别和调用。
 
-工具的扩展点包括：新增设备类型（在 SVG 户型图设备映射表中新增 entity、type、area 与可选显示名，并在语义设备映射规则中补充类型匹配）、新增场景类型（在 SCENE\_CONFIGS 字典中添加场景配置）、新增信息查询类型（在 InfoQuery.execute 方法中添加分支处理）。扩展过程以户型图设备表为真实设备来源，避免仅修改 DeviceController.state 后出现“代码支持但家庭中不存在”的误执行问题。
+工具的扩展点包括：新增设备类型（在 SVG 户型图设备映射表中新增 entity、type、area 与可选显示名，并在工具注册表和语义设备映射规则中补充类型匹配）、新增场景类型（在 SCENE\_CONFIGS 字典或工具配置中添加场景定义）、新增信息查询类型（在 InfoQuery.execute 方法中添加分支处理并补充注册元数据）。扩展过程以户型图设备表和仿真注册表为执行来源，避免仅修改 DeviceController.state 后出现“代码支持但当前仿真家庭中不存在”的误执行问题。
 
 \section{模型后端扩展能力}
 
@@ -792,11 +790,11 @@ LLM 决策模块支持三种后端模式（Mock、llama.cpp、OpenAI API），�
 
 系统维护三层记忆结构。三层记忆分别对应“当前轮交互是否连贯”“长期偏好是否稳定”“历史经验是否可被再次检索复用”三个问题：
 
-\textbf{会话上下文}（HomeContext）存储在内存中，包含 hour、temperature、humidity、members\_home、day\_of\_week、last\_scene 和 devices 七个字段，每次处理用户输入后自动增量更新。
+\textbf{会话上下文}（HomeContext）存储在内存中，包含 hour、temperature、humidity、members\_home、day\_of\_week、last\_scene、current\_scene 和 devices 八个字段，每次处理用户输入后自动增量更新，用于跟踪当前场景、最近环境状态和连续多轮控制语境。
 
 \textbf{结构化偏好}（PreferenceStore）以 JSON 文件持久化存储，按 devices、scenes、recommendation 和 language 四类结构化字段维护长期偏好，支持温度、亮度、场景接受率和语言纠正映射的统一读写。
 
-\textbf{长期记忆}（KnowledgeBase + ChromaDB RAG）持久化存储用户反馈、语音纠正记录和手动添加的知识条目，支持向量语义检索、关键词回退与预设领域知识管理。长期记忆采用短条目、事件化、可写回的组织方式：每条记录都尽量对应一个明确经验、一个稳定说法或一个被接受过的动作结论。这样可以直接把长期记忆接入 BSR 历史召回、LSR 偏好打分和 LLM 上下文提示三个环节，形成“记忆即能力增强”的闭环。
+\textbf{长期记忆}（KnowledgeBase + ChromaDB RAG）持久化存储用户反馈、语音纠正记录、手动添加知识和仿真运行摘要，支持向量语义检索、关键词回退、来源分库、可信度分级、冲突检测、时序摘要和语义压缩上下文生成。长期记忆采用短条目、事件化、可写回的组织方式：每条记录尽量对应一个明确经验、一个稳定说法或一个被接受过的动作结论，并附带 \texttt{source\_bucket}、\texttt{source\_name}、\texttt{trust\_score}、\texttt{trust\_level}、\texttt{conflict} 等元数据。这样可以直接把长期记忆接入 BSR 历史召回、LSR 偏好打分和 LLM 上下文提示三个环节，形成“记忆即能力增强”的闭环。
 
 \begin{table}[H]
     \centering
@@ -820,7 +818,7 @@ LLM 决策模块支持三种后端模式（Mock、llama.cpp、OpenAI API），�
 
 设备映射支持 Tuple 和 Object 两种导入格式，经归一化处理后按 area 分组，计算每个设备在房间区域内的显示坐标。归一化处理包括 entity\_id 格式校验、area 非空校验、device\_type 支持列表校验以及可选坐标、显示名称、控制属性和区域显示名归一化。区域显示名可通过 \texttt{areaName}、\texttt{roomName} 或顶层 \texttt{areaNames} 字典维护，例如将 \texttt{living\_room} 命名为“影音区”，后续用户说“打开影音区灯”时即可命中该区域。HausRAGen 风格的设备映射数据统一存储在 \path{data/devices.json}，与户型图元数据通过 floor plan id 建立关联。
 
-设备映射数据使系统能够理解"打开客厅灯"等带房间修饰的指令，通过查询 area="living\_room" 或用户自定义区域名对应的设备列表，BSR 与执行前空间校验层可共同定位目标设备。当前实现将激活户型图及其设备映射作为自然语言控制和场景切换的真实设备来源：若当前户型图中没有对应设备，系统不会回退到内置模拟设备，而是返回明确的 unsupported/clarification 响应。设备开关功能模块同时提供设备注册表 CRUD，支持前端对设备的新增、编辑、删除、开关控制和状态刷新；设备 id 和运行态字段（如开关状态、当前状态快照）不允许通过编辑接口修改，运行期设备状态只能由控制接口写入本地注册表文件 \path{data/device-registry.json}。为适配约 100 个设备、10 个空间的演示数据规模，前端设备控制面板采用"先选择空间、再显示该空间设备"的交互方式，按 \texttt{area}/\texttt{areaName} 对设备分组，并使用紧凑设备卡片展示状态、协议、空间和开关操作；编辑表单默认折叠，以减少长列表滚动和同类设备在不同空间下的识别负担。场景配置模块也提供创建、读取、更新和删除能力，场景配置仍以结构化设备动作字典保存，并在切换时经过同一套 SVG 设备表校验。
+设备映射数据使系统能够理解"打开客厅灯"等带房间修饰的指令，通过查询 area="living\_room" 或用户自定义区域名对应的设备列表，BSR 与执行前空间校验层可共同定位目标设备。当前实现将激活户型图及其设备映射作为自然语言控制和场景切换的仿真设备来源：若当前户型图中没有对应设备，系统不会回退到内置默认设备，而是返回明确的 unsupported/clarification 响应。设备开关功能模块同时提供设备注册表 CRUD，支持前端对设备的新增、编辑、删除、开关控制和状态刷新；设备 id 和运行态字段（如开关状态、当前状态快照）不允许通过编辑接口修改，运行期设备状态只能由控制接口写入本地注册表文件 \path{data/device-registry.json}。为适配约 100 个设备、10 个空间的演示数据规模，前端设备控制面板采用"先选择空间、再显示该空间设备"的交互方式，按 \texttt{area}/\texttt{areaName} 对设备分组，并使用紧凑设备卡片展示状态、协议、空间和开关操作；编辑表单默认折叠，以减少长列表滚动和同类设备在不同空间下的识别负担。场景配置模块也提供创建、读取、更新和删除能力，场景配置仍以结构化设备动作字典保存，并在切换时经过同一套 SVG 设备表校验。
 
 \chapter{测试设计与结果分析}
 
@@ -945,25 +943,25 @@ LSR 轻量精排在环境特征引入后有效提升了候选排序质量。高�
 
 \section{项目总结}
 
-HomeMind 的核心完成度体现在一条完整而克制的能力编排链上：TAP 自动化引擎、BSR 广召回、LSR 轻量重排序、DQN 主动推荐、语言与语音识别、云端协同、上下文记忆、隐私保护、本地 RAG、SVG 户型图和设备映射共同服务于“家庭终端上的端侧 Agent 主链”。它们分别承担输入标准化、候选生成、上下文选择、主动服务、复杂意图增强、经验沉淀、空间关联和安全执行等职责，使系统既能处理高频明确命令，又能在长期使用中逐步形成更贴近家庭成员习惯的决策能力。
+HomeMind 的核心完成度体现在一条完整而克制的能力编排链上：TAP 自动化引擎、BSR 广召回、LSR 轻量重排序、DQN 主动推荐、语言与语音识别、云端协同、上下文记忆、来源感知本地 RAG、动态工具注册、注入检测、运行时策略引擎、零信任身份、审计日志、事务回滚、SVG 户型图和设备映射共同服务于“家庭终端上的端侧 Agent 主链”。它们分别承担输入标准化、候选生成、上下文选择、主动服务、复杂意图增强、经验沉淀、空间关联和安全执行等职责，使系统既能处理高频明确命令，又能在长期使用中逐步形成更贴近家庭成员习惯的决策能力。
 
 HomeMind 的核心价值体现在围绕家庭终端构建一条完整、轻量、可持续演进的端侧 Agent 主链路。该方案将自然语言理解、上下文记忆、偏好学习、结构化决策、设备执行与反馈写回组织为统一闭环，使系统既能够处理高频明确指令，也能够通过端云协同吸收少量复杂语义需求。
 
-在方案设计层面，系统形成了三项鲜明特征：第一，以 BSR-LSR-Router-LLM-Execution 构成分层主链，将高频任务前移到低成本模块，体现端侧优先的工程原则；第二，以三层记忆结构承载会话状态、稳定偏好与可检索经验，并通过原子化短记忆设计让长期记忆可以直接参与召回、重排序和决策提示；第三，以固定 JSON 输出、命令约束校验、最小必要上下文上传和本地加密存储构成结构化可控的执行闭环，使 Agent 能力自然转化为可落地的家庭自动化能力。
+在方案设计层面，系统形成了三项鲜明特征：第一，以集成安全治理的 BSR-LSR-Router-LLM-Execution 主链承载高频任务，将注入检测、策略评估、身份授权、审计记录和事务回滚前移到执行前后关键节点，体现端侧优先的工程原则；第二，以三层记忆结构承载会话状态、稳定偏好与可检索经验，并通过来源分库、可信度分级、冲突检测、时序摘要和语义压缩让长期记忆可以直接参与召回、重排序和决策提示；第三，以固定 JSON 输出、命令约束校验、动态工具注册、最小必要上下文上传和本地加密存储构成结构化可控的执行闭环，使 Agent 能力自然转化为可落地的家庭自动化能力。
 
-从项目方案角度看，HomeMind 在家庭终端上重新组织智能能力：把复杂理解拆成召回、重排序、记忆和路由协同；把长期适配建立在可写回、可检索、可复用的记忆机制上；把设备控制建立在结构化命令链上；把空间理解建立在 SVG 户型图、元数据和设备映射关系上。这一设计使方案具备较强的赛题契合度、工程可实施性和后续产品化延展空间。
+从项目方案角度看，HomeMind 在家庭终端上重新组织智能能力：把复杂理解拆成召回、重排序、记忆和路由协同；把长期适配建立在可写回、可检索、可复用的记忆机制上；把设备控制建立在结构化命令链上；把空间理解建立在 SVG 户型图、元数据和设备映射关系上。这一设计使方案同时具备清晰的工程可实施性、场景落地价值和后续产品化延展空间。
 
 
 \section{产品化演进方向}
 
 HomeMind 的产品化演进围绕规模化家庭部署展开。端侧算力优先投入到设备控制、场景切换、语音交互、记忆写回、空间配置和受控协同等高价值任务上，使每一份算力都服务于真实可执行的家庭行为。
 
-当前方案已经形成家庭高频任务的主链路：语言层覆盖家庭常见口语与方言表达，记忆层沉淀短经验与稳定偏好，执行层围绕设备控制、场景切换、信息查询和自动化规则展开，空间层维护户型图元数据与设备映射关系，协同层服务复杂意图增强裁决。后续产品化工作可在真实设备生态、多人长期使用和跨房间空间联动上继续扩展。
+当前方案已经形成家庭高频任务的主链路：语言层覆盖家庭常见口语与方言表达，记忆层沉淀短经验、稳定偏好和时序摘要，执行层围绕设备控制、场景切换、信息查询和自动化规则展开，并由动态工具注册、运行时策略、零信任身份、审计检索和事务回滚共同约束，空间层维护户型图元数据与设备映射关系，协同层服务复杂意图增强裁决。后续产品化工作可在更大规模仿真、多用户长期使用和跨房间空间联动上继续扩展；真实设备协议联调仍属于后续独立阶段，而非当前实现范围。
 
 
 \section{未来工作}
 
-项目组后续工作将重点面向规模化家庭部署展开。第一，继续扩展方言与口语化表达覆盖范围，引入更细粒度的家庭成员语言画像与更稳健的语音纠正反馈机制。第二，围绕真实设备生态深化协议联调，补充多品牌、多房间、多网关环境下的稳定性测试与故障恢复机制。第三，增强自动化与推荐模块的解释能力，在规则冲突、推荐拒绝原因和云端协同决策依据上提供更清晰的可视化说明。第四，完善长期运行观测与隐私审计能力，对云端调用频率、Token 使用量、规则命中情况和用户反馈闭环进行持续统计，为后续产品化和规模化部署提供依据。
+项目组后续工作将重点面向规模化家庭部署展开。第一，继续扩展方言与口语化表达覆盖范围，引入更细粒度的家庭成员语言画像与更稳健的语音纠正反馈机制。第二，继续扩展仿真环境复杂度，补充多品牌、多房间、多网关、多故障注入条件下的稳定性测试、异常恢复与回滚评估机制；如后续进入真实部署阶段，再单独推进真实设备协议联调。第三，增强自动化与推荐模块的解释能力，在规则冲突、推荐拒绝原因和云端协同决策依据上提供更清晰的可视化说明。第四，完善长期运行观测与隐私审计能力，对云端调用频率、Token 使用量、策略命中情况、审计日志分布和用户反馈闭环进行持续统计，为后续产品化和规模化部署提供依据。
 
 \addcontentsline{toc}{chapter}{参考文献}
 \begingroup
@@ -987,7 +985,7 @@ HomeMind 的产品化演进围绕规模化家庭部署展开。端侧算力优�
 
 \section*{附录 A：核心数据结构定义}
 
-HomeContext 数据类（demo/context.py）定义了系统的环境上下文状态，包含 hour、temperature、humidity、members\_home、day\_of\_week、last\_scene 和 devices 七个字段。
+HomeContext 数据类（demo/context.py）定义了系统的环境上下文状态，包含 hour、temperature、humidity、members\_home、day\_of\_week、last\_scene、current\_scene 和 devices 八个字段。
 
 SessionStore（core/memory/session\_store.py）维护短期会话状态，包含 current\_scene、last\_user\_input、last\_normalized\_input、last\_action、last\_clarification、last\_route 和 recent\_turns 等字段。
 
@@ -997,7 +995,7 @@ BSR 候选动作结构（core/bsr/candidate\_recall.py）定义了每个候选�
 
 LLM 决策结果结构（core/llm/decision.py）定义了决策层输出的 JSON 格式，包含 action、device、scene、device\_action、params、confidence 和 reasoning 七个必填字段。
 
-KnowledgeBase（core/rag/knowledge\_base.py）定义了长期记忆条目的核心结构，包含 id、content、category、accepted 以及补充 metadata 字段，用于支持 RAG 检索、反馈写回与偏好增强。
+KnowledgeBase（core/rag/knowledge\_base.py）定义了长期记忆条目的核心结构，除 id、content、category、accepted 等基础字段外，还维护 source\_bucket、source\_name、trust\_score、trust\_level、conflict、conflict\_reason、first\_seen、last\_seen、count 等元数据，并额外维护时序摘要存储，用于支持多源 RAG 检索、可信度过滤、冲突检测、反馈写回与偏好增强。
 
 TAP 规则结构（core/automation/tap\_rules.py）定义了规则的数据模型，包含 id、name、enabled、priority、trigger、conditions、action、created\_at 和 updated\_at 等字段。
 
@@ -1029,8 +1027,9 @@ TAP 规则结构（core/automation/tap\_rules.py）定义了规则的数据模�
     \item \verb|/api/voice/feedback|：语音反馈写回接口，支持 accepted、corrected、ignored 等反馈类型。
     \item \verb|/api/dqn/recommend|：DQN 主动推荐接口。
     \item \verb|/api/dqn/feedback|：主动推荐反馈接口。
-    \item \verb|/api/kb/query|：知识库查询接口。
+    \item \verb|/api/kb/query|：知识库查询接口，支持多源检索结果返回。
     \item \verb|/api/kb/add|：知识条目写入接口。
+    \item \verb|/api/audit/logs|：审计日志检索接口，支持按时间范围、用户和条数限制查询执行记录。
     \item \verb|/api/rules|：TAP 规则列表与创建接口，支持 GET 和 POST。
     \item \verb|/api/rules/\{id\}|：TAP 规则更新与删除接口，支持 PUT 和 DELETE。
     \item \verb|/api/rules/\{id\}/toggle|：TAP 规则启停接口。
@@ -1039,7 +1038,7 @@ TAP 规则结构（core/automation/tap\_rules.py）定义了规则的数据模�
     \item \verb|/api/floor-plans|：SVG 户型图元数据列表与创建接口，支持 GET 和 POST，数据统一写入 \texttt{data/floor-plans.json}。
     \item \verb|/api/floor-plans/\{id\}|：户型图详情、更新与删除接口，支持 GET、PUT 和 DELETE。
     \item \verb|/api/floor-plans/\{id\}/svg|：户型图 SVG 文件读取接口，用于前端渲染默认户型图或用户上传户型图。
-    \item \verb|/api/floor-plans/\{id\}/activate|：激活指定户型图，后续自然语言设备控制和场景切换以该户型图的设备映射表作为真实设备来源。
+    \item \verb|/api/floor-plans/\{id\}/activate|：激活指定户型图，后续自然语言设备控制和场景切换以该户型图的设备映射表作为当前仿真设备来源。
     \item \verb|/api/floor-plans/\{id\}/devices|：户型图设备映射读取、写入与清空接口，支持 GET、POST 和 DELETE，映射数据统一写入 \texttt{data/devices.json}。
 \end{itemize}
 
