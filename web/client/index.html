@@ -2556,9 +2556,14 @@
                     method: "POST",
                     body: form
                 });
-                const data = await response.json();
+                let data = {};
+                try {
+                    data = await response.json();
+                } catch (parseError) {
+                    data = {};
+                }
                 if (!response.ok || data.status !== "success") {
-                    showToast(data.error || "SVG 上传失败");
+                    showToast(data.error || `SVG 上传失败${response.status ? ` (${response.status})` : ""}`);
                     return;
                 }
                 selectedFloorPlan = data.floorPlan;
@@ -2566,15 +2571,10 @@
                 showToast("SVG 已上传");
                 await loadFloorPlanUploads();
             } catch (e) {
-                showToast("SVG 上传失败");
+                showToast(`SVG 上传失败: ${e && e.message ? e.message : "network error"}`);
             }
         }
-
         async function saveFloorPlanDeviceMapping() {
-            if (!selectedFloorPlan) {
-                showToast("请先选择户型图");
-                return;
-            }
             const raw = document.getElementById("device-mapping-json").value.trim();
             if (!raw) {
                 showToast("请输入设备映射 JSON");

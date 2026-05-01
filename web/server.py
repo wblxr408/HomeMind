@@ -124,7 +124,7 @@ FLOOR_PLAN_UPLOAD_DIR = UPLOAD_ROOT / "floor-plans"
 FLOOR_PLAN_STORE_PATH = Path(os.environ.get("HOMEMIND_FLOOR_PLAN_STORE", "data/floor-plans.json"))
 FLOOR_PLAN_DEVICE_STORE_PATH = Path(os.environ.get("HOMEMIND_FLOOR_PLAN_DEVICE_STORE", "data/devices.json"))
 DEVICE_REGISTRY_PATH = Path(os.environ.get("HOMEMIND_DEVICE_REGISTRY_STORE", "data/device-registry.json"))
-MAX_SVG_UPLOAD_BYTES = int(os.environ.get("HOMEMIND_MAX_SVG_UPLOAD_BYTES", str(2 * 1024 * 1024)))
+MAX_SVG_UPLOAD_BYTES = int(os.environ.get("HOMEMIND_MAX_SVG_UPLOAD_BYTES", str(10 * 1024 * 1024)))
 DEFAULT_SVG_WIDTH = 640.0
 DEFAULT_SVG_HEIGHT = 660.0
 DEFAULT_DEVICE_REGISTRY = [
@@ -214,7 +214,9 @@ def _validate_svg_upload(filename: str, data: bytes) -> tuple[bool, str]:
     if not data:
         return False, "svg file is empty"
     if len(data) > MAX_SVG_UPLOAD_BYTES:
-        return False, "svg file is too large"
+        size_mb = len(data) / (1024 * 1024)
+        limit_mb = MAX_SVG_UPLOAD_BYTES / (1024 * 1024)
+        return False, f"svg file is too large ({size_mb:.2f} MB > {limit_mb:.2f} MB limit)"
     try:
         root = ElementTree.fromstring(data)
     except ElementTree.ParseError:
@@ -4117,6 +4119,7 @@ def upload_floor_plan():
         description=request.form.get("description", ""),
     )
     if result.get("status") != "success":
+        app.logger.warning("SVG upload rejected: filename=%s error=%s", getattr(uploaded, "filename", ""), result.get("error", "unknown"))
         return jsonify(result), 400
     return jsonify({**result, "success": True})
 

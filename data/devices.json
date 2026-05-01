@@ -1951,5 +1951,221 @@
     },
     "updatedAt": "2026-04-30T16:13:32+08:00",
     "createdAt": "2026-03-29T03:10:45+08:00"
+  },
+  {
+    "floorPlanId": "modern_family_apartment_floor_plan-1777540572.svg",
+    "devices": [
+      {
+        "id": "light.living_room",
+        "name": "客厅灯",
+        "type": "light",
+        "area": "living_room",
+        "areaName": "客厅",
+        "x": 6.14,
+        "y": 16.65,
+        "icon": "light"
+      },
+      {
+        "id": "switch.living_room_tv",
+        "name": "客厅电视",
+        "type": "switch",
+        "area": "living_room",
+        "areaName": "客厅",
+        "x": 8.91,
+        "y": 16.65,
+        "icon": "switch"
+      },
+      {
+        "id": "cover.living_room_curtain",
+        "name": "客厅窗帘",
+        "type": "cover",
+        "area": "living_room",
+        "areaName": "客厅",
+        "x": 6.14,
+        "y": 20.73,
+        "icon": "cover"
+      },
+      {
+        "id": "light.dining_room",
+        "name": "餐厅灯",
+        "type": "light",
+        "area": "dining_room",
+        "areaName": "餐厅",
+        "x": 12.09,
+        "y": 40.56,
+        "icon": "light"
+      }
+    ],
+    "rawDevices": [
+      {
+        "entity_id": "light.entry",
+        "area": "entry",
+        "device_type": "light",
+        "name": "玄关灯",
+        "area_name": "玄关"
+      },
+      {
+        "entity_id": "light.living_room",
+        "area": "living_room",
+        "device_type": "light",
+        "name": "客厅灯",
+        "area_name": "客厅"
+      },
+      {
+        "entity_id": "switch.living_room_tv",
+        "area": "living_room",
+        "device_type": "switch",
+        "name": "客厅电视",
+        "area_name": "客厅"
+      },
+      {
+        "entity_id": "cover.living_room_curtain",
+        "area": "living_room",
+        "device_type": "cover",
+        "name": "客厅窗帘",
+        "area_name": "客厅"
+      },
+      {
+        "entity_id": "light.dining_room",
+        "area": "dining_room",
+        "device_type": "light",
+        "name": "餐厅灯",
+        "area_name": "餐厅"
+      },
+      {
+        "entity_id": "light.kitchen",
+        "area": "kitchen",
+        "device_type": "light",
+        "name": "厨房灯",
+        "area_name": "厨房"
+      },
+      {
+        "entity_id": "switch.kitchen_hood",
+        "area": "kitchen",
+        "device_type": "switch",
+        "name": "油烟机",
+        "area_name": "厨房"
+      },
+      {
+        "entity_id": "light.master_bedroom",
+        "area": "master_bedroom",
+        "device_type": "light",
+        "name": "主卧灯",
+        "area_name": "主卧"
+      },
+      {
+        "entity_id": "cover.master_bedroom_curtain",
+        "area": "master_bedroom",
+        "device_type": "cover",
+        "name": "主卧窗帘",
+        "area_name": "主卧"
+      },
+      {
+        "entity_id": "climate.master_bedroom_ac",
+        "area": "master_bedroom",
+        "device_type": "climate",
+        "name": "主卧空调",
+        "area_name": "主卧"
+      },
+      {
+        "entity_id": "light.bedroom_1",
+        "area": "bedroom_1",
+        "device_type": "light",
+        "name": "次卧1灯",
+        "area_name": "次卧1"
+      },
+      {
+        "entity_id": "cover.bedroom_1_curtain",
+        "area": "bedroom_1",
+        "device_type": "cover",
+        "name": "次卧1窗帘",
+        "area_name": "次卧1"
+      },
+      {
+        "entity_id": "climate.bedroom_1_ac",
+        "area": "bedroom_1",
+        "device_type": "climate",
+        "name": "次卧1空调",
+        "area_name": "次卧1"
+      },
+      {
+        "entity_id": "light.bedroom_2",
+        "area": "bedroom_2",
+        "device_type": "light",
+        "name": "次卧2灯",
+        "area_name": "次卧2"
+      },
+      {
+        "entity_id": "cover.bedroom_2_curtain",
+        "area": "bedroom_2",
+        "device_type": "cover",
+        "name": "次卧2窗帘",
+        "area_name": "次卧2"
+      },
+      {
+        "entity_id": "climate.bedroom_2_ac",
+        "area": "bedroom_2",
+        "device_type": "climate",
+        "name": "次卧2空调",
+        "area_name": "次卧2"
+      },
+      {
+        "entity_id": "light.bathroom_1",
+        "area": "bathroom_1",
+        "device_type": "light",
+        "name": "卫生间1灯",
+        "area_name": "卫生间1"
+      },
+      {
+        "entity_id": "fan.bathroom_1_exhaust",
+        "area": "bathroom_1",
+        "device_type": "fan",
+        "name": "卫生间1排风扇",
+        "area_name": "卫生间1"
+      },
+      {
+        "entity_id": "light.bathroom_2",
+        "area": "bathroom_2",
+        "device_type": "light",
+        "name": "卫生间2灯",
+        "area_name": "卫生间2"
+      },
+      {
+        "entity_id": "fan.bathroom_2_exhaust",
+        "area": "bathroom_2",
+        "device_type": "fan",
+        "name": "卫生间2排风扇",
+        "area_name": "卫生间2"
+      },
+      {
+        "entity_id": "light.balcony",
+        "area": "balcony",
+        "device_type": "light",
+        "name": "阳台灯",
+        "area_name": "阳台"
+      },
+      {
+        "entity_id": "switch.balcony_washer",
+        "area": "balcony",
+        "device_type": "switch",
+        "name": "洗衣机",
+        "area_name": "阳台"
+      }
+    ],
+    "customRooms": null,
+    "areaNames": {
+      "entry": "玄关",
+      "living_room": "客厅",
+      "dining_room": "餐厅",
+      "kitchen": "厨房",
+      "master_bedroom": "主卧",
+      "bedroom_1": "次卧1",
+      "bedroom_2": "次卧2",
+      "bathroom_1": "卫生间1",
+      "bathroom_2": "卫生间2",
+      "balcony": "阳台"
+    },
+    "updatedAt": "2026-04-30T17:18:26.279211+08:00",
+    "createdAt": "2026-04-30T17:18:26.279211+08:00"
   }
 ]

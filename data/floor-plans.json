@@ -9,5 +9,25 @@
     "height": 660,
     "uploadedAt": "2026-04-29T14:45:00+08:00",
     "active": true
+  },
+  {
+    "id": "modern_family_apartment_floor_plan.svg",
+    "name": "test-plan",
+    "description": "probe",
+    "filePath": "uploads\\floor-plans\\modern_family_apartment_floor_plan.svg",
+    "url": "/uploads/floor-plans/modern_family_apartment_floor_plan.svg",
+    "width": 1448.0,
+    "height": 1086.0,
+    "uploadedAt": "2026-04-30T17:15:35.598609+08:00"
+  },
+  {
+    "id": "modern_family_apartment_floor_plan-1777540572.svg",
+    "name": "modern_family_apartment_floor_plan",
+    "description": "",
+    "filePath": "uploads\\floor-plans\\modern_family_apartment_floor_plan-1777540572.svg",
+    "url": "/uploads/floor-plans/modern_family_apartment_floor_plan-1777540572.svg",
+    "width": 1448.0,
+    "height": 1086.0,
+    "uploadedAt": "2026-04-30T17:16:12.762035+08:00"
   }
 ]
