@@ -65,7 +65,7 @@ class SceneStoreEnhancementTests(unittest.TestCase):
                 "confidence": 0.9,
             })
 
-            self.assertTrue(result["valid"])
+            self.assertTrue(result.valid)
 
 
 class NLToTAPEnhancementTests(unittest.TestCase):

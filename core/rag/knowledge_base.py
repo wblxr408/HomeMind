@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 DATA_DIR = "data"
 os.makedirs(DATA_DIR, exist_ok=True)
 DEFAULT_COLLECTION_NAME = "homemind_kb"
-DEFAULT_BACKUP_PATH = os.path.join(DATA_DIR, "kb_backup.enc")
+DEFAULT_BACKUP_PATH = os.getenv("HOMEMIND_KB_BACKUP_PATH", os.path.join(DATA_DIR, "kb_backup.enc"))
 
 CHROMA_AVAILABLE = False
 try:
@@ -36,11 +36,13 @@ class KnowledgeBase:
         persist_dir: str = os.path.join(DATA_DIR, "chroma_db"),
         embedding_fn=None,
         max_records: int = 500,
+        backup_path: str = None,
     ):
         self.persist_dir = persist_dir
         os.makedirs(self.persist_dir, exist_ok=True)
         self.embedding_fn = embedding_fn
         self.max_records = max(1, int(max_records))
+        self.backup_path = backup_path or os.getenv("HOMEMIND_KB_BACKUP_PATH", DEFAULT_BACKUP_PATH)
         self.preference_store = None
         self.preset_knowledge = self._init_preset_kb()
         self.memory_store: List[Dict] = []
@@ -398,7 +400,7 @@ class KnowledgeBase:
 
     def backup(self, path: str = None) -> bool:
         if path is None:
-            path = DEFAULT_BACKUP_PATH
+            path = self.backup_path
         data = {
             "memory_store": self.memory_store,
             "timestamp": datetime.now().isoformat(),
@@ -410,7 +412,7 @@ class KnowledgeBase:
 
     def restore(self, path: str = None) -> bool:
         if path is None:
-            path = DEFAULT_BACKUP_PATH
+            path = self.backup_path
         data = self._storage.load_pickle(path)
         if data and "memory_store" in data:
             self.memory_store = list(data["memory_store"])

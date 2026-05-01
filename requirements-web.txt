@@ -1,4 +1,4 @@
-﻿# HomeMind 依赖
+# HomeMind 依赖
 
 # 核心依赖
 numpy>=1.24.0
@@ -9,7 +9,13 @@ scikit-learn>=1.3.0
 
 # LLM 支持
 openai>=1.0.0  # OpenAI-compatible cloud LLM clients (OpenAI, DeepSeek, etc.)
-# llama-cpp-python>=0.2.0  # 本地模型（可选）
+llama-cpp-python>=0.2.0  # 本地模型：Ollama 或直接 llama.cpp 推理
+
+# OTA / 生命周期
+requests>=2.31.0  # 用于模型下载和 HTTP 更新检查
+
+# 可观测性
+prometheus-client>=0.19.0  # 指标暴露
 
 # Web 服务依赖
 flask>=3.0.0
@@ -24,9 +30,14 @@ requests>=2.31.0  # HTTP API
 
 # 工具
 python-dotenv>=1.0.0  # 环境变量
+pyyaml>=6.0  # 策略配置解析
 
 # 安全与加密
 cryptography>=41.0.0  # 加密存储（DQN策略、知识库备份）
+
+# 可观测性
+prometheus-client>=0.19.0  # 指标暴露
+psutil>=5.9.0  # 内存/进程监控
 
 # Voice recognition (optional, requires faster-whisper for server-side)
 # faster-whisper  # Server-side transcription (future)

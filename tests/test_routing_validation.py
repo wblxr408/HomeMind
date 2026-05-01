@@ -101,8 +101,8 @@ class CommandValidatorTests(unittest.TestCase):
             "params": {"temperature": 26},
             "confidence": 0.9,
         })
-        self.assertTrue(result["valid"])
-        self.assertEqual(result["risk_level"], "low")
+        self.assertTrue(result.valid)
+        self.assertEqual(result.risk_level, "low")
 
     def test_invalid_temperature_is_rejected(self):
         result = self.validator.validate({
@@ -112,8 +112,8 @@ class CommandValidatorTests(unittest.TestCase):
             "params": {"temperature": 35},
             "confidence": 0.9,
         })
-        self.assertFalse(result["valid"])
-        self.assertTrue(any("temperature" in item for item in result["errors"]))
+        self.assertFalse(result.valid)
+        self.assertTrue(any("temperature" in item for item in result.errors))
 
     def test_high_risk_water_heater_requires_confirmation(self):
         result = self.validator.validate({
@@ -123,9 +123,9 @@ class CommandValidatorTests(unittest.TestCase):
             "params": {"temperature": 65},
             "confidence": 0.9,
         })
-        self.assertTrue(result["valid"])
-        self.assertTrue(result["requires_confirmation"])
-        self.assertEqual(result["risk_level"], "high")
+        self.assertTrue(result.valid)
+        self.assertTrue(result.requires_confirmation)
+        self.assertEqual(result.risk_level, "high")
 
     def test_invalid_scene_is_rejected(self):
         result = self.validator.validate({
@@ -135,7 +135,7 @@ class CommandValidatorTests(unittest.TestCase):
             "params": {},
             "confidence": 0.9,
         })
-        self.assertFalse(result["valid"])
+        self.assertFalse(result.valid)
 
 
 if __name__ == "__main__":

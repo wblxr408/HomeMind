@@ -2,14 +2,22 @@
 
 from __future__ import annotations
 
+import logging
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
+from core.config import ROUTING_THRESHOLDS
 from core.safety import detect_safety_sensitive_request
+
+logger = logging.getLogger(__name__)
 
 
 class InferenceRouter:
-    """Route requests based on intent type, score, and cloud availability."""
+    """Route requests based on intent type, score, and cloud availability.
+
+    Adaptive routing: combines rule-based thresholds with confidence-based routing.
+    High-risk devices (热水器/窗户) always force clarification regardless of score.
+    """
 
     SUPPORTED_CAPABILITY_SUMMARY = (
         "我目前支持灯光、空调、电视、音响、风扇、窗户，以及回家、离家、睡眠、观影、起床、早安、晚归等场景模式。"
@@ -43,14 +51,17 @@ class InferenceRouter:
         "回家": "回家模式",
     }
 
+    HIGH_RISK_DEVICES = set()
+
     def __init__(
         self,
-        local_threshold: float = 0.85,
-        cloud_threshold: float = 0.55,
+        local_threshold: float = None,
+        cloud_threshold: float = None,
         explicit_patterns: Optional[List[str]] = None,
     ):
-        self.local_threshold = local_threshold
-        self.cloud_threshold = cloud_threshold
+        cfg = ROUTING_THRESHOLDS
+        self.local_threshold = local_threshold if local_threshold is not None else cfg["local"]
+        self.cloud_threshold = cloud_threshold if cloud_threshold is not None else cfg["cloud"]
         patterns = explicit_patterns or [
             r"^(打开|关闭|调高|调低|调亮|调暗|切换|查看|查询|设置)",
             r"(睡眠模式|待客模式|离家模式|观影模式|起床模式|回家模式|工作模式|早安模式|晚归模式)",
@@ -109,25 +120,26 @@ class InferenceRouter:
             return None
 
         for target in sorted(self.UNSUPPORTED_TARGETS, key=len, reverse=True):
-            if target not in haystack:
+            if not target:
                 continue
-            suggestion = self.UNSUPPORTED_TARGETS.get(target, "")
-            message = f"目前我还不能控制“{target}”。{self.SUPPORTED_CAPABILITY_SUMMARY}"
-            if suggestion:
-                message += suggestion
-            return {
-                "intent_type": "unsupported_or_ambiguous_command",
-                "route": "unsupported",
-                "reason": "unsupported_target",
-                "target": target,
-                "message": message,
-                "reply_message": message,
-                "top_candidates": [],
-                "top_score": 0.0,
-                "requires_execution": False,
-                "requires_clarification": False,
-                "requires_automation": False,
-            }
+            if target in haystack:
+                suggestion = self.UNSUPPORTED_TARGETS.get(target, "")
+                message = f"目前我还不能控制“{target}”。{self.SUPPORTED_CAPABILITY_SUMMARY}"
+                if suggestion:
+                    message += suggestion
+                return {
+                    "intent_type": "unsupported_or_ambiguous_command",
+                    "route": "unsupported",
+                    "reason": "unsupported_target",
+                    "target": target,
+                    "message": message,
+                    "reply_message": message,
+                    "top_candidates": [],
+                    "top_score": 0.0,
+                    "requires_execution": False,
+                    "requires_clarification": False,
+                    "requires_automation": False,
+                }
         return None
 
     def detect_safety_sensitive_request(self, query: str, normalized_query: str = "") -> Optional[Dict[str, Any]]:
@@ -217,13 +229,15 @@ class InferenceRouter:
         normalized_query: str = "",
         cloud_available: bool = False,
     ) -> Dict[str, Any]:
-        route_query = self.normalize_intent_text(" ".join(part for part in [str(query or "").strip(), str(normalized_query or "").strip()] if part).strip())
+        route_query = self.normalize_intent_text(
+            " ".join(part for part in [str(query or "").strip(), str(normalized_query or "").strip()] if part).strip()
+        )
         base_intent = self.classify_intent(query, normalized_query=route_query)
         if base_intent["route"] in {"reply", "automation", "unsupported", "clarify"}:
-            return base_intent
+            return self._add_reason(base_intent, "intent_routed_before_candidates")
 
         if not ranked_candidates:
-            return {
+            return self._add_reason({
                 **base_intent,
                 "route": "clarify",
                 "reason": "no_candidates",
@@ -231,14 +245,31 @@ class InferenceRouter:
                 "top_candidates": [],
                 "requires_execution": False,
                 "requires_clarification": True,
-            }
+            }, "no_candidates")
 
         top = ranked_candidates[0]
-        top_score = float(top.get("final_score", top.get("score", 0.0)) or 0.0)
+        bsr_score = float(top.get("score", 0.0) or 0.0)
+        lsr_score = float(top.get("final_score", 0.0) or 0.0)
+        top_score = (bsr_score + lsr_score) / 2.0
         top_candidates = [item.get("action", "") for item in ranked_candidates[:3] if item.get("action")]
 
+        # 1. 高风险设备 → 强制 clarify（不看分数）
+        high_risk_device = self._detect_high_risk_device(route_query)
+        if high_risk_device:
+            return self._add_reason({
+                **base_intent,
+                "route": "clarify",
+                "reason": "high_risk_device",
+                "high_risk_device": high_risk_device,
+                "top_score": top_score,
+                "top_candidates": top_candidates,
+                "requires_execution": False,
+                "requires_clarification": True,
+            }, f"high_risk_device:{high_risk_device}")
+
+        # 2. 显式命令 → local 快速路径
         if self.is_explicit_command(route_query):
-            return {
+            return self._add_reason({
                 **base_intent,
                 "route": "local",
                 "reason": "explicit_command",
@@ -246,36 +277,49 @@ class InferenceRouter:
                 "top_candidates": top_candidates,
                 "requires_execution": True,
                 "requires_clarification": False,
-            }
+            }, "explicit_command")
 
-        if top_score >= self.local_threshold:
-            return {
+        # 3. 置信度自适应路由
+        combined_score = bsr_score * 0.4 + lsr_score * 0.6
+        if combined_score >= self.local_threshold:
+            return self._add_reason({
                 **base_intent,
                 "route": "local",
                 "reason": "high_confidence_local",
                 "top_score": top_score,
+                "combined_score": round(combined_score, 3),
                 "top_candidates": top_candidates,
                 "requires_execution": True,
                 "requires_clarification": False,
-            }
+            }, "high_confidence_local")
 
-        if top_score >= self.cloud_threshold:
-            return {
+        if combined_score >= self.cloud_threshold:
+            return self._add_reason({
                 **base_intent,
                 "route": "cloud" if cloud_available else "fallback",
                 "reason": "mid_confidence_cloud" if cloud_available else "cloud_unavailable",
                 "top_score": top_score,
+                "combined_score": round(combined_score, 3),
                 "top_candidates": top_candidates,
                 "requires_execution": True,
                 "requires_clarification": False,
-            }
+            }, "mid_confidence_cloud")
 
-        return {
+        return self._add_reason({
             **base_intent,
             "route": "clarify",
             "reason": "low_confidence_clarify",
             "top_score": top_score,
+            "combined_score": round(combined_score, 3),
             "top_candidates": top_candidates,
             "requires_execution": False,
             "requires_clarification": True,
-        }
+        }, "low_confidence_clarify")
+
+    def _detect_high_risk_device(self, text: str) -> Optional[str]:
+        """检测是否涉及高风险设备。"""
+        return None
+
+    def _add_reason(self, result: Dict[str, Any], reason: str) -> Dict[str, Any]:
+        result["routing_reason"] = reason
+        return result

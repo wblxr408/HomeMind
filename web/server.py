@@ -1,4 +1,4 @@
-﻿"""
+"""
 HomeMind Web 服务 - 中央指令器
 提供 REST API 和 WebSocket 接口，连接智能家居 Agent 与前端控制面板
 """
@@ -727,7 +727,7 @@ class HomeMindWebAgent:
         if current_scene:
             self.context.current_scene = current_scene
             self.context.last_scene = SCENE_INDEX_MAP.get(current_scene, -1)
-        if self.kb and os.path.exists(os.path.join("data", "kb_backup.enc")):
+        if self.kb and os.path.exists(self.kb.backup_path):
             self.kb.restore()
 
     def _record_query_context(self, raw_text: str, normalized_text: str):
@@ -953,7 +953,7 @@ class HomeMindWebAgent:
         trigger = dict(rule.get("trigger", {}) or {})
         action = dict(rule.get("action", {}) or {})
         validation = self._validate_tap_rule_draft(rule)
-        if not validation["valid"]:
+        if not validation.get("valid"):
             return None
         summary = self._summarize_automation_rule(trigger, action)
         proposal_id = self._next_message_id("proposal")
@@ -1338,6 +1338,14 @@ class HomeMindWebAgent:
     def _validate_decision(self, decision: dict):
         return self.command_validator.validate(decision)
 
+    def _spatial_rejection_for_decision(self, decision: dict, text: str, route: str):
+        if decision.get("action") != "\u8bbe\u5907\u63a7\u5236":
+            return None
+        spatial = self._validate_spatial_device_command(decision, text=text)
+        if spatial.get("valid"):
+            return None
+        return self._execute_device_with_spatial_gate(decision, text=text, route=route)
+
     def _detect_unsupported_request(self, raw_text: str, normalized_text: str = ""):
         unsupported = self.router.detect_unsupported_request(raw_text, normalized_query=normalized_text)
         if unsupported:
@@ -1347,12 +1355,12 @@ class HomeMindWebAgent:
 
     def _execute_structured_command(self, command: dict, route: str = "tap") -> dict:
         validation = self._validate_decision(command)
-        if not validation["valid"]:
-            return {"status": "invalid", "errors": validation["errors"], "command": command}
-        if validation["requires_confirmation"]:
-            return {"status": "confirmation_required", "command": validation["normalized_command"]}
+        if not validation.valid:
+            return {"status": "invalid", "errors": validation.errors, "command": command}
+        if validation.requires_confirmation:
+            return {"status": "confirmation_required", "command": validation.normalized_command}
 
-        normalized = validation["normalized_command"]
+        normalized = validation.normalized_command
         action_type = normalized.get("action", "")
         device = normalized.get("device", "")
         device_action = normalized.get("device_action", "")
@@ -1663,6 +1671,11 @@ class HomeMindWebAgent:
         return recommendation
 
     def _start_scheduler_loop(self):
+        if os.environ.get("HOMEMIND_DISABLE_BACKGROUND_THREADS") == "1":
+            self.scheduler_thread = None
+            self._timed_phase("scheduler_loop", lambda: None)
+            return
+
         def scheduler_worker():
             while True:
                 try:
@@ -1747,6 +1760,11 @@ class HomeMindWebAgent:
         }
     
     def _start_agent_loop(self):
+        if os.environ.get("HOMEMIND_DISABLE_BACKGROUND_THREADS") == "1":
+            self.agent_thread = None
+            self._timed_phase("agent_loop", lambda: None)
+            return
+
         """启动 Agent 处理循环（后台线程）"""
         def agent_worker():
             while True:
@@ -2018,9 +2036,21 @@ class HomeMindWebAgent:
                     })
                     return
 
+                spatial_rejection = self._spatial_rejection_for_decision(decision, query_text, route_info["route"])
+                if spatial_rejection:
+                    socketio.emit("message", {
+                        "type": "agent_clarification",
+                        "data": {
+                            "question": spatial_rejection.get("response", ""),
+                            "candidates": route_info["top_candidates"],
+                            "query_id": query_id
+                        }
+                    })
+                    return
+
                 validation = self._validate_decision(decision)
-                if not validation["valid"]:
-                    message = "我暂时不能执行这个指令：" + "；".join(validation["errors"])
+                if not validation.valid:
+                    message = "我暂时不能执行这个指令：" + ";".join(validation.errors)
                     self.session_store.update_clarification(message)
                     socketio.emit("message", {
                         "type": "agent_clarification",
@@ -2031,7 +2061,7 @@ class HomeMindWebAgent:
                         }
                     })
                     return
-                if validation["requires_confirmation"]:
+                if validation.requires_confirmation:
                     message = "这个操作风险较高，需要二次确认后再执行。"
                     self.session_store.update_clarification(message)
                     socketio.emit("message", {
@@ -2043,7 +2073,7 @@ class HomeMindWebAgent:
                         }
                     })
                     return
-                decision = validation["normalized_command"]
+                decision = validation.normalized_command
                 action_type = decision.get("action", "")
                 device = decision.get("device", "")
                 device_action = decision.get("device_action", "")
@@ -2859,9 +2889,15 @@ class HomeMindWebAgent:
                         "route_reason": route_info["reason"],
                         "normalized_query": normalized.to_dict(),
                     }
+                spatial_rejection = self._spatial_rejection_for_decision(decision, query_for_ai, route_info["route"])
+                if spatial_rejection:
+                    return {
+                        **spatial_rejection,
+                        "normalized_query": normalized.to_dict(),
+                    }
                 validation = self._validate_decision(decision)
-                if not validation["valid"]:
-                    message = "我暂时不能执行这个指令：" + "；".join(validation["errors"])
+                if not validation.valid:
+                    message = "我暂时不能执行这个指令：" + ";".join(validation.errors)
                     self.session_store.update_clarification(message)
                     return {
                         "status": "clarification",
@@ -2872,7 +2908,7 @@ class HomeMindWebAgent:
                         "route_reason": route_info["reason"],
                         "normalized_query": normalized.to_dict(),
                     }
-                if validation["requires_confirmation"]:
+                if validation.requires_confirmation:
                     message = "这个操作风险较高，需要二次确认后再执行。"
                     self.session_store.update_clarification(message)
                     return {
@@ -2884,7 +2920,7 @@ class HomeMindWebAgent:
                         "route_reason": route_info["reason"],
                         "normalized_query": normalized.to_dict(),
                     }
-                decision = validation["normalized_command"]
+                decision = validation.normalized_command
                 
                 action_type = decision.get("action", "")
                 device = decision.get("device", "")
@@ -2972,6 +3008,8 @@ def _webagent_run_llm_first_query(self: HomeMindWebAgent, raw_text: str, normali
         }
 
     intent_plan = self.llm.plan_intent(raw_text, normalized_query=normalized_text, context=self.context)
+    if hasattr(self.llm, "_post_process_intent"):
+        intent_plan = self.llm._post_process_intent(intent_plan, normalized_text or raw_text)
     self.last_route_info = {
         "intent_type": intent_plan.get("intent_type", ""),
         "route": intent_plan.get("route", ""),
@@ -3133,9 +3171,26 @@ def _webagent_run_llm_first_query(self: HomeMindWebAgent, raw_text: str, normali
             },
         }
 
+    spatial_rejection = self._spatial_rejection_for_decision(
+        decision,
+        " ".join(part for part in [raw_text, normalized_text, goal_query] if part),
+        route_info["route"],
+    )
+    if spatial_rejection:
+        return {
+            **spatial_rejection,
+            "_debug": {
+                "intent_plan": intent_plan,
+                "candidates": candidates,
+                "ranked": ranked,
+                "route_info": route_info,
+                "decision": decision,
+            },
+        }
+
     validation = self._validate_decision(decision)
-    if not validation["valid"]:
-        message = "我暂时不能执行这个指令：" + "；".join(validation["errors"])
+    if not validation.valid:
+        message = "我暂时不能执行这个指令：" + ";".join(validation.errors)
         self.session_store.update_clarification(message)
         return {
             "status": "clarification",
@@ -3152,7 +3207,7 @@ def _webagent_run_llm_first_query(self: HomeMindWebAgent, raw_text: str, normali
                 "decision": decision,
             },
         }
-    if validation["requires_confirmation"]:
+    if validation.requires_confirmation:
         message = "这个操作风险较高，需要二次确认后再执行。"
         self.session_store.update_clarification(message)
         return {
@@ -3171,7 +3226,7 @@ def _webagent_run_llm_first_query(self: HomeMindWebAgent, raw_text: str, normali
             },
         }
 
-    decision = validation["normalized_command"]
+    decision = validation.normalized_command
     action_type = decision.get("action", "")
     device = decision.get("device", "")
     device_action = decision.get("device_action", "")

@@ -6,6 +6,8 @@ The decider now works in two stages:
    clarification, or automation.
 2. `decide_local` / `decide_cloud` select a structured command from recalled
    candidates for executable requests.
+Also supports Ollama API backend for on-device inference with KV cache
+quantization (Q8_0), 2048 token context limit, and num_parallel=1.
 """
 
 from __future__ import annotations
@@ -13,8 +15,13 @@ from __future__ import annotations
 import json
 import logging
 import re
+import time
 from typing import Any, Dict, List, Optional
 
+import requests
+
+from core.config import OLLAMA_CONFIG, LLAMA_CPP_CONFIG, REACT_CONFIG
+from core.observability import get_metrics
 from core.safety import detect_safety_sensitive_request
 
 from .cloud_client import CloudClient
@@ -150,51 +157,135 @@ class LLMDecider:
         self.cloud_model = cloud_model
         self._llm = None
         self._cloud_client = None
+        self._ollama_session = None
         self._init_backend()
 
     def _init_backend(self):
         if self.backend == "mock":
             logger.info("LLMDecider initialized in mock mode")
+        elif self.backend == "ollama":
+            self._init_ollama()
         elif self.backend == "llama_cpp":
-            try:
-                from llama_cpp import Llama
-
-                self._llm = Llama(model_path=self.model_path, n_ctx=2048, n_threads=4)
-                logger.info("LLMDecider initialized with llama.cpp: %s", self.model_path)
-            except ImportError:
-                logger.warning("llama-cpp-python is not installed; falling back to mock")
-                self.backend = "mock"
+            self._init_llama_cpp()
         elif self.backend == "openai":
-            self._cloud_client = CloudClient(
-                api_base=self.api_base,
-                api_key=self.api_key,
-                model=self.cloud_model,
+            self._init_openai()
+
+    def _init_ollama(self):
+        """Connect to local Ollama server."""
+        cfg = OLLAMA_CONFIG
+        self._ollama_session = requests.Session()
+        self._ollama_session.headers.update({"Content-Type": "application/json"})
+        try:
+            resp = self._ollama_session.get(
+                f"{cfg['base_url']}/api/tags",
+                timeout=cfg["timeout"],
             )
-            if self._cloud_client.is_available():
-                logger.info("LLMDecider initialized with OpenAI-compatible cloud backend")
+            if resp.status_code == 200:
+                models = resp.json().get("models", [])
+                logger.info("LLMDecider connected to Ollama, available models: %s",
+                          [m.get("name") for m in models])
+                self.backend = "ollama"
             else:
-                logger.warning("Cloud backend unavailable; falling back to mock")
+                logger.warning("Ollama server returned %s; falling back to mock", resp.status_code)
                 self.backend = "mock"
+        except requests.exceptions.RequestException as exc:
+            logger.warning("Ollama server unreachable at %s: %s; falling back to mock",
+                         cfg["base_url"], exc)
+            self.backend = "mock"
+
+    def _init_llama_cpp(self):
+        try:
+            from llama_cpp import Llama
+
+            cfg = LLAMA_CPP_CONFIG
+            self._llm = Llama(
+                model_path=self.model_path or cfg["model_path"],
+                n_ctx=cfg["n_ctx"],
+                n_threads=cfg["n_threads"],
+                n_gpu_layers=cfg["n_gpu_layers"],
+                use_mlock=cfg["use_mlock"],
+            )
+            logger.info("LLMDecider initialized with llama.cpp: %s (n_ctx=%d)",
+                      self.model_path or cfg["model_path"], cfg["n_ctx"])
+        except ImportError:
+            logger.warning("llama-cpp-python is not installed; falling back to mock")
+            self.backend = "mock"
+
+    def _init_openai(self):
+        self._cloud_client = CloudClient(
+            api_base=self.api_base,
+            api_key=self.api_key,
+            model=self.cloud_model,
+        )
+        if self._cloud_client.is_available():
+            logger.info("LLMDecider initialized with OpenAI-compatible cloud backend")
+        else:
+            logger.warning("Cloud backend unavailable; falling back to mock")
+            self.backend = "mock"
 
     def is_cloud_available(self) -> bool:
-        return self.backend == "openai" and self._cloud_client is not None and self._cloud_client.is_available()
+        if self.backend == "openai" and self._cloud_client is not None:
+            return self._cloud_client.is_available()
+        return False
+
+    def _ollama_complete(self, prompt: str, max_tokens: int = 512) -> str:
+        """Call Ollama API for completion."""
+        cfg = OLLAMA_CONFIG
+        try:
+            resp = self._ollama_session.post(
+                f"{cfg['base_url']}/api/generate",
+                json={
+                    "model": cfg["model"],
+                    "prompt": prompt,
+                    "stream": False,
+                    "options": {
+                        "num_predict": max_tokens,
+                        "num_ctx": 2048,
+                        "temperature": 0.3,
+                    },
+                },
+                timeout=cfg["timeout"],
+            )
+            if resp.status_code == 200:
+                data = resp.json()
+                return data.get("response", "")
+        except requests.exceptions.RequestException as exc:
+            logger.warning("Ollama request failed: %s", exc)
+        return ""
 
     def complete_json(self, prompt: str, max_tokens: int = 512) -> Dict[str, Any]:
-        if not self.is_cloud_available():
+        if not self.is_cloud_available() and self.backend not in ("ollama", "llama_cpp"):
             return {}
+        start = time.time()
         try:
-            text = self._cloud_client.complete(prompt, max_tokens=max_tokens)
+            if self.backend == "ollama":
+                text = self._ollama_complete(prompt, max_tokens)
+            elif self.backend == "llama_cpp" and self._llm is not None:
+                output = self._llm(prompt, max_tokens=max_tokens, stop=["```"])
+                text = output.get("choices", [{}])[0].get("text", "") if isinstance(output, dict) else str(output)
+            else:
+                text = self._cloud_client.complete(prompt, max_tokens=max_tokens) if self._cloud_client else ""
         except Exception as exc:
-            logger.warning("Cloud JSON completion failed: %s", exc)
+            logger.warning("LLM completion failed: %s", exc)
             return {}
+
+        # Record metrics
+        latency_ms = (time.time() - start) * 1000
         try:
-            start = text.find("{")
-            end = text.rfind("}") + 1
-            if start != -1 and end > start:
-                parsed = json.loads(text[start:end])
+            metrics = get_metrics()
+            metrics.record_llm_request(self.backend, 0)
+            metrics.record_latency(latency_ms)
+        except Exception:
+            pass
+
+        try:
+            start_json = text.find("{")
+            end_json = text.rfind("}") + 1
+            if start_json != -1 and end_json > start_json:
+                parsed = json.loads(text[start_json:end_json])
                 return parsed if isinstance(parsed, dict) else {}
         except json.JSONDecodeError:
-            logger.warning("Cloud JSON parse failed: %s", text[:160])
+            logger.warning("JSON parse failed: %s", text[:160])
         return {}
 
     def plan_intent(
@@ -206,19 +297,26 @@ class LLMDecider:
         context_summary: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         route_text = str(normalized_query or query or "").strip()
-        if self.backend == "llama_cpp" and self._llm is not None:
+        if self.backend == "ollama":
+            prompt = self._build_intent_prompt(query, route_text, context_summary=context_summary)
+            text = self._ollama_complete(prompt, max_tokens=256)
+            parsed = self._parse_intent_output(text)
+            if parsed.get("intent_type"):
+                return parsed
+        elif self.backend == "llama_cpp" and self._llm is not None:
             prompt = self._build_intent_prompt(query, route_text, context_summary=context_summary)
             output = self._llm(prompt, max_tokens=256, stop=["```"])
             text = output.get("choices", [{}])[0].get("text", "") if isinstance(output, dict) else str(output)
             parsed = self._parse_intent_output(text)
-            if parsed.get("decision_confidence", 0.0) > 0:
+            if parsed.get("intent_type"):
                 return parsed
-        if self.backend == "openai" and self.is_cloud_available():
+        elif self.backend == "openai" and self.is_cloud_available():
             prompt = self._build_intent_prompt(query, route_text, context_summary=context_summary)
             try:
                 text = self._cloud_client.complete(prompt, max_tokens=256)
                 parsed = self._parse_intent_output(text)
-                if parsed.get("decision_confidence", 0.0) > 0:
+                if parsed.get("intent_type"):
+                    parsed = self._post_process_intent(parsed, route_text)
                     return parsed
             except Exception as exc:
                 logger.warning("Cloud intent planning failed: %s; falling back to mock", exc)
@@ -247,7 +345,13 @@ class LLMDecider:
         context,
         rag_context: str = "",
     ) -> Dict[str, Any]:
-        if self.backend == "llama_cpp" and self._llm is not None:
+        if self.backend == "ollama":
+            prompt = self._build_prompt(query, candidates, context, rag_context)
+            text = self._ollama_complete(prompt, max_tokens=256)
+            parsed = self._parse_output(text)
+            if parsed.get("confidence", 0.0) > 0:
+                return parsed
+        elif self.backend == "llama_cpp" and self._llm is not None:
             prompt = self._build_prompt(query, candidates, context, rag_context)
             output = self._llm(prompt, max_tokens=256, stop=["```"])
             text = output.get("choices", [{}])[0].get("text", "") if isinstance(output, dict) else str(output)
@@ -411,6 +515,32 @@ class LLMDecider:
                 "requires_automation": False,
                 "decision_confidence": 0.82,
                 "reasoning": "识别到控制动作，但需要候选约束进一步确认",
+            }
+
+        # Recognize implicit scene switch requests like "切换到XX模式"
+        if self._looks_like_scene_switch_request(route_text):
+            return {
+                "intent_type": "action_command",
+                "route": "action",
+                "reply_message": "",
+                "normalized_goal": route_text,
+                "requires_candidates": True,
+                "requires_automation": False,
+                "decision_confidence": 0.88,
+                "reasoning": "识别为场景切换请求",
+            }
+
+        # Recognize implicit comfort/action requests like "有点热"
+        if self._looks_like_comfort_request(route_text):
+            return {
+                "intent_type": "action_command",
+                "route": "action",
+                "reply_message": "",
+                "normalized_goal": route_text,
+                "requires_candidates": True,
+                "requires_automation": False,
+                "decision_confidence": 0.80,
+                "reasoning": "识别为舒适度/环境调节请求",
             }
 
         return {
@@ -602,6 +732,56 @@ class LLMDecider:
         if not text:
             return False
         return any(hint in text for hint in ACTION_HINTS) or text in DEVICE_ACTION_MAP or text in SCENE_ACTION_MAP
+
+    def _looks_like_scene_switch_request(self, text: str) -> bool:
+        """Recognize implicit scene switch requests like '切换到睡眠模式'."""
+        text = str(text or "").strip()
+        if not text:
+            return False
+        scene_keywords = ("睡眠", "待客", "离家", "观影", "起床", "回家", "工作", "早安", "晚归")
+        switch_keywords = ("切换", "进入", "开", "启动")
+        return any(sk in text for sk in scene_keywords) and any(sw in text for sw in switch_keywords)
+
+    def _looks_like_comfort_request(self, text: str) -> bool:
+        """Recognize implicit comfort/environment adjustment requests like '有点热'."""
+        text = str(text or "").strip()
+        if not text:
+            return False
+        comfort_keywords = ("热", "冷", "闷", "亮", "暗", "吵", "安静", "困")
+        return any(ck in text for ck in comfort_keywords)
+
+    def _post_process_intent(self, parsed: Dict[str, Any], query: str) -> Dict[str, Any]:
+        """
+        Override LLM intent classification when clear comfort/action keywords are present.
+        This ensures consistent behavior across cloud providers.
+        """
+        if parsed.get("intent_type") == "chat_reply" and self._looks_like_comfort_request(query):
+            return {
+                "intent_type": "action_command",
+                "route": "action",
+                "reply_message": "",
+                "normalized_goal": query,
+                "requires_candidates": True,
+                "requires_automation": False,
+                "decision_confidence": 0.85,
+                "reasoning": "识别为舒适度/环境调节请求（后处理覆盖LLM分类）",
+            }
+        if parsed.get("intent_type") == "chat_reply" and self._looks_like_scene_switch_request(query):
+            return {
+                "intent_type": "action_command",
+                "route": "action",
+                "reply_message": "",
+                "normalized_goal": query,
+                "requires_candidates": True,
+                "requires_automation": False,
+                "decision_confidence": 0.88,
+                "reasoning": "识别为场景切换请求（后处理覆盖LLM分类）",
+            }
+        if parsed.get("intent_type") == "action_command" and parsed.get("route") == "clarify":
+            parsed["route"] = "action"
+            parsed["requires_automation"] = False
+            parsed["requires_candidates"] = True
+        return parsed
 
     def _normalize_goal(self, text: str) -> str:
         text = str(text or "").strip()

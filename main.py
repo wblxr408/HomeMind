@@ -20,6 +20,7 @@ except ImportError:
 from demo.context import HomeContext
 from core.bsr.candidate_recall import BSRecall
 from core.automation import NLToTAPConverter, TAPRuleStore
+from core.automation.tap_engine import TAPEngine
 from core.lsr.precision_ranking import LSRecify
 from core.llm.decision import LLMDecider
 from core.dqn.policy import DQNPolicy
@@ -30,6 +31,7 @@ from core.language.normalizer import LanguageNormalizer
 from core.memory import PreferenceStore, SessionStore
 from core.privacy import PrivacyRedactor
 from core.router import InferenceRouter
+from core.config import SECURITY_CONFIG, DQN_CONFIG, REACT_CONFIG
 from tools.device_control import DeviceController
 from tools.info_query import InfoQuery
 from tools.scene_switch import SceneSwitcher
@@ -54,8 +56,13 @@ class HomeMindAgent:
         self.preference_store = PreferenceStore()
         self.privacy_redactor = PrivacyRedactor()
         self.router = InferenceRouter()
-        self.command_validator = CommandValidator()
+        self.command_validator = CommandValidator(
+            scene_store=None,
+            rate_limit_window_s=SECURITY_CONFIG["rate_limit_window_s"],
+            rate_limit_max_ops=SECURITY_CONFIG["rate_limit_max_ops"],
+        )
         self.tap_rule_store = TAPRuleStore()
+        self.tap_engine = TAPEngine()
         self.kb = KnowledgeBase()
         self.kb.preference_store = self.preference_store
         self.bsr = BSRecall(self.kb)
@@ -67,7 +74,10 @@ class HomeMindAgent:
             api_key=os.getenv("LLM_API_KEY", ""),
             cloud_model=os.getenv("LLM_MODEL", ""),
         )
-        self.dqn = DQNPolicy()
+        self.dqn = DQNPolicy(
+            model_dir=os.getenv("DQN_MODEL_DIR", "models"),
+            seed=int(os.getenv("DQN_SEED", "42")),
+        )
         self.device_ctrl = DeviceController()
         self.info_query = InfoQuery()
         self.scene_switcher = SceneSwitcher(self.device_ctrl)
@@ -75,6 +85,11 @@ class HomeMindAgent:
         self.dqn_feedback = DQNFeedback(self.dqn)
         self.language_normalizer = LanguageNormalizer()
         self.nl_to_tap = NLToTAPConverter()
+
+        # 运行时注入 scene_store，解决 CommandValidator 初始化时为 None 的问题
+        from core.automation.scene_store import SceneStore
+        scene_store = SceneStore()
+        self.command_validator.set_scene_store(scene_store)
 
         self.context = HomeContext()
         self.context.current_scene = ""
@@ -130,7 +145,7 @@ class HomeMindAgent:
         if current_scene:
             self.context.current_scene = current_scene
             self.context.last_scene = SCENE_INDEX_MAP.get(current_scene, -1)
-        if self.kb and os.path.exists(os.path.join("data", "kb_backup.enc")):
+        if self.kb and os.path.exists(self.kb.backup_path):
             self.kb.restore()
 
     def process(self, user_input: str) -> str:
@@ -145,6 +160,20 @@ class HomeMindAgent:
         if self._simulator:
             self.context = self._simulator.get_context()
             self.context.current_scene = self.session_store.get_current_scene()
+
+        # TAP 自动化规则评估（每次处理用户输入时主动检查）
+        matched_rules = self.tap_engine.evaluate(
+            self.context,
+            self.tap_rule_store.list_rules(),
+        )
+        if matched_rules:
+            logger.info("TAP 规则触发 %d 条: %s", len(matched_rules), [r["rule"].get("name") for r in matched_rules])
+            # 按优先级执行触发规则，低于当前置信度阈值的规则不执行
+            for rule_match in matched_rules:
+                cmd = rule_match["command"]
+                if cmd.get("confidence", 1.0) >= self.confidence_threshold:
+                    logger.info("执行 TAP 规则: %s", rule_match["rule"].get("name", "unnamed"))
+                    self._execute_command_from_dict(cmd)
 
         pending = self.session_store.get_pending_confirmation()
         if pending:
@@ -250,15 +279,15 @@ class HomeMindAgent:
 
         validation = self.command_validator.validate(decision)
         logger.info(f"命令校验: {validation}")
-        if not validation["valid"]:
-            message = "我暂时不能执行这个指令：" + "；".join(validation["errors"])
+        if not validation.valid:
+            message = "我暂时不能执行这个指令：" + ";".join(validation.errors)
             self.session_store.update_clarification(message)
             return message
-        if validation["requires_confirmation"]:
+        if validation.requires_confirmation:
             message = "这个操作风险较高，需要二次确认后再执行。"
             self.session_store.update_clarification(message)
             return message
-        decision = validation["normalized_command"]
+        decision = validation.normalized_command
 
         action = decision.get("action", "")
         params = decision.get("params", {})
@@ -298,14 +327,33 @@ class HomeMindAgent:
         else:
             result = f"执行了: {action}，参数: {params}"
 
-        # 根据置信度决定反馈：高于阈值记录"接受"，否则记录"忽略"
-        confidence = decision.get("confidence", 0)
-        feedback = "接受" if confidence >= 0.85 else "忽略"
-        self.session_store.update_from_decision(decision, route=route, result=result)
-        self.preference_store.record_feedback(user_input, query_for_ai, feedback)
-        if feedback == "接受":
-            self.preference_store.record_action_accept(decision, self.context)
-        self.kb_writer.write_feedback(user_input, decision, feedback)
+        # DQN 在线学习反馈回路（每次执行后记录）
+        self.dqn.record_feedback(self.context, int(self._last_dqn_action or 0), feedback)
+        # 持久化 DQN 事件到 PreferenceStore
+        scene_name = SCENE_NAMES.get(int(self._last_dqn_action or 0), "") if self._last_dqn_action else ""
+        if scene_name:
+            self.preference_store.record_dqn_recommendation(
+                scene=scene_name,
+                action=int(self._last_dqn_action or 0),
+                confidence=confidence,
+                reason=f"feedback={feedback}",
+                source="process",
+            )
+            self.preference_store.record_dqn_feedback(
+                scene=scene_name,
+                action=int(self._last_dqn_action or 0),
+                feedback=feedback,
+                reward=DQNPolicy.REWARD_MAP.get(feedback, 0.0),
+                updated=False,
+                buffer_size=len(self.dqn.replay),
+                source="process",
+            )
+
+        # 定期触发 DQN 在线学习（每 DQN_CONFIG["update_freq"] 次记录后触发一次更新）
+        if self.dqn.update_counter > 0 and self.dqn.update_counter % DQN_CONFIG["update_freq"] == 0:
+            update_result = self.dqn.daily_incremental_update(min_replay=DQN_CONFIG["batch_size"])
+            if update_result.get("status") == "updated":
+                self.preference_store.record_dqn_learning(update_result, source="periodic")
 
         return result
 
@@ -377,6 +425,44 @@ class HomeMindAgent:
         """将场景切换结果同步到 simulator"""
         if self._simulator:
             self._simulator.apply_scene(scene)
+
+    def _execute_command_from_dict(self, cmd: dict) -> str:
+        """执行来自 TAP 规则或 ReAct 循环的结构化命令。"""
+        action = cmd.get("action", "")
+        device = cmd.get("device", "")
+        device_action = cmd.get("device_action", "")
+        params = cmd.get("params", {})
+        scene = cmd.get("scene", "")
+
+        if action == "设备控制":
+            try:
+                result = self.device_ctrl.execute(device, device_action, params)
+                self._sync_devices_from_controller()
+                return result
+            except Exception as e:
+                logger.error("TAP 设备控制失败: %s", e)
+                return f"设备控制失败: {e}"
+
+        if action == "场景切换":
+            try:
+                result = self.scene_switcher.execute(scene)
+                self._sync_scene_to_simulator(scene)
+                self.context.current_scene = scene
+                self.context.last_scene = SCENE_INDEX_MAP.get(scene, -1)
+                self.session_store.update_scene(scene)
+                return result
+            except Exception as e:
+                logger.error("TAP 场景切换失败: %s", e)
+                return f"场景切换失败: {e}"
+
+        if action == "信息查询":
+            try:
+                return self.info_query.execute(cmd.get("query_type", "status"), params)
+            except Exception as e:
+                logger.error("TAP 信息查询失败: %s", e)
+                return f"信息查询失败: {e}"
+
+        return f"未知动作类型: {action}"
 
     def _scene_to_index(self, scene: str) -> int:
         scene_map = {"睡眠模式": 0, "待客模式": 1, "离家模式": 2,
@@ -566,15 +652,15 @@ def _llm_first_process(self: HomeMindAgent, user_input: str) -> str:
 
     validation = self.command_validator.validate(decision)
     logger.info("命令校验: %s", validation)
-    if not validation["valid"]:
-        message = "我暂时不能执行这个指令：" + "；".join(validation["errors"])
+    if not validation.valid:
+        message = "我暂时不能执行这个指令：" + ";".join(validation.errors)
         self.session_store.update_clarification(message)
         return message
-    if validation["requires_confirmation"]:
+    if validation.requires_confirmation:
         message = "这个操作风险较高，需要二次确认后再执行。"
         self.session_store.update_clarification(message)
         return message
-    decision = validation["normalized_command"]
+    decision = validation.normalized_command
 
     action = decision.get("action", "")
     params = decision.get("params", {})
