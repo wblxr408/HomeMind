@@ -6,6 +6,9 @@ param(
     [int]$Port = 5000,
     [ValidateSet("mock", "qwen25-1.5b-q4", "qwen25-3b-q4")]
     [string]$LlmProfile = "qwen25-1.5b-q4",
+    [ValidateSet("auto", "cpu", "force")]
+    [string]$GpuMode = "auto",
+    [int]$GpuLayers = -1,
     [switch]$Debug
 )
 
@@ -42,6 +45,7 @@ $ProfileConfig = @{
         ModelPath = Join-Path $PSScriptRoot "models\Qwen2.5-1.5B-Instruct-Q4_K_M.gguf"
         Context = 2048
         Threads = 4
+        GpuLayers = -1
     }
     "qwen25-3b-q4" = @{
         Backend = "llama_cpp"
@@ -49,6 +53,7 @@ $ProfileConfig = @{
         ModelPath = Join-Path $PSScriptRoot "models\Qwen2.5-3B-Instruct-Q4_K_M.gguf"
         Context = 2048
         Threads = 4
+        GpuLayers = -1
     }
 }
 
@@ -74,7 +79,9 @@ if ($SelectedProfile.ModelPath) {
     $env:LLM_MODEL_PATH = $SelectedProfile.ModelPath
     $env:LLAMA_N_CTX = "$($SelectedProfile.Context)"
     $env:LLAMA_N_THREADS = "$($SelectedProfile.Threads)"
-    $env:LLAMA_N_GPU_LAYERS = "0"
+    $env:LLAMA_GPU_MODE = $GpuMode
+    $ResolvedGpuLayers = if ($GpuMode -eq "cpu") { 0 } elseif ($GpuLayers -ge 0) { $GpuLayers } else { $SelectedProfile.GpuLayers }
+    $env:LLAMA_N_GPU_LAYERS = "$ResolvedGpuLayers"
 }
 
 $DisplayHost = if ($HostAddress -eq "0.0.0.0") { "localhost" } else { $HostAddress }
@@ -108,6 +115,8 @@ if ($SelectedProfile.ModelPath) {
     Write-Host "    - Model Path:    $($SelectedProfile.ModelPath)" -ForegroundColor White
     Write-Host "    - Context:       $($SelectedProfile.Context)" -ForegroundColor White
     Write-Host "    - Threads:       $($SelectedProfile.Threads)" -ForegroundColor White
+    Write-Host "    - GPU Mode:      $GpuMode" -ForegroundColor White
+    Write-Host "    - GPU Layers:    $env:LLAMA_N_GPU_LAYERS" -ForegroundColor White
 }
 Write-Host ""
 Write-Host "  Press Ctrl+C to stop" -ForegroundColor Yellow

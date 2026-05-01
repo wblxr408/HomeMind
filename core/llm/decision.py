@@ -16,6 +16,7 @@ import json
 import logging
 import re
 import time
+from copy import deepcopy
 from typing import Any, Dict, List, Optional
 
 import requests
@@ -158,6 +159,7 @@ class LLMDecider:
         self._llm = None
         self._cloud_client = None
         self._ollama_session = None
+        self._llama_runtime: Dict[str, Any] = {}
         self._init_backend()
 
     def _init_backend(self):
@@ -198,18 +200,65 @@ class LLMDecider:
             from llama_cpp import Llama
 
             cfg = LLAMA_CPP_CONFIG
-            self._llm = Llama(
-                model_path=self.model_path or cfg["model_path"],
-                n_ctx=cfg["n_ctx"],
-                n_threads=cfg["n_threads"],
-                n_gpu_layers=cfg["n_gpu_layers"],
-                use_mlock=cfg["use_mlock"],
-            )
-            logger.info("LLMDecider initialized with llama.cpp: %s (n_ctx=%d)",
-                      self.model_path or cfg["model_path"], cfg["n_ctx"])
+            attempts = self._build_llama_attempts(cfg)
+            last_error = ""
+            for attempt in attempts:
+                kwargs = deepcopy(attempt["kwargs"])
+                try:
+                    self._llm = Llama(**kwargs)
+                    self._llama_runtime = {
+                        "gpu_mode": attempt["mode"],
+                        "requested_gpu_layers": cfg["n_gpu_layers"],
+                        "effective_gpu_layers": kwargs["n_gpu_layers"],
+                        "model_path": kwargs["model_path"],
+                        "n_ctx": kwargs["n_ctx"],
+                        "n_threads": kwargs["n_threads"],
+                    }
+                    logger.info(
+                        "LLMDecider initialized with llama.cpp: %s (n_ctx=%d, n_gpu_layers=%d, mode=%s)",
+                        kwargs["model_path"],
+                        kwargs["n_ctx"],
+                        kwargs["n_gpu_layers"],
+                        attempt["mode"],
+                    )
+                    return
+                except Exception as exc:
+                    last_error = f"{type(exc).__name__}: {exc}"
+                    logger.warning(
+                        "llama.cpp init attempt failed (mode=%s, n_gpu_layers=%s): %s",
+                        attempt["mode"],
+                        kwargs["n_gpu_layers"],
+                        last_error,
+                    )
+            logger.warning("llama.cpp unavailable after all init attempts; falling back to mock")
+            self._llm = None
+            self._llama_runtime = {"error": last_error}
+            self.backend = "mock"
         except ImportError:
             logger.warning("llama-cpp-python is not installed; falling back to mock")
             self.backend = "mock"
+            self._llama_runtime = {"error": "llama-cpp-python not installed"}
+
+    def _build_llama_attempts(self, cfg: Dict[str, Any]) -> List[Dict[str, Any]]:
+        base_kwargs = {
+            "model_path": self.model_path or cfg["model_path"],
+            "n_ctx": cfg["n_ctx"],
+            "n_threads": cfg["n_threads"],
+            "use_mlock": cfg["use_mlock"],
+        }
+        gpu_mode = str(cfg.get("gpu_mode", "auto") or "auto").strip().lower()
+        requested_gpu_layers = int(cfg.get("n_gpu_layers", 0) or 0)
+
+        if gpu_mode == "cpu" or requested_gpu_layers == 0:
+            return [{"mode": "cpu", "kwargs": {**base_kwargs, "n_gpu_layers": 0}}]
+
+        gpu_attempt = {
+            "mode": "gpu_force" if gpu_mode == "force" else "gpu_auto",
+            "kwargs": {**base_kwargs, "n_gpu_layers": requested_gpu_layers},
+        }
+        if gpu_mode == "force":
+            return [gpu_attempt]
+        return [gpu_attempt, {"mode": "cpu_fallback", "kwargs": {**base_kwargs, "n_gpu_layers": 0}}]
 
     def _init_openai(self):
         self._cloud_client = CloudClient(

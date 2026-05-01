@@ -49,7 +49,7 @@ EDGE_LLM_PROFILES = {
         "backend": "llama_cpp",
         "n_ctx": 2048,
         "n_threads": 4,
-        "n_gpu_layers": 0,
+        "n_gpu_layers": -1,
     },
     "qwen25_3b_q4": {
         "display_name": "Qwen2.5-3B-Instruct-Q4_K_M",
@@ -57,7 +57,7 @@ EDGE_LLM_PROFILES = {
         "backend": "llama_cpp",
         "n_ctx": 2048,
         "n_threads": 4,
-        "n_gpu_layers": 0,
+        "n_gpu_layers": -1,
     },
 }
 
@@ -75,6 +75,7 @@ LLAMA_CPP_CONFIG = {
     "n_ctx": _env_int("LLAMA_N_CTX", _DEFAULT_EDGE_LLM["n_ctx"]),
     "n_threads": _env_int("LLAMA_N_THREADS", _DEFAULT_EDGE_LLM["n_threads"]),
     "n_gpu_layers": _env_int("LLAMA_N_GPU_LAYERS", _DEFAULT_EDGE_LLM["n_gpu_layers"]),
+    "gpu_mode": _env("LLAMA_GPU_MODE", "auto").strip().lower(),
     "use_mlock": True,
     "kv_cache_type": _env("LLAMA_KV_CACHE_TYPE", "Q8_0"),
 }
