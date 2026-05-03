@@ -1,302 +1,164 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (MiKTeX 24.1) (preloaded format=pdflatex 2026.4.9)  1 MAY 2026 14:36
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (MiKTeX 24.1) (preloaded format=pdflatex 2026.4.9)  3 MAY 2026 18:53
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
  %&-line parsing enabled.
-**./main.tex
-(main.tex
+**d:/HomeMind/main.tex
+(d:/HomeMind/main.tex
 LaTeX2e <2025-11-01>
 L3 programming layer <2026-01-19>
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/ctex\ctexrep.cls
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/ctex/config\ctexbackend
-.cfg
+(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/ctex\ctexrep.cls (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/ctex/config\ctexbackend.cfg
 File: ctexbackend.cfg 2022/07/14 v2.5.10 Backend configuration file (CTEX)
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/l3kernel\expl3.sty
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/l3kernel\expl3.sty
 Package: expl3 2026-01-19 L3 programming layer (loader) 
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/l3backend\l3backend-pdf
-tex.def
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/l3backend\l3backend-pdftex.def
 File: l3backend-pdftex.def 2025-10-09 L3 backend support: PDF output (pdfTeX)
 \l__color_backend_stack_int=\count275
 ))
-Document Class: ctexrep 2022/07/14 v2.5.10 Chinese adapter for class report (CT
-EX)
+Document Class: ctexrep 2022/07/14 v2.5.10 Chinese adapter for class report (CTEX)
 (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/ctex\ctexhook.sty
 Package: ctexhook 2022/07/14 v2.5.10 Document and package hooks (CTEX)
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/ctex\ctexpatch.sty
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/ctex\ctexpatch.sty
 Package: ctexpatch 2022/07/14 v2.5.10 Patching commands (CTEX)
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/base\fix-cm.sty
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/base\fix-cm.sty
 Package: fix-cm 2020/11/24 v1.1t fixes to LaTeX
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/base\ts1enc.def
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/base\ts1enc.def
 File: ts1enc.def 2001/06/05 v3.0e (jk/car/fm) Standard LaTeX file
 LaTeX Font Info:    Redeclaring font encoding TS1 on input line 47.
-LaTeX Encoding Info:    Redeclaring text command \capitalcedilla (encoding TS1)
- on input line 49.
-LaTeX Encoding Info:    Redeclaring text command \capitalogonek (encoding TS1) 
-on input line 52.
-LaTeX Encoding Info:    Redeclaring text command \capitalgrave (encoding TS1) o
-n input line 55.
-LaTeX Encoding Info:    Redeclaring text command \capitalacute (encoding TS1) o
-n input line 56.
-LaTeX Encoding Info:    Redeclaring text command \capitalcircumflex (encoding T
-S1) on input line 57.
-LaTeX Encoding Info:    Redeclaring text command \capitaltilde (encoding TS1) o
-n input line 58.
-LaTeX Encoding Info:    Redeclaring text command \capitaldieresis (encoding TS1
-) on input line 59.
-LaTeX Encoding Info:    Redeclaring text command \capitalhungarumlaut (encoding
- TS1) on input line 60.
-LaTeX Encoding Info:    Redeclaring text command \capitalring (encoding TS1) on
- input line 61.
-LaTeX Encoding Info:    Redeclaring text command \capitalcaron (encoding TS1) o
-n input line 62.
-LaTeX Encoding Info:    Redeclaring text command \capitalbreve (encoding TS1) o
-n input line 63.
-LaTeX Encoding Info:    Redeclaring text command \capitalmacron (encoding TS1) 
-on input line 64.
-LaTeX Encoding Info:    Redeclaring text command \capitaldotaccent (encoding TS
-1) on input line 65.
-LaTeX Encoding Info:    Redeclaring text command \t (encoding TS1) on input lin
-e 66.
-LaTeX Encoding Info:    Redeclaring text command \capitaltie (encoding TS1) on 
-input line 67.
-LaTeX Encoding Info:    Redeclaring text command \newtie (encoding TS1) on inpu
-t line 68.
-LaTeX Encoding Info:    Redeclaring text command \capitalnewtie (encoding TS1) 
-on input line 69.
-LaTeX Encoding Info:    Redeclaring text symbol \textcapitalcompwordmark (encod
-ing TS1) on input line 70.
-LaTeX Encoding Info:    Redeclaring text symbol \textascendercompwordmark (enco
-ding TS1) on input line 71.
-LaTeX Encoding Info:    Redeclaring text symbol \textquotestraightbase (encodin
-g TS1) on input line 72.
-LaTeX Encoding Info:    Redeclaring text symbol \textquotestraightdblbase (enco
-ding TS1) on input line 73.
-LaTeX Encoding Info:    Redeclaring text symbol \texttwelveudash (encoding TS1)
- on input line 74.
-LaTeX Encoding Info:    Redeclaring text symbol \textthreequartersemdash (encod
-ing TS1) on input line 75.
-LaTeX Encoding Info:    Redeclaring text symbol \textleftarrow (encoding TS1) o
-n input line 76.
-LaTeX Encoding Info:    Redeclaring text symbol \textrightarrow (encoding TS1) 
-on input line 77.
-LaTeX Encoding Info:    Redeclaring text symbol \textblank (encoding TS1) on in
-put line 78.
-LaTeX Encoding Info:    Redeclaring text symbol \textdollar (encoding TS1) on i
-nput line 79.
-LaTeX Encoding Info:    Redeclaring text symbol \textquotesingle (encoding TS1)
- on input line 80.
-LaTeX Encoding Info:    Redeclaring text command \textasteriskcentered (encodin
-g TS1) on input line 81.
-LaTeX Encoding Info:    Redeclaring text symbol \textdblhyphen (encoding TS1) o
-n input line 92.
-LaTeX Encoding Info:    Redeclaring text symbol \textfractionsolidus (encoding 
-TS1) on input line 93.
-LaTeX Encoding Info:    Redeclaring text symbol \textzerooldstyle (encoding TS1
-) on input line 94.
-LaTeX Encoding Info:    Redeclaring text symbol \textoneoldstyle (encoding TS1)
- on input line 95.
-LaTeX Encoding Info:    Redeclaring text symbol \texttwooldstyle (encoding TS1)
- on input line 96.
-LaTeX Encoding Info:    Redeclaring text symbol \textthreeoldstyle (encoding TS
-1) on input line 97.
-LaTeX Encoding Info:    Redeclaring text symbol \textfouroldstyle (encoding TS1
-) on input line 98.
-LaTeX Encoding Info:    Redeclaring text symbol \textfiveoldstyle (encoding TS1
-) on input line 99.
-LaTeX Encoding Info:    Redeclaring text symbol \textsixoldstyle (encoding TS1)
- on input line 100.
-LaTeX Encoding Info:    Redeclaring text symbol \textsevenoldstyle (encoding TS
-1) on input line 101.
-LaTeX Encoding Info:    Redeclaring text symbol \texteightoldstyle (encoding TS
-1) on input line 102.
-LaTeX Encoding Info:    Redeclaring text symbol \textnineoldstyle (encoding TS1
-) on input line 103.
-LaTeX Encoding Info:    Redeclaring text symbol \textlangle (encoding TS1) on i
-nput line 104.
-LaTeX Encoding Info:    Redeclaring text symbol \textminus (encoding TS1) on in
-put line 105.
-LaTeX Encoding Info:    Redeclaring text symbol \textrangle (encoding TS1) on i
-nput line 106.
-LaTeX Encoding Info:    Redeclaring text symbol \textmho (encoding TS1) on inpu
-t line 107.
-LaTeX Encoding Info:    Redeclaring text symbol \textbigcircle (encoding TS1) o
-n input line 108.
-LaTeX Encoding Info:    Redeclaring text command \textcircled (encoding TS1) on
- input line 109.
-LaTeX Encoding Info:    Redeclaring text symbol \textohm (encoding TS1) on inpu
-t line 115.
-LaTeX Encoding Info:    Redeclaring text symbol \textlbrackdbl (encoding TS1) o
-n input line 116.
-LaTeX Encoding Info:    Redeclaring text symbol \textrbrackdbl (encoding TS1) o
-n input line 117.
-LaTeX Encoding Info:    Redeclaring text symbol \textuparrow (encoding TS1) on 
-input line 118.
-LaTeX Encoding Info:    Redeclaring text symbol \textdownarrow (encoding TS1) o
-n input line 119.
-LaTeX Encoding Info:    Redeclaring text symbol \textasciigrave (encoding TS1) 
-on input line 120.
-LaTeX Encoding Info:    Redeclaring text symbol \textborn (encoding TS1) on inp
-ut line 121.
-LaTeX Encoding Info:    Redeclaring text symbol \textdivorced (encoding TS1) on
- input line 122.
-LaTeX Encoding Info:    Redeclaring text symbol \textdied (encoding TS1) on inp
-ut line 123.
-LaTeX Encoding Info:    Redeclaring text symbol \textleaf (encoding TS1) on inp
-ut line 124.
-LaTeX Encoding Info:    Redeclaring text symbol \textmarried (encoding TS1) on 
-input line 125.
-LaTeX Encoding Info:    Redeclaring text symbol \textmusicalnote (encoding TS1)
- on input line 126.
-LaTeX Encoding Info:    Redeclaring text symbol \texttildelow (encoding TS1) on
- input line 127.
-LaTeX Encoding Info:    Redeclaring text symbol \textdblhyphenchar (encoding TS
-1) on input line 128.
-LaTeX Encoding Info:    Redeclaring text symbol \textasciibreve (encoding TS1) 
-on input line 129.
-LaTeX Encoding Info:    Redeclaring text symbol \textasciicaron (encoding TS1) 
-on input line 130.
-LaTeX Encoding Info:    Redeclaring text symbol \textacutedbl (encoding TS1) on
- input line 131.
-LaTeX Encoding Info:    Redeclaring text symbol \textgravedbl (encoding TS1) on
- input line 132.
-LaTeX Encoding Info:    Redeclaring text symbol \textdagger (encoding TS1) on i
-nput line 133.
-LaTeX Encoding Info:    Redeclaring text symbol \textdaggerdbl (encoding TS1) o
-n input line 134.
-LaTeX Encoding Info:    Redeclaring text symbol \textbardbl (encoding TS1) on i
-nput line 135.
-LaTeX Encoding Info:    Redeclaring text symbol \textperthousand (encoding TS1)
- on input line 136.
-LaTeX Encoding Info:    Redeclaring text symbol \textbullet (encoding TS1) on i
-nput line 137.
-LaTeX Encoding Info:    Redeclaring text symbol \textcelsius (encoding TS1) on 
-input line 138.
-LaTeX Encoding Info:    Redeclaring text symbol \textdollaroldstyle (encoding T
-S1) on input line 139.
-LaTeX Encoding Info:    Redeclaring text symbol \textcentoldstyle (encoding TS1
-) on input line 140.
-LaTeX Encoding Info:    Redeclaring text symbol \textflorin (encoding TS1) on i
-nput line 141.
-LaTeX Encoding Info:    Redeclaring text symbol \textcolonmonetary (encoding TS
-1) on input line 142.
-LaTeX Encoding Info:    Redeclaring text symbol \textwon (encoding TS1) on inpu
-t line 143.
-LaTeX Encoding Info:    Redeclaring text symbol \textnaira (encoding TS1) on in
-put line 144.
-LaTeX Encoding Info:    Redeclaring text symbol \textguarani (encoding TS1) on 
-input line 145.
-LaTeX Encoding Info:    Redeclaring text symbol \textpeso (encoding TS1) on inp
-ut line 146.
-LaTeX Encoding Info:    Redeclaring text symbol \textlira (encoding TS1) on inp
-ut line 147.
-LaTeX Encoding Info:    Redeclaring text symbol \textrecipe (encoding TS1) on i
-nput line 148.
-LaTeX Encoding Info:    Redeclaring text symbol \textinterrobang (encoding TS1)
- on input line 149.
-LaTeX Encoding Info:    Redeclaring text symbol \textinterrobangdown (encoding 
-TS1) on input line 150.
-LaTeX Encoding Info:    Redeclaring text symbol \textdong (encoding TS1) on inp
-ut line 151.
-LaTeX Encoding Info:    Redeclaring text symbol \texttrademark (encoding TS1) o
-n input line 152.
-LaTeX Encoding Info:    Redeclaring text symbol \textpertenthousand (encoding T
-S1) on input line 153.
-LaTeX Encoding Info:    Redeclaring text symbol \textpilcrow (encoding TS1) on 
-input line 154.
-LaTeX Encoding Info:    Redeclaring text symbol \textbaht (encoding TS1) on inp
-ut line 155.
-LaTeX Encoding Info:    Redeclaring text symbol \textnumero (encoding TS1) on i
-nput line 156.
-LaTeX Encoding Info:    Redeclaring text symbol \textdiscount (encoding TS1) on
- input line 157.
-LaTeX Encoding Info:    Redeclaring text symbol \textestimated (encoding TS1) o
-n input line 158.
-LaTeX Encoding Info:    Redeclaring text symbol \textopenbullet (encoding TS1) 
-on input line 159.
-LaTeX Encoding Info:    Redeclaring text symbol \textservicemark (encoding TS1)
- on input line 160.
-LaTeX Encoding Info:    Redeclaring text symbol \textlquill (encoding TS1) on i
-nput line 161.
-LaTeX Encoding Info:    Redeclaring text symbol \textrquill (encoding TS1) on i
-nput line 162.
-LaTeX Encoding Info:    Redeclaring text symbol \textcent (encoding TS1) on inp
-ut line 163.
-LaTeX Encoding Info:    Redeclaring text symbol \textsterling (encoding TS1) on
- input line 164.
-LaTeX Encoding Info:    Redeclaring text symbol \textcurrency (encoding TS1) on
- input line 165.
-LaTeX Encoding Info:    Redeclaring text symbol \textyen (encoding TS1) on inpu
-t line 166.
-LaTeX Encoding Info:    Redeclaring text symbol \textbrokenbar (encoding TS1) o
-n input line 167.
-LaTeX Encoding Info:    Redeclaring text symbol \textsection (encoding TS1) on 
-input line 168.
-LaTeX Encoding Info:    Redeclaring text symbol \textasciidieresis (encoding TS
-1) on input line 169.
-LaTeX Encoding Info:    Redeclaring text symbol \textcopyright (encoding TS1) o
-n input line 170.
-LaTeX Encoding Info:    Redeclaring text symbol \textordfeminine (encoding TS1)
- on input line 171.
-LaTeX Encoding Info:    Redeclaring text symbol \textcopyleft (encoding TS1) on
- input line 172.
-LaTeX Encoding Info:    Redeclaring text symbol \textlnot (encoding TS1) on inp
-ut line 173.
-LaTeX Encoding Info:    Redeclaring text symbol \textcircledP (encoding TS1) on
- input line 174.
-LaTeX Encoding Info:    Redeclaring text symbol \textregistered (encoding TS1) 
-on input line 175.
-LaTeX Encoding Info:    Redeclaring text symbol \textasciimacron (encoding TS1)
- on input line 176.
-LaTeX Encoding Info:    Redeclaring text symbol \textdegree (encoding TS1) on i
-nput line 177.
-LaTeX Encoding Info:    Redeclaring text symbol \textpm (encoding TS1) on input
- line 178.
-LaTeX Encoding Info:    Redeclaring text symbol \texttwosuperior (encoding TS1)
- on input line 179.
-LaTeX Encoding Info:    Redeclaring text symbol \textthreesuperior (encoding TS
-1) on input line 180.
-LaTeX Encoding Info:    Redeclaring text symbol \textasciiacute (encoding TS1) 
-on input line 181.
-LaTeX Encoding Info:    Redeclaring text symbol \textmu (encoding TS1) on input
- line 182.
-LaTeX Encoding Info:    Redeclaring text symbol \textparagraph (encoding TS1) o
-n input line 183.
-LaTeX Encoding Info:    Redeclaring text symbol \textperiodcentered (encoding T
-S1) on input line 184.
-LaTeX Encoding Info:    Redeclaring text symbol \textreferencemark (encoding TS
-1) on input line 185.
-LaTeX Encoding Info:    Redeclaring text symbol \textonesuperior (encoding TS1)
- on input line 186.
-LaTeX Encoding Info:    Redeclaring text symbol \textordmasculine (encoding TS1
-) on input line 187.
-LaTeX Encoding Info:    Redeclaring text symbol \textsurd (encoding TS1) on inp
-ut line 188.
-LaTeX Encoding Info:    Redeclaring text symbol \textonequarter (encoding TS1) 
-on input line 189.
-LaTeX Encoding Info:    Redeclaring text symbol \textonehalf (encoding TS1) on 
-input line 190.
-LaTeX Encoding Info:    Redeclaring text symbol \textthreequarters (encoding TS
-1) on input line 191.
-LaTeX Encoding Info:    Redeclaring text symbol \texteuro (encoding TS1) on inp
-ut line 192.
-LaTeX Encoding Info:    Redeclaring text symbol \texttimes (encoding TS1) on in
-put line 193.
-LaTeX Encoding Info:    Redeclaring text symbol \textdiv (encoding TS1) on inpu
-t line 194.
+LaTeX Encoding Info:    Redeclaring text command \capitalcedilla (encoding TS1) on input line 49.
+LaTeX Encoding Info:    Redeclaring text command \capitalogonek (encoding TS1) on input line 52.
+LaTeX Encoding Info:    Redeclaring text command \capitalgrave (encoding TS1) on input line 55.
+LaTeX Encoding Info:    Redeclaring text command \capitalacute (encoding TS1) on input line 56.
+LaTeX Encoding Info:    Redeclaring text command \capitalcircumflex (encoding TS1) on input line 57.
+LaTeX Encoding Info:    Redeclaring text command \capitaltilde (encoding TS1) on input line 58.
+LaTeX Encoding Info:    Redeclaring text command \capitaldieresis (encoding TS1) on input line 59.
+LaTeX Encoding Info:    Redeclaring text command \capitalhungarumlaut (encoding TS1) on input line 60.
+LaTeX Encoding Info:    Redeclaring text command \capitalring (encoding TS1) on input line 61.
+LaTeX Encoding Info:    Redeclaring text command \capitalcaron (encoding TS1) on input line 62.
+LaTeX Encoding Info:    Redeclaring text command \capitalbreve (encoding TS1) on input line 63.
+LaTeX Encoding Info:    Redeclaring text command \capitalmacron (encoding TS1) on input line 64.
+LaTeX Encoding Info:    Redeclaring text command \capitaldotaccent (encoding TS1) on input line 65.
+LaTeX Encoding Info:    Redeclaring text command \t (encoding TS1) on input line 66.
+LaTeX Encoding Info:    Redeclaring text command \capitaltie (encoding TS1) on input line 67.
+LaTeX Encoding Info:    Redeclaring text command \newtie (encoding TS1) on input line 68.
+LaTeX Encoding Info:    Redeclaring text command \capitalnewtie (encoding TS1) on input line 69.
+LaTeX Encoding Info:    Redeclaring text symbol \textcapitalcompwordmark (encoding TS1) on input line 70.
+LaTeX Encoding Info:    Redeclaring text symbol \textascendercompwordmark (encoding TS1) on input line 71.
+LaTeX Encoding Info:    Redeclaring text symbol \textquotestraightbase (encoding TS1) on input line 72.
+LaTeX Encoding Info:    Redeclaring text symbol \textquotestraightdblbase (encoding TS1) on input line 73.
+LaTeX Encoding Info:    Redeclaring text symbol \texttwelveudash (encoding TS1) on input line 74.
+LaTeX Encoding Info:    Redeclaring text symbol \textthreequartersemdash (encoding TS1) on input line 75.
+LaTeX Encoding Info:    Redeclaring text symbol \textleftarrow (encoding TS1) on input line 76.
+LaTeX Encoding Info:    Redeclaring text symbol \textrightarrow (encoding TS1) on input line 77.
+LaTeX Encoding Info:    Redeclaring text symbol \textblank (encoding TS1) on input line 78.
+LaTeX Encoding Info:    Redeclaring text symbol \textdollar (encoding TS1) on input line 79.
+LaTeX Encoding Info:    Redeclaring text symbol \textquotesingle (encoding TS1) on input line 80.
+LaTeX Encoding Info:    Redeclaring text command \textasteriskcentered (encoding TS1) on input line 81.
+LaTeX Encoding Info:    Redeclaring text symbol \textdblhyphen (encoding TS1) on input line 92.
+LaTeX Encoding Info:    Redeclaring text symbol \textfractionsolidus (encoding TS1) on input line 93.
+LaTeX Encoding Info:    Redeclaring text symbol \textzerooldstyle (encoding TS1) on input line 94.
+LaTeX Encoding Info:    Redeclaring text symbol \textoneoldstyle (encoding TS1) on input line 95.
+LaTeX Encoding Info:    Redeclaring text symbol \texttwooldstyle (encoding TS1) on input line 96.
+LaTeX Encoding Info:    Redeclaring text symbol \textthreeoldstyle (encoding TS1) on input line 97.
+LaTeX Encoding Info:    Redeclaring text symbol \textfouroldstyle (encoding TS1) on input line 98.
+LaTeX Encoding Info:    Redeclaring text symbol \textfiveoldstyle (encoding TS1) on input line 99.
+LaTeX Encoding Info:    Redeclaring text symbol \textsixoldstyle (encoding TS1) on input line 100.
+LaTeX Encoding Info:    Redeclaring text symbol \textsevenoldstyle (encoding TS1) on input line 101.
+LaTeX Encoding Info:    Redeclaring text symbol \texteightoldstyle (encoding TS1) on input line 102.
+LaTeX Encoding Info:    Redeclaring text symbol \textnineoldstyle (encoding TS1) on input line 103.
+LaTeX Encoding Info:    Redeclaring text symbol \textlangle (encoding TS1) on input line 104.
+LaTeX Encoding Info:    Redeclaring text symbol \textminus (encoding TS1) on input line 105.
+LaTeX Encoding Info:    Redeclaring text symbol \textrangle (encoding TS1) on input line 106.
+LaTeX Encoding Info:    Redeclaring text symbol \textmho (encoding TS1) on input line 107.
+LaTeX Encoding Info:    Redeclaring text symbol \textbigcircle (encoding TS1) on input line 108.
+LaTeX Encoding Info:    Redeclaring text command \textcircled (encoding TS1) on input line 109.
+LaTeX Encoding Info:    Redeclaring text symbol \textohm (encoding TS1) on input line 115.
+LaTeX Encoding Info:    Redeclaring text symbol \textlbrackdbl (encoding TS1) on input line 116.
+LaTeX Encoding Info:    Redeclaring text symbol \textrbrackdbl (encoding TS1) on input line 117.
+LaTeX Encoding Info:    Redeclaring text symbol \textuparrow (encoding TS1) on input line 118.
+LaTeX Encoding Info:    Redeclaring text symbol \textdownarrow (encoding TS1) on input line 119.
+LaTeX Encoding Info:    Redeclaring text symbol \textasciigrave (encoding TS1) on input line 120.
+LaTeX Encoding Info:    Redeclaring text symbol \textborn (encoding TS1) on input line 121.
+LaTeX Encoding Info:    Redeclaring text symbol \textdivorced (encoding TS1) on input line 122.
+LaTeX Encoding Info:    Redeclaring text symbol \textdied (encoding TS1) on input line 123.
+LaTeX Encoding Info:    Redeclaring text symbol \textleaf (encoding TS1) on input line 124.
+LaTeX Encoding Info:    Redeclaring text symbol \textmarried (encoding TS1) on input line 125.
+LaTeX Encoding Info:    Redeclaring text symbol \textmusicalnote (encoding TS1) on input line 126.
+LaTeX Encoding Info:    Redeclaring text symbol \texttildelow (encoding TS1) on input line 127.
+LaTeX Encoding Info:    Redeclaring text symbol \textdblhyphenchar (encoding TS1) on input line 128.
+LaTeX Encoding Info:    Redeclaring text symbol \textasciibreve (encoding TS1) on input line 129.
+LaTeX Encoding Info:    Redeclaring text symbol \textasciicaron (encoding TS1) on input line 130.
+LaTeX Encoding Info:    Redeclaring text symbol \textacutedbl (encoding TS1) on input line 131.
+LaTeX Encoding Info:    Redeclaring text symbol \textgravedbl (encoding TS1) on input line 132.
+LaTeX Encoding Info:    Redeclaring text symbol \textdagger (encoding TS1) on input line 133.
+LaTeX Encoding Info:    Redeclaring text symbol \textdaggerdbl (encoding TS1) on input line 134.
+LaTeX Encoding Info:    Redeclaring text symbol \textbardbl (encoding TS1) on input line 135.
+LaTeX Encoding Info:    Redeclaring text symbol \textperthousand (encoding TS1) on input line 136.
+LaTeX Encoding Info:    Redeclaring text symbol \textbullet (encoding TS1) on input line 137.
+LaTeX Encoding Info:    Redeclaring text symbol \textcelsius (encoding TS1) on input line 138.
+LaTeX Encoding Info:    Redeclaring text symbol \textdollaroldstyle (encoding TS1) on input line 139.
+LaTeX Encoding Info:    Redeclaring text symbol \textcentoldstyle (encoding TS1) on input line 140.
+LaTeX Encoding Info:    Redeclaring text symbol \textflorin (encoding TS1) on input line 141.
+LaTeX Encoding Info:    Redeclaring text symbol \textcolonmonetary (encoding TS1) on input line 142.
+LaTeX Encoding Info:    Redeclaring text symbol \textwon (encoding TS1) on input line 143.
+LaTeX Encoding Info:    Redeclaring text symbol \textnaira (encoding TS1) on input line 144.
+LaTeX Encoding Info:    Redeclaring text symbol \textguarani (encoding TS1) on input line 145.
+LaTeX Encoding Info:    Redeclaring text symbol \textpeso (encoding TS1) on input line 146.
+LaTeX Encoding Info:    Redeclaring text symbol \textlira (encoding TS1) on input line 147.
+LaTeX Encoding Info:    Redeclaring text symbol \textrecipe (encoding TS1) on input line 148.
+LaTeX Encoding Info:    Redeclaring text symbol \textinterrobang (encoding TS1) on input line 149.
+LaTeX Encoding Info:    Redeclaring text symbol \textinterrobangdown (encoding TS1) on input line 150.
+LaTeX Encoding Info:    Redeclaring text symbol \textdong (encoding TS1) on input line 151.
+LaTeX Encoding Info:    Redeclaring text symbol \texttrademark (encoding TS1) on input line 152.
+LaTeX Encoding Info:    Redeclaring text symbol \textpertenthousand (encoding TS1) on input line 153.
+LaTeX Encoding Info:    Redeclaring text symbol \textpilcrow (encoding TS1) on input line 154.
+LaTeX Encoding Info:    Redeclaring text symbol \textbaht (encoding TS1) on input line 155.
+LaTeX Encoding Info:    Redeclaring text symbol \textnumero (encoding TS1) on input line 156.
+LaTeX Encoding Info:    Redeclaring text symbol \textdiscount (encoding TS1) on input line 157.
+LaTeX Encoding Info:    Redeclaring text symbol \textestimated (encoding TS1) on input line 158.
+LaTeX Encoding Info:    Redeclaring text symbol \textopenbullet (encoding TS1) on input line 159.
+LaTeX Encoding Info:    Redeclaring text symbol \textservicemark (encoding TS1) on input line 160.
+LaTeX Encoding Info:    Redeclaring text symbol \textlquill (encoding TS1) on input line 161.
+LaTeX Encoding Info:    Redeclaring text symbol \textrquill (encoding TS1) on input line 162.
+LaTeX Encoding Info:    Redeclaring text symbol \textcent (encoding TS1) on input line 163.
+LaTeX Encoding Info:    Redeclaring text symbol \textsterling (encoding TS1) on input line 164.
+LaTeX Encoding Info:    Redeclaring text symbol \textcurrency (encoding TS1) on input line 165.
+LaTeX Encoding Info:    Redeclaring text symbol \textyen (encoding TS1) on input line 166.
+LaTeX Encoding Info:    Redeclaring text symbol \textbrokenbar (encoding TS1) on input line 167.
+LaTeX Encoding Info:    Redeclaring text symbol \textsection (encoding TS1) on input line 168.
+LaTeX Encoding Info:    Redeclaring text symbol \textasciidieresis (encoding TS1) on input line 169.
+LaTeX Encoding Info:    Redeclaring text symbol \textcopyright (encoding TS1) on input line 170.
+LaTeX Encoding Info:    Redeclaring text symbol \textordfeminine (encoding TS1) on input line 171.
+LaTeX Encoding Info:    Redeclaring text symbol \textcopyleft (encoding TS1) on input line 172.
+LaTeX Encoding Info:    Redeclaring text symbol \textlnot (encoding TS1) on input line 173.
+LaTeX Encoding Info:    Redeclaring text symbol \textcircledP (encoding TS1) on input line 174.
+LaTeX Encoding Info:    Redeclaring text symbol \textregistered (encoding TS1) on input line 175.
+LaTeX Encoding Info:    Redeclaring text symbol \textasciimacron (encoding TS1) on input line 176.
+LaTeX Encoding Info:    Redeclaring text symbol \textdegree (encoding TS1) on input line 177.
+LaTeX Encoding Info:    Redeclaring text symbol \textpm (encoding TS1) on input line 178.
+LaTeX Encoding Info:    Redeclaring text symbol \texttwosuperior (encoding TS1) on input line 179.
+LaTeX Encoding Info:    Redeclaring text symbol \textthreesuperior (encoding TS1) on input line 180.
+LaTeX Encoding Info:    Redeclaring text symbol \textasciiacute (encoding TS1) on input line 181.
+LaTeX Encoding Info:    Redeclaring text symbol \textmu (encoding TS1) on input line 182.
+LaTeX Encoding Info:    Redeclaring text symbol \textparagraph (encoding TS1) on input line 183.
+LaTeX Encoding Info:    Redeclaring text symbol \textperiodcentered (encoding TS1) on input line 184.
+LaTeX Encoding Info:    Redeclaring text symbol \textreferencemark (encoding TS1) on input line 185.
+LaTeX Encoding Info:    Redeclaring text symbol \textonesuperior (encoding TS1) on input line 186.
+LaTeX Encoding Info:    Redeclaring text symbol \textordmasculine (encoding TS1) on input line 187.
+LaTeX Encoding Info:    Redeclaring text symbol \textsurd (encoding TS1) on input line 188.
+LaTeX Encoding Info:    Redeclaring text symbol \textonequarter (encoding TS1) on input line 189.
+LaTeX Encoding Info:    Redeclaring text symbol \textonehalf (encoding TS1) on input line 190.
+LaTeX Encoding Info:    Redeclaring text symbol \textthreequarters (encoding TS1) on input line 191.
+LaTeX Encoding Info:    Redeclaring text symbol \texteuro (encoding TS1) on input line 192.
+LaTeX Encoding Info:    Redeclaring text symbol \texttimes (encoding TS1) on input line 193.
+LaTeX Encoding Info:    Redeclaring text symbol \textdiv (encoding TS1) on input line 194.
 ))
 \l__ctex_tmp_int=\count276
 \l__ctex_tmp_box=\box53
 \l__ctex_tmp_dim=\dimen148
 \g__ctex_section_depth_int=\count277
 \g__ctex_font_size_int=\count278
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/ctex/config\ctexopts.cf
-g
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/ctex/config\ctexopts.cfg
 File: ctexopts.cfg 2022/07/14 v2.5.10 Option configuration file (CTEX)
 )
 
@@ -319,32 +181,23 @@ File: size12.clo 2025/01/22 v1.4n Standard LaTeX file (size option)
 \abovecaptionskip=\skip49
 \belowcaptionskip=\skip50
 \bibindent=\dimen149
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/ctex/engine\ctex-engine
--pdftex.def
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/ctex/engine\ctex-engine-pdftex.def
 File: ctex-engine-pdftex.def 2022/07/14 v2.5.10 (pdf)LaTeX adapter (CTEX)
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/cjk\CJKutf8.sty
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/cjk\CJKutf8.sty
 Package: CJKutf8 2021/10/16 4.8.5
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/iftex\ifpdf.sty
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/iftex\ifpdf.sty
 Package: ifpdf 2019/10/25 v3.4 ifpdf legacy package. Use iftex instead.
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/iftex\iftex.sty
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/iftex\iftex.sty
 Package: iftex 2024/12/12 v1.0g TeX engine tests
-))
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/base\inputenc.sty
+)) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/base\inputenc.sty
 Package: inputenc 2024/02/08 v1.3d Input encoding file
 \inpenc@prehook=\toks17
 \inpenc@posthook=\toks18
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/cjk\CJK.sty
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/cjk\CJK.sty
 Package: CJK 2021/10/16 4.8.5
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/cjk/mule\MULEenc.sty
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/cjk/mule\MULEenc.sty
 Package: MULEenc 2021/10/16 4.8.5
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/cjk\CJK.enc
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/cjk\CJK.enc
 File: CJK.enc 2021/10/16 4.8.5
 Now handling font encoding C00 ...
 ... no UTF-8 mapping file for font encoding C00
@@ -412,11 +265,9 @@ Now handling font encoding C62 ...
 ... no UTF-8 mapping file for font encoding C62
 )
 \CJK@indent=\box54
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/base\fontenc.sty
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/base\fontenc.sty
 Package: fontenc 2025/07/18 v2.1d Standard LaTeX package
-))
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/cjkpunct\CJKpunct.sty
+)) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/cjkpunct\CJKpunct.sty
 Package: CJKpunct 2016/05/14 4.8.4
 \CJKpunct@cnta=\count288
 \CJKpunct@cntb=\count289
@@ -429,58 +280,39 @@ Package: CJKpunct 2016/05/14 4.8.4
    defining Unicode char U+201D (decimal 8221)
    defining Unicode char U+2014 (decimal 8212)
    defining Unicode char U+2026 (decimal 8230)
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/cjkpunct\CJKpunct.spa))
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/cjk\CJKspace.sty
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/cjkpunct\CJKpunct.spa)) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/cjk\CJKspace.sty
 Package: CJKspace 2021/10/16 3.8.0
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/cjk/UTF8\UTF8.bdg
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/cjk/UTF8\UTF8.bdg
 File: UTF8.bdg 2021/10/16 4.8.5
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/ctex\ctexspa.def
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/ctex\ctexspa.def
 File: ctexspa.def 2022/07/14 v2.5.10 Space info for CJKpunct (CTEX)
 )
 \ccwd=\dimen150
 \l__ctex_ccglue_skip=\skip51
 )
 \l__ctex_ziju_dim=\dimen151
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/zhnumber\zhnumber.sty
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/zhnumber\zhnumber.sty
 Package: zhnumber 2022/07/14 v3.0 Typesetting numbers with Chinese glyphs
 \l__zhnum_scale_int=\count293
 \l__zhnum_tmp_int=\count294
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/zhnumber\zhnumber-utf8.
-cfg
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/zhnumber\zhnumber-utf8.cfg
 File: zhnumber-utf8.cfg 2022/07/14 v3.0 Chinese numerals with UTF8 encoding
 ))
 \l__ctex_heading_skip=\skip52
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/ctex/scheme\ctex-scheme
--chinese-report.def
-File: ctex-scheme-chinese-report.def 2022/07/14 v2.5.10 Chinese scheme for repo
-rt (CTEX)
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/ctex/config\ctex-name-u
-tf8.cfg
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/ctex/scheme\ctex-scheme-chinese-report.def
+File: ctex-scheme-chinese-report.def 2022/07/14 v2.5.10 Chinese scheme for report (CTEX)
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/ctex/config\ctex-name-utf8.cfg
 File: ctex-name-utf8.cfg 2022/07/14 v2.5.10 Caption with encoding UTF-8 (CTEX)
-))
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/ctex/fontset\ctex-fonts
-et-windows.def
-File: ctex-fontset-windows.def 2022/07/14 v2.5.10 Windows fonts definition (CTE
-X)
-))
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/ctex/config\ctex.cfg
+)) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/ctex/fontset\ctex-fontset-windows.def
+File: ctex-fontset-windows.def 2022/07/14 v2.5.10 Windows fonts definition (CTEX)
+)) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/ctex/config\ctex.cfg
 File: ctex.cfg 2022/07/14 v2.5.10 Configuration file (CTEX)
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/geometry\geometry.sty
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/geometry\geometry.sty
 Package: geometry 2020/01/02 v5.9 Page Geometry
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/graphics\keyval.sty
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/graphics\keyval.sty
 Package: keyval 2022/05/29 v1.15 key=value parser (DPC)
 \KV@toks@=\toks19
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/iftex\ifvtex.sty
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/iftex\ifvtex.sty
 Package: ifvtex 2019/10/25 v1.7 ifvtex legacy package. Use iftex instead.
 )
 \Gm@cnth=\count295
@@ -495,24 +327,17 @@ Package: ifvtex 2019/10/25 v1.7 ifvtex legacy package. Use iftex instead.
 \Gm@layouthoffset=\dimen158
 \Gm@layoutvoffset=\dimen159
 \Gm@dimlist=\toks20
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/geometry\geometry.cfg))
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/graphics\graphicx.sty
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/geometry\geometry.cfg)) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/graphics\graphicx.sty
 Package: graphicx 2021/09/16 v1.2d Enhanced LaTeX Graphics (DPC,SPQR)
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/graphics\graphics.sty
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/graphics\graphics.sty
 Package: graphics 2022/03/10 v1.4e Standard LaTeX Graphics (DPC,SPQR)
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/graphics\trig.sty
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/graphics\trig.sty
 Package: trig 2021/08/11 v1.11 sin cos tan (DPC)
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/graphics-cfg\graphics.c
-fg
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/graphics-cfg\graphics.cfg
 File: graphics.cfg 2016/06/04 v1.11 sample graphics configuration
 )
 Package graphics Info: Driver file: pdftex.def on input line 107.
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/graphics-def\pdftex.def
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/graphics-def\pdftex.def
 File: pdftex.def 2022/09/22 v1.2b Graphics/color driver for pdftex
 ))
 \Gin@req@height=\dimen160
@@ -526,8 +351,7 @@ Package: array 2023/10/16 v2.5g Tabular extension package (FMi)
 \extratabsurround=\skip53
 \backup@length=\skip54
 \ar@cellbox=\box56
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/booktabs\booktabs.sty
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/booktabs\booktabs.sty
 Package: booktabs 2020/01/12 v1.61803398 Publication quality tables
 \heavyrulewidth=\dimen164
 \lightrulewidth=\dimen165
@@ -546,8 +370,7 @@ Package: booktabs 2020/01/12 v1.61803398 Publication quality tables
 \@thisruleclass=\count300
 \@lastruleclass=\count301
 \@thisrulewidth=\dimen176
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tools\longtable.sty
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tools\longtable.sty
 Package: longtable 2023-11-01 v4.19 Multi-page Table package (DPC)
 \LTleft=\skip55
 \LTright=\skip56
@@ -565,8 +388,7 @@ Package: longtable 2023-11-01 v4.19 Multi-page Table package (DPC)
 \c@LT@tables=\count305
 \c@LT@chunks=\count306
 \LT@p@ftn=\toks22
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tools\tabularx.sty
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tools\tabularx.sty
 Package: tabularx 2023/07/08 v2.11c `tabularx' package (DPC)
 \TX@col@width=\dimen178
 \TX@old@table=\dimen179
@@ -575,15 +397,13 @@ Package: tabularx 2023/07/08 v2.11c `tabularx' package (DPC)
 \TX@delta=\dimen182
 \TX@cols=\count307
 \TX@ftn=\toks23
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/multirow\multirow.sty
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/multirow\multirow.sty
 Package: multirow 2024/11/12 v2.9 Span multiple rows of a table
 \multirow@colwidth=\skip59
 \multirow@cntb=\count308
 \multirow@dima=\skip60
 \bigstrutjot=\dimen183
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/enumitem\enumitem.sty
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/enumitem\enumitem.sty
 Package: enumitem 2025/02/06 v3.11 Customized lists
 \labelindent=\skip61
 \enit@outerparindent=\dimen184
@@ -591,15 +411,13 @@ Package: enumitem 2025/02/06 v3.11 Customized lists
 \enit@inbox=\box62
 \enit@count@id=\count309
 \enitdp@description=\count310
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/xcolor\xcolor.sty
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/xcolor\xcolor.sty
 Package: xcolor 2023/11/15 v3.01 LaTeX color extensions (UK)
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/graphics-cfg\color.cfg
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/graphics-cfg\color.cfg
 File: color.cfg 2016/01/02 v1.6 sample color configuration
 )
 Package xcolor Info: Driver file: pdftex.def on input line 274.
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/graphics\mathcolor.ltx)
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/graphics\mathcolor.ltx)
 Package xcolor Info: Model `cmy' substituted by `cmy0' on input line 1350.
 Package xcolor Info: Model `hsb' substituted by `rgb' on input line 1354.
 Package xcolor Info: Model `RGB' extended on input line 1366.
@@ -611,77 +429,53 @@ Package xcolor Info: Model `Gray' substituted by `gray' on input line 1372.
 Package xcolor Info: Model `wave' substituted by `hsb' on input line 1373.
 ) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/hyperref\hyperref.sty
 Package: hyperref 2023-11-26 v7.01g Hypertext links for LaTeX
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/infwarerr\infwarerr.s
-ty
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/infwarerr\infwarerr.sty
 Package: infwarerr 2019/12/03 v1.5 Providing info/warning/error messages (HO)
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/kvsetkeys\kvsetkeys.sty
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/kvsetkeys\kvsetkeys.sty
 Package: kvsetkeys 2022-10-05 v1.19 Key value parser (HO)
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/kvdefinekeys\kvdefine
-keys.sty
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/kvdefinekeys\kvdefinekeys.sty
 Package: kvdefinekeys 2019-12-19 v1.6 Define keys (HO)
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pdfescape\pdfescape.s
-ty
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pdfescape\pdfescape.sty
 Package: pdfescape 2019/12/09 v1.15 Implements pdfTeX's escape features (HO)
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/ltxcmds\ltxcmds.sty
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/ltxcmds\ltxcmds.sty
 Package: ltxcmds 2023-12-04 v1.26 LaTeX kernel commands for general use (HO)
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pdftexcmds\pdftexcmds
-.sty
-Package: pdftexcmds 2020-06-27 v0.33 Utility functions of pdfTeX for LuaTeX (HO
-)
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pdftexcmds\pdftexcmds.sty
+Package: pdftexcmds 2020-06-27 v0.33 Utility functions of pdfTeX for LuaTeX (HO)
 Package pdftexcmds Info: \pdf@primitive is available.
 Package pdftexcmds Info: \pdf@ifprimitive is available.
 Package pdftexcmds Info: \pdfdraftmode found.
-))
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/hycolor\hycolor.sty
+)) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/hycolor\hycolor.sty
 Package: hycolor 2020-01-27 v1.10 Color options for hyperref/bookmark (HO)
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/letltxmacro\letltxmacro
-.sty
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/letltxmacro\letltxmacro.sty
 Package: letltxmacro 2019/12/03 v1.6 Let assignment for LaTeX macros (HO)
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/auxhook\auxhook.sty
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/auxhook\auxhook.sty
 Package: auxhook 2019-12-17 v1.6 Hooks for auxiliary files (HO)
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/hyperref\nameref.sty
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/hyperref\nameref.sty
 Package: nameref 2023-11-26 v2.56 Cross-referencing by name of section
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/refcount\refcount.sty
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/refcount\refcount.sty
 Package: refcount 2019/12/15 v3.6 Data extraction from label references (HO)
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/gettitlestring\gettit
-lestring.sty
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/gettitlestring\gettitlestring.sty
 Package: gettitlestring 2019/12/15 v1.6 Cleanup title references (HO)
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/kvoptions\kvoptions.sty
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/kvoptions\kvoptions.sty
 Package: kvoptions 2022-06-15 v3.15 Key value format for package options (HO)
 ))
 \c@section@level=\count311
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/etoolbox\etoolbox.sty
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/etoolbox\etoolbox.sty
 Package: etoolbox 2020/10/05 v2.5k e-TeX tools for LaTeX (JAW)
 \etb@tempcnta=\count312
 )
 \@linkdim=\dimen185
 \Hy@linkcounter=\count313
 \Hy@pagecounter=\count314
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/hyperref\pd1enc.def
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/hyperref\pd1enc.def
 File: pd1enc.def 2023-11-26 v7.01g Hyperref: PDFDocEncoding definition (HO)
 Now handling font encoding PD1 ...
 ... no UTF-8 mapping file for font encoding PD1
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/intcalc\intcalc.sty
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/intcalc\intcalc.sty
 Package: intcalc 2019/12/15 v1.3 Expandable calculations with integers (HO)
 )
 \Hy@SavedSpaceFactor=\count315
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/hyperref\puenc.def
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/hyperref\puenc.def
 File: puenc.def 2023-11-26 v7.01g Hyperref: PDF Unicode definition (HO)
 Now handling font encoding PU ...
 ... no UTF-8 mapping file for font encoding PU
@@ -695,21 +489,16 @@ Package hyperref Info: Backreferencing OFF on input line 4201.
 Package hyperref Info: Implicit mode ON; LaTeX internals redefined.
 Package hyperref Info: Bookmarks ON on input line 4448.
 \c@Hy@tempcnt=\count316
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/url\url.sty
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/url\url.sty
 \Urlmuskip=\muskip17
 Package: url 2013/09/16  ver 3.4  Verb mode for urls, etc.
 )
 LaTeX Info: Redefining \url on input line 4786.
 \XeTeXLinkMargin=\dimen186
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/bitset\bitset.sty
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/bitset\bitset.sty
 Package: bitset 2019/12/09 v1.3 Handle bit-vector datatype (HO)
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/bigintcalc\bigintcalc
-.sty
-Package: bigintcalc 2019/12/15 v1.5 Expandable calculations on big integers (HO
-)
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/bigintcalc\bigintcalc.sty
+Package: bigintcalc 2019/12/15 v1.5 Expandable calculations on big integers (HO)
 ))
 \Fld@menulength=\count317
 \Field@Width=\dimen187
@@ -721,8 +510,7 @@ Package hyperref Info: backreferencing OFF on input line 6080.
 Package hyperref Info: Link coloring OFF on input line 6085.
 Package hyperref Info: Link coloring with OCG OFF on input line 6090.
 Package hyperref Info: PDF/A mode OFF on input line 6095.
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/base\atbegshi-ltx.sty
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/base\atbegshi-ltx.sty
 Package: atbegshi-ltx 2021/01/10 v1.0c Emulation of the original atbegshi
 package with kernel methods
 )
@@ -731,39 +519,29 @@ package with kernel methods
 \c@Hfootnote=\count320
 
 
-LaTeX Warning: Command `\theHfootnote' already defined -- not changed on input 
-line 7264.
+LaTeX Warning: Command `\theHfootnote' already defined -- not changed on input line 7264.
 
 )
 Package hyperref Info: Driver (autodetected): hpdftex.
  (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/hyperref\hpdftex.def
 File: hpdftex.def 2023-11-26 v7.01g Hyperref driver for pdfTeX
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/base\atveryend-ltx.sty
-Package: atveryend-ltx 2020/08/19 v1.0a Emulation of the original atveryend pac
-kage
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/base\atveryend-ltx.sty
+Package: atveryend-ltx 2020/08/19 v1.0a Emulation of the original atveryend package
 with kernel methods
 )
 \Fld@listcount=\count321
 \c@bookmark@seq@number=\count322
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/rerunfilecheck\rerunfil
-echeck.sty
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/rerunfilecheck\rerunfilecheck.sty
 Package: rerunfilecheck 2025-06-21 v1.11 Rerun checks for auxiliary files (HO)
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/uniquecounter\uniquec
-ounter.sty
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/uniquecounter\uniquecounter.sty
 Package: uniquecounter 2019/12/15 v1.4 Provide unlimited unique counter (HO)
 )
-Package uniquecounter Info: New unique counter `rerunfilecheck' on input line 2
-84.
+Package uniquecounter Info: New unique counter `rerunfilecheck' on input line 284.
 )
 \Hy@SectionHShift=\skip62
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/caption\caption.sty
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/caption\caption.sty
 Package: caption 2023/08/05 v3.6o Customizing captions (AR)
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/caption\caption3.sty
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/caption\caption3.sty
 Package: caption3 2023/07/31 v2.4d caption3 kernel (AR)
 \caption@tempdima=\dimen189
 \captionmargin=\dimen190
@@ -779,11 +557,9 @@ Package caption Info: Standard document class detected.
 \c@continuedfloat=\count324
 Package caption Info: hyperref package is loaded.
 Package caption Info: longtable package is loaded.
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/caption\ltcaption.sty
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/caption\ltcaption.sty
 Package: ltcaption 2021/01/08 v1.4c longtable captions (AR)
-)) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/caption\subcaption.s
-ty
+)) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/caption\subcaption.sty
 Package: subcaption 2023/07/28 v1.6b Sub-captions (AR)
 Package caption Info: New subtype `subfigure' on input line 238.
 \c@subfigure=\count325
@@ -796,10 +572,8 @@ Package: float 2001/11/08 v1.3d Float enhancements (AL)
 \float@box=\box63
 \@float@everytoks=\toks26
 \@floatcapt=\box64
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/fancyhdr\fancyhdr.sty
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/fancyhdr\fancyhdr.sty
 Package: fancyhdr 2025/02/07 v5.2 Extensive control of page headers and footers
-
 \f@nch@headwidth=\skip63
 \f@nch@offset@elh=\skip64
 \f@nch@offset@erh=\skip65
@@ -815,8 +589,7 @@ Package: fancyhdr 2025/02/07 v5.2 Extensive control of page headers and footers
 \f@nch@widthC=\skip75
 \f@nch@widthR=\skip76
 \@temptokenb=\toks27
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/titlesec\titlesec.sty
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/titlesec\titlesec.sty
 Package: titlesec 2025/01/04 v2.17 Sectioning titles
 \ttl@box=\box65
 \beforetitleunit=\skip77
@@ -827,25 +600,21 @@ Package: titlesec 2025/01/04 v2.17 Sectioning titles
 \titlewidth=\dimen199
 \titlewidthlast=\dimen256
 \titlewidthfirst=\dimen257
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amsmath.sty
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amsmath.sty
 Package: amsmath 2023/05/13 v2.17o AMS math features
 \@mathmargin=\skip79
 
 For additional information on amsmath, use the `?' option.
 (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amstext.sty
 Package: amstext 2021/08/26 v2.01 AMS text
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amsgen.sty
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amsgen.sty
 File: amsgen.sty 1999/11/30 v2.0 generic functions
 \@emptytoks=\toks29
 \ex@=\dimen258
-))
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amsbsy.sty
+)) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amsbsy.sty
 Package: amsbsy 1999/11/29 v1.2d Bold Symbols
 \pmbraise@=\dimen259
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amsopn.sty
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amsopn.sty
 Package: amsopn 2022/04/08 v2.04 operator names
 )
 \inf@bad=\count328
@@ -895,55 +664,31 @@ LaTeX Info: Redefining \Relbar on input line 971.
 \mathdisplay@stack=\toks33
 LaTeX Info: Redefining \[ on input line 2953.
 LaTeX Info: Redefining \] on input line 2954.
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\amssymb.sty
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\amssymb.sty
 Package: amssymb 2013/01/14 v3.01 AMS font symbols
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\amsfonts.sty
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\amsfonts.sty
 Package: amsfonts 2013/01/14 v3.01 Basic AMSFonts support
 \symAMSa=\mathgroup4
 \symAMSb=\mathgroup5
 LaTeX Font Info:    Redeclaring math symbol \hbar on input line 98.
 LaTeX Font Info:    Overwriting math alphabet `\mathfrak' in version `bold'
 (Font)                  U/euf/m/n --> U/euf/b/n on input line 106.
-))
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/pgf/frontendlayer\tikz.
-sty
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/pgf/basiclayer\pgf.sty
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/pgf/utilities\pgfrcs.st
-y
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/utilities\pgfutil
--common.tex
+)) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/pgf/frontendlayer\tikz.sty (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/pgf/basiclayer\pgf.sty (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/pgf/utilities\pgfrcs.sty (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/utilities\pgfutil-common.tex
 \pgfutil@everybye=\toks34
 \pgfutil@tempdima=\dimen267
 \pgfutil@tempdimb=\dimen268
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/utilities\pgfutil
--latex.def
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/utilities\pgfutil-latex.def
 \pgfutil@abb=\box68
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/utilities\pgfrcs.
-code.tex
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf\pgf.revision.tex)
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/utilities\pgfrcs.code.tex (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf\pgf.revision.tex)
 Package: pgfrcs 2023-01-15 v3.1.10 (3.1.10)
 ))
 Package: pgf 2023-01-15 v3.1.10 (3.1.10)
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/pgf/basiclayer\pgfcore.
-sty
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/pgf/systemlayer\pgfsys.
-sty
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/systemlayer\pgfsy
-s.code.tex
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/pgf/basiclayer\pgfcore.sty (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/pgf/systemlayer\pgfsys.sty (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/systemlayer\pgfsys.code.tex
 Package: pgfsys 2023-01-15 v3.1.10 (3.1.10)
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/utilities\pgfkeys
-.code.tex
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/utilities\pgfkeys.code.tex
 \pgfkeys@pathtoks=\toks35
 \pgfkeys@temptoks=\toks36
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/utilities\pgfkeys
-libraryfiltered.code.tex
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/utilities\pgfkeyslibraryfiltered.code.tex
 \pgfkeys@tmptoks=\toks37
 ))
 \pgf@x=\dimen269
@@ -966,76 +711,32 @@ libraryfiltered.code.tex
 \t@pgf@tokb=\toks39
 \t@pgf@tokc=\toks40
 \pgf@sys@id@count=\count344
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/systemlayer\pgf.c
-fg
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/systemlayer\pgf.cfg
 File: pgf.cfg 2023-01-15 v3.1.10 (3.1.10)
 )
 Driver file for pgf: pgfsys-pdftex.def
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/systemlayer\pgfsy
-s-pdftex.def
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/systemlayer\pgfsys-pdftex.def
 File: pgfsys-pdftex.def 2023-01-15 v3.1.10 (3.1.10)
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/systemlayer\pgfsy
-s-common-pdf.def
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/systemlayer\pgfsys-common-pdf.def
 File: pgfsys-common-pdf.def 2023-01-15 v3.1.10 (3.1.10)
-)))
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/systemlayer\pgfsy
-ssoftpath.code.tex
+))) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/systemlayer\pgfsyssoftpath.code.tex
 File: pgfsyssoftpath.code.tex 2023-01-15 v3.1.10 (3.1.10)
 \pgfsyssoftpath@smallbuffer@items=\count345
 \pgfsyssoftpath@bigbuffer@items=\count346
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/systemlayer\pgfsy
-sprotocol.code.tex
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/systemlayer\pgfsysprotocol.code.tex
 File: pgfsysprotocol.code.tex 2023-01-15 v3.1.10 (3.1.10)
-))
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcor
-e.code.tex
+)) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcore.code.tex
 Package: pgfcore 2023-01-15 v3.1.10 (3.1.10)
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmath.code
-.tex
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathutil.
-code.tex)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathparse
-r.code.tex
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmath.code.tex (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathutil.code.tex) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathparser.code.tex
 \pgfmath@dimen=\dimen279
 \pgfmath@count=\count347
 \pgfmath@box=\box69
 \pgfmath@toks=\toks41
 \pgfmath@stack@operand=\toks42
 \pgfmath@stack@operation=\toks43
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfunct
-ions.code.tex)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfunct
-ions.basic.code.tex)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfunct
-ions.trigonometric.code.tex)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfunct
-ions.random.code.tex)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfunct
-ions.comparison.code.tex)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfunct
-ions.base.code.tex)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfunct
-ions.round.code.tex)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfunct
-ions.misc.code.tex)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfunct
-ions.integerarithmetics.code.tex)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathcalc.
-code.tex)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfloat
-.code.tex
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfunctions.code.tex) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfunctions.basic.code.tex) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfunctions.trigonometric.code.tex) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfunctions.random.code.tex) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfunctions.comparison.code.tex) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfunctions.base.code.tex) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfunctions.round.code.tex) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfunctions.misc.code.tex) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfunctions.integerarithmetics.code.tex) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathcalc.code.tex) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfloat.code.tex
 \c@pgfmathroundto@lastzeros=\count348
-))
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfint.code.
-tex)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcor
-epoints.code.tex
+)) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfint.code.tex) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcorepoints.code.tex
 File: pgfcorepoints.code.tex 2023-01-15 v3.1.10 (3.1.10)
 \pgf@picminx=\dimen280
 \pgf@picmaxx=\dimen281
@@ -1051,130 +752,75 @@ File: pgfcorepoints.code.tex 2023-01-15 v3.1.10 (3.1.10)
 \pgf@yy=\dimen291
 \pgf@zx=\dimen292
 \pgf@zy=\dimen293
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcor
-epathconstruct.code.tex
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcorepathconstruct.code.tex
 File: pgfcorepathconstruct.code.tex 2023-01-15 v3.1.10 (3.1.10)
 \pgf@path@lastx=\dimen294
 \pgf@path@lasty=\dimen295
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcor
-epathusage.code.tex
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcorepathusage.code.tex
 File: pgfcorepathusage.code.tex 2023-01-15 v3.1.10 (3.1.10)
 \pgf@shorten@end@additional=\dimen296
 \pgf@shorten@start@additional=\dimen297
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcor
-escopes.code.tex
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcorescopes.code.tex
 File: pgfcorescopes.code.tex 2023-01-15 v3.1.10 (3.1.10)
 \pgfpic=\box70
 \pgf@hbox=\box71
 \pgf@layerbox@main=\box72
 \pgf@picture@serial@count=\count349
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcor
-egraphicstate.code.tex
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcoregraphicstate.code.tex
 File: pgfcoregraphicstate.code.tex 2023-01-15 v3.1.10 (3.1.10)
 \pgflinewidth=\dimen298
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcor
-etransformations.code.tex
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcoretransformations.code.tex
 File: pgfcoretransformations.code.tex 2023-01-15 v3.1.10 (3.1.10)
 \pgf@pt@x=\dimen299
 \pgf@pt@y=\dimen300
 \pgf@pt@temp=\dimen301
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcor
-equick.code.tex
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcorequick.code.tex
 File: pgfcorequick.code.tex 2023-01-15 v3.1.10 (3.1.10)
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcor
-eobjects.code.tex
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcoreobjects.code.tex
 File: pgfcoreobjects.code.tex 2023-01-15 v3.1.10 (3.1.10)
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcor
-epathprocessing.code.tex
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcorepathprocessing.code.tex
 File: pgfcorepathprocessing.code.tex 2023-01-15 v3.1.10 (3.1.10)
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcor
-earrows.code.tex
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcorearrows.code.tex
 File: pgfcorearrows.code.tex 2023-01-15 v3.1.10 (3.1.10)
 \pgfarrowsep=\dimen302
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcor
-eshade.code.tex
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcoreshade.code.tex
 File: pgfcoreshade.code.tex 2023-01-15 v3.1.10 (3.1.10)
 \pgf@max=\dimen303
 \pgf@sys@shading@range@num=\count350
 \pgf@shadingcount=\count351
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcor
-eimage.code.tex
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcoreimage.code.tex
 File: pgfcoreimage.code.tex 2023-01-15 v3.1.10 (3.1.10)
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcor
-eexternal.code.tex
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcoreexternal.code.tex
 File: pgfcoreexternal.code.tex 2023-01-15 v3.1.10 (3.1.10)
 \pgfexternal@startupbox=\box73
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcor
-elayers.code.tex
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcorelayers.code.tex
 File: pgfcorelayers.code.tex 2023-01-15 v3.1.10 (3.1.10)
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcor
-etransparency.code.tex
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcoretransparency.code.tex
 File: pgfcoretransparency.code.tex 2023-01-15 v3.1.10 (3.1.10)
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcor
-epatterns.code.tex
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcorepatterns.code.tex
 File: pgfcorepatterns.code.tex 2023-01-15 v3.1.10 (3.1.10)
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcor
-erdf.code.tex
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcorerdf.code.tex
 File: pgfcorerdf.code.tex 2023-01-15 v3.1.10 (3.1.10)
-)))
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/modules\pgfmodule
-shapes.code.tex
+))) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/modules\pgfmoduleshapes.code.tex
 File: pgfmoduleshapes.code.tex 2023-01-15 v3.1.10 (3.1.10)
 \pgfnodeparttextbox=\box74
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/modules\pgfmodule
-plot.code.tex
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/modules\pgfmoduleplot.code.tex
 File: pgfmoduleplot.code.tex 2023-01-15 v3.1.10 (3.1.10)
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/pgf/compatibility\pgfco
-mp-version-0-65.sty
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/pgf/compatibility\pgfcomp-version-0-65.sty
 Package: pgfcomp-version-0-65 2023-01-15 v3.1.10 (3.1.10)
 \pgf@nodesepstart=\dimen304
 \pgf@nodesepend=\dimen305
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/pgf/compatibility\pgfco
-mp-version-1-18.sty
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/pgf/compatibility\pgfcomp-version-1-18.sty
 Package: pgfcomp-version-1-18 2023-01-15 v3.1.10 (3.1.10)
-))
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/pgf/utilities\pgffor.st
-y
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/pgf/utilities\pgfkeys.s
-ty
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/utilities\pgfkeys
-.code.tex))
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/pgf/math\pgfmath.sty
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmath.code
-.tex))
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/utilities\pgffor.
-code.tex
+)) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/pgf/utilities\pgffor.sty (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/pgf/utilities\pgfkeys.sty (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/utilities\pgfkeys.code.tex)) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/pgf/math\pgfmath.sty (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmath.code.tex)) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/utilities\pgffor.code.tex
 Package: pgffor 2023-01-15 v3.1.10 (3.1.10)
 \pgffor@iter=\dimen306
 \pgffor@skip=\dimen307
 \pgffor@stack=\toks44
 \pgffor@toks=\toks45
-))
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/frontendlayer/tik
-z\tikz.code.tex
+)) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/frontendlayer/tikz\tikz.code.tex
 Package: tikz 2023-01-15 v3.1.10 (3.1.10)
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/libraries\pgflibr
-aryplothandlers.code.tex
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/libraries\pgflibraryplothandlers.code.tex
 File: pgflibraryplothandlers.code.tex 2023-01-15 v3.1.10 (3.1.10)
 \pgf@plot@mark@count=\count352
 \pgfplotmarksize=\dimen308
@@ -1195,41 +841,29 @@ File: pgflibraryplothandlers.code.tex 2023-01-15 v3.1.10 (3.1.10)
 \tikznumberofchildren=\count354
 \tikznumberofcurrentchild=\count355
 \tikz@fig@count=\count356
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/modules\pgfmodule
-matrix.code.tex
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/modules\pgfmodulematrix.code.tex
 File: pgfmodulematrix.code.tex 2023-01-15 v3.1.10 (3.1.10)
 \pgfmatrixcurrentrow=\count357
 \pgfmatrixcurrentcolumn=\count358
 \pgf@matrix@numberofcolumns=\count359
 )
 \tikz@expandcount=\count360
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/frontendlayer/tik
-z/libraries\tikzlibrarytopaths.code.tex
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/frontendlayer/tikz/libraries\tikzlibrarytopaths.code.tex
 File: tikzlibrarytopaths.code.tex 2023-01-15 v3.1.10 (3.1.10)
-)))
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/frontendlayer/tik
-z/libraries\tikzlibraryfit.code.tex
+))) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/frontendlayer/tikz/libraries\tikzlibraryfit.code.tex
 File: tikzlibraryfit.code.tex 2023-01-15 v3.1.10 (3.1.10)
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/frontendlayer/tik
-z/libraries\tikzlibrarypositioning.code.tex
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/frontendlayer/tikz/libraries\tikzlibrarypositioning.code.tex
 File: tikzlibrarypositioning.code.tex 2023-01-15 v3.1.10 (3.1.10)
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tcolorbox\tcolorbox.sty
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tcolorbox\tcolorbox.sty
 Package: tcolorbox 2024/01/10 version 6.2.0 text color boxes
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tools\verbatim.sty
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tools\verbatim.sty
 Package: verbatim 2023-11-06 v1.5v LaTeX2e package for verbatim enhancements
 \every@verbatim=\toks46
 \verbatim@line=\toks47
 \verbatim@in@stream=\read3
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/environ\environ.sty
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/environ\environ.sty
 Package: environ 2014/05/04 v0.3 A new way to define environments
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/trimspaces\trimspaces.s
-ty
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/trimspaces\trimspaces.sty
 Package: trimspaces 2009/09/17 v1.1 Trim spaces around a token list
 ))
 \tcb@titlebox=\box79
@@ -1245,36 +879,24 @@ Package: trimspaces 2009/09/17 v1.1 Trim spaces around a token list
 \tcb@temp=\box85
 \tcb@temp=\box86
 \tcb@temp=\box87
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tcolorbox\tcbraster.cod
-e.tex
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tcolorbox\tcbraster.code.tex
 Library (tcolorbox): 'tcbraster.code.tex' version '6.2.0'
 \c@tcbrastercolumn=\count364
 \c@tcbrasterrow=\count365
 \c@tcbrasternum=\count366
 \c@tcbraster=\count367
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tcolorbox\tcbskins.code
-.tex
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tcolorbox\tcbskins.code.tex
 Library (tcolorbox): 'tcbskins.code.tex' version '6.2.0'
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tikzfill\tikzfill.image
-.sty
+(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tikzfill\tikzfill.image.sty
 Package: tikzfill.image 2026/03/26 v1.1.0 Image filling library for TikZ
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tikzfill\tikzlibraryfil
-l.image.code.tex
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tikzfill\tikzlibraryfill.image.code.tex
 File: tikzlibraryfill.image.code.tex 2026/03/26 v1.1.0 Image filling library
 \l__tikzfill_tmpa_dim=\dimen318
 \l__tikzfill_tmpb_dim=\dimen319
 \l__tikzfill_img_box=\box88
-))
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tcolorbox\tcbskinsjigsa
-w.code.tex
+)) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tcolorbox\tcbskinsjigsaw.code.tex
 Library (tcolorbox): 'tcbskinsjigsaw.code.tex' version '6.2.0'
-))
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tcolorbox\tcbbreakable.
-code.tex
+)) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tcolorbox\tcbbreakable.code.tex
 Library (tcolorbox): 'tcbbreakable.code.tex' version '6.2.0'
 (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/pdfcol\pdfcol.sty
 Package: pdfcol 2022-09-21 v1.7 Handle new color stacks for pdfTeX (HO)
@@ -1283,29 +905,19 @@ Package pdfcol Info: New color stack `tcb@breakable' = 1 on input line 23.
 \tcb@testbox=\box89
 \tcb@totalupperbox=\box90
 \tcb@totallowerbox=\box91
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tcolorbox\tcbhooks.code
-.tex
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tcolorbox\tcbhooks.code.tex
 Library (tcolorbox): 'tcbhooks.code.tex' version '6.2.0'
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tcolorbox\tcbtheorems.c
-ode.tex
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tcolorbox\tcbtheorems.code.tex
 Library (tcolorbox): 'tcbtheorems.code.tex' version '6.2.0'
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tcolorbox\tcbfitting.co
-de.tex
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tcolorbox\tcbfitting.code.tex
 Library (tcolorbox): 'tcbfitting.code.tex' version '6.2.0'
 \tcbfitdim=\dimen320
 \tcb@lowerfitdim=\dimen321
 \tcb@upperfitdim=\dimen322
 \tcb@cur@hbadness=\count368
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tcolorbox\tcblistingsut
-f8.code.tex
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tcolorbox\tcblistingsutf8.code.tex
 Library (tcolorbox): 'tcblistingsutf8.code.tex' version '6.2.0'
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tcolorbox\tcblistings.c
-ode.tex
+(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tcolorbox\tcblistings.code.tex
 Library (tcolorbox): 'tcblistings.code.tex' version '6.2.0'
 (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/listings\listings.sty
 \lst@mode=\count369
@@ -1320,159 +932,135 @@ Library (tcolorbox): 'tcblistings.code.tex' version '6.2.0'
 \lst@newlines=\count373
 \lst@lineno=\count374
 \lst@maxwidth=\dimen326
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/listings\lstmisc.sty
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/listings\lstmisc.sty
 File: lstmisc.sty 2023/02/27 1.9 (Carsten Heinz)
 \c@lstnumber=\count375
 \lst@skipnumbers=\count376
 \lst@framebox=\box93
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/listings\listings.cfg
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/listings\listings.cfg
 File: listings.cfg 2023/02/27 1.9 listings configuration
 ))
 Package: listings 2023/02/27 1.9 (Carsten Heinz)
+
 ==> First Aid for listings.sty no longer applied!
     Expected:
         2024/09/23 1.10c (Carsten Heinz)
     but found:
         2023/02/27 1.9 (Carsten Heinz)
     so I'm assuming it got fixed.
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tcolorbox\tcblistingsco
-re.code.tex
+(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tcolorbox\tcblistingscore.code.tex
 Library (tcolorbox): 'tcblistingscore.code.tex' version '6.2.0'
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tcolorbox\tcbprocessing
-.code.tex
+(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tcolorbox\tcbprocessing.code.tex
 Library (tcolorbox): 'tcbprocessing.code.tex' version '6.2.0'
 )
 \c@tcblisting=\count377
-))
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/listingsutf8\listingsut
-f8.sty
+)) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/listingsutf8\listingsutf8.sty
 Package: listingsutf8 2019-12-10 v1.5 Allow UTF-8 in listings input (HO)
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/stringenc\stringenc.s
-ty
-Package: stringenc 2019/11/29 v1.12 Convert strings between diff. encodings (HO
-)
-)))
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tcolorbox\tcbexternal.c
-ode.tex
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/stringenc\stringenc.sty
+Package: stringenc 2019/11/29 v1.12 Convert strings between diff. encodings (HO)
+))) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tcolorbox\tcbexternal.code.tex
 Library (tcolorbox): 'tcbexternal.code.tex' version '6.2.0'
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tcolorbox\tcbmagazine.c
-ode.tex
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tcolorbox\tcbmagazine.code.tex
 Library (tcolorbox): 'tcbmagazine.code.tex' version '6.2.0'
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tcolorbox\tcbvignette.c
-ode.tex
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tcolorbox\tcbvignette.code.tex
 Library (tcolorbox): 'tcbvignette.code.tex' version '6.2.0'
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/frontendlayer/tik
-z/libraries\tikzlibraryfadings.code.tex
+(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/frontendlayer/tikz/libraries\tikzlibraryfadings.code.tex
 File: tikzlibraryfadings.code.tex 2023-01-15 v3.1.10 (3.1.10)
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/libraries\pgflibr
-aryfadings.code.tex
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/libraries\pgflibraryfadings.code.tex
 File: pgflibraryfadings.code.tex 2023-01-15 v3.1.10 (3.1.10)
-)))
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tcolorbox\tcbposter.cod
-e.tex
+))) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tcolorbox\tcbposter.code.tex
 Library (tcolorbox): 'tcbposter.code.tex' version '6.2.0'
 ))
-Package hyperref Info: Option `colorlinks' set `true' on input line 33.
+Package hyperref Info: Option `colorlinks' set `true' on input line 35.
  (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/cjk/UTF8\UTF8.enc
 File: UTF8.enc 2021/10/16 4.8.5
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/cjk/UTF8\UTF8.chr
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/cjk/UTF8\UTF8.chr
 File: UTF8.chr 2021/10/16 4.8.5
-)
-(main.aux)
+) (main.aux)
 \openout1 = `main.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 145.
-LaTeX Font Info:    ... okay on input line 145.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 145.
-LaTeX Font Info:    ... okay on input line 145.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 145.
-LaTeX Font Info:    ... okay on input line 145.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 145.
-LaTeX Font Info:    ... okay on input line 145.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 145.
-LaTeX Font Info:    ... okay on input line 145.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 145.
-LaTeX Font Info:    ... okay on input line 145.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 145.
-LaTeX Font Info:    ... okay on input line 145.
-LaTeX Font Info:    Checking defaults for C00/song/m/n on input line 145.
-LaTeX Font Info:    ... okay on input line 145.
-LaTeX Font Info:    Checking defaults for C05/song/m/n on input line 145.
-LaTeX Font Info:    ... okay on input line 145.
-LaTeX Font Info:    Checking defaults for C09/song/m/n on input line 145.
-LaTeX Font Info:    ... okay on input line 145.
-LaTeX Font Info:    Checking defaults for C10/song/m/n on input line 145.
-LaTeX Font Info:    ... okay on input line 145.
-LaTeX Font Info:    Checking defaults for C20/song/m/n on input line 145.
-LaTeX Font Info:    ... okay on input line 145.
-LaTeX Font Info:    Checking defaults for C19/song/m/n on input line 145.
-LaTeX Font Info:    ... okay on input line 145.
-LaTeX Font Info:    Checking defaults for C40/song/m/n on input line 145.
-LaTeX Font Info:    ... okay on input line 145.
-LaTeX Font Info:    Checking defaults for C42/song/m/n on input line 145.
-LaTeX Font Info:    ... okay on input line 145.
-LaTeX Font Info:    Checking defaults for C43/song/m/n on input line 145.
-LaTeX Font Info:    ... okay on input line 145.
-LaTeX Font Info:    Checking defaults for C50/song/m/n on input line 145.
-LaTeX Font Info:    ... okay on input line 145.
-LaTeX Font Info:    Checking defaults for C52/song/m/n on input line 145.
-LaTeX Font Info:    ... okay on input line 145.
-LaTeX Font Info:    Checking defaults for C49/song/m/n on input line 145.
-LaTeX Font Info:    ... okay on input line 145.
-LaTeX Font Info:    Checking defaults for C60/mj/m/n on input line 145.
-LaTeX Font Info:    ... okay on input line 145.
-LaTeX Font Info:    Checking defaults for C61/mj/m/n on input line 145.
-LaTeX Font Info:    ... okay on input line 145.
-LaTeX Font Info:    Checking defaults for C63/mj/m/n on input line 145.
-LaTeX Font Info:    ... okay on input line 145.
-LaTeX Font Info:    Checking defaults for C64/mj/m/n on input line 145.
-LaTeX Font Info:    ... okay on input line 145.
-LaTeX Font Info:    Checking defaults for C65/mj/m/n on input line 145.
-LaTeX Font Info:    ... okay on input line 145.
-LaTeX Font Info:    Checking defaults for C70/song/m/n on input line 145.
-LaTeX Font Info:    ... okay on input line 145.
-LaTeX Font Info:    Checking defaults for C31/song/m/n on input line 145.
-LaTeX Font Info:    ... okay on input line 145.
-LaTeX Font Info:    Checking defaults for C32/song/m/n on input line 145.
-LaTeX Font Info:    ... okay on input line 145.
-LaTeX Font Info:    Checking defaults for C33/song/m/n on input line 145.
-LaTeX Font Info:    ... okay on input line 145.
-LaTeX Font Info:    Checking defaults for C34/song/m/n on input line 145.
-LaTeX Font Info:    ... okay on input line 145.
-LaTeX Font Info:    Checking defaults for C35/song/m/n on input line 145.
-LaTeX Font Info:    ... okay on input line 145.
-LaTeX Font Info:    Checking defaults for C36/song/m/n on input line 145.
-LaTeX Font Info:    ... okay on input line 145.
-LaTeX Font Info:    Checking defaults for C37/song/m/n on input line 145.
-LaTeX Font Info:    ... okay on input line 145.
-LaTeX Font Info:    Checking defaults for C80/song/m/n on input line 145.
-LaTeX Font Info:    ... okay on input line 145.
-LaTeX Font Info:    Checking defaults for C81/song/m/n on input line 145.
-LaTeX Font Info:    ... okay on input line 145.
-LaTeX Font Info:    Checking defaults for C01/song/m/n on input line 145.
-LaTeX Font Info:    ... okay on input line 145.
-LaTeX Font Info:    Checking defaults for C11/song/m/n on input line 145.
-LaTeX Font Info:    ... okay on input line 145.
-LaTeX Font Info:    Checking defaults for C21/song/m/n on input line 145.
-LaTeX Font Info:    ... okay on input line 145.
-LaTeX Font Info:    Checking defaults for C41/song/m/n on input line 145.
-LaTeX Font Info:    ... okay on input line 145.
-LaTeX Font Info:    Checking defaults for C62/song/m/n on input line 145.
-LaTeX Font Info:    ... okay on input line 145.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 145.
-LaTeX Font Info:    ... okay on input line 145.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 145.
-LaTeX Font Info:    ... okay on input line 145.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C00/song/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C05/song/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C09/song/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C10/song/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C20/song/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C19/song/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C40/song/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C42/song/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C43/song/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C50/song/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C52/song/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C49/song/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C60/mj/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C61/mj/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C63/mj/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C64/mj/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C65/mj/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C70/song/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C31/song/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C32/song/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C33/song/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C34/song/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C35/song/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C36/song/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C37/song/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C80/song/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C81/song/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C01/song/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C11/song/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C21/song/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C41/song/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C62/song/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
 
 *geometry* driver: auto-detecting
 *geometry* detected driver: pdftex
@@ -1508,9 +1096,7 @@ LaTeX Font Info:    ... okay on input line 145.
 * \@reversemarginfalse
 * (1in=72.27pt=25.4mm, 1cm=28.453pt)
 
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/context/base/mkii\supp-pdf.mk
-ii
+(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/context/base/mkii\supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
 \scratchcounter=\count378
 \scratchdimen=\dimen327
@@ -1523,19 +1109,13 @@ ii
 \MPnumerator=\count382
 \makeMPintoPDFobject=\count383
 \everyMPtoPDFconversion=\toks50
-)
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/epstopdf-pkg\epstopdf-b
-ase.sty
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/epstopdf-pkg\epstopdf-base.sty
 Package: epstopdf-base 2020-01-24 v2.11 Base part for package epstopdf
-Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
-85.
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/00miktex\epstopdf-sys.c
-fg
+Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 485.
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/00miktex\epstopdf-sys.cfg
 File: epstopdf-sys.cfg 2021/03/18 v2.0 Configuration of epstopdf for MiKTeX
 ))
-Package hyperref Info: Link coloring ON on input line 145.
- (main.out) (main.out)
+Package hyperref Info: Link coloring ON on input line 147.
 \@outlinefile=\write4
 \openout4 = `main.out'.
 
@@ -1544,35 +1124,39 @@ Package caption Info: float package is loaded.
 Package caption Info: listings package is loaded.
 Package caption Info: End \AtBeginDocument code.
 \c@lstlisting=\count384
-LaTeX Font Info:    Trying to load font information for C70+rm on input line 15
-2.
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/ctex/fd\c70rm.fd
+LaTeX Font Info:    Trying to load font information for C70+rm on input line 154.
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/ctex/fd\c70rm.fd
 File: c70rm.fd 2022/07/14 v2.5.10 Chinese font definition (CTEX)
 )
-LaTeX Font Info:    Trying to load font information for U+msa on input line 164
-.
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsa.fd
+LaTeX Font Info:    Trying to load font information for U+msa on input line 166.
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 164
-.
-
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsb.fd
+LaTeX Font Info:    Trying to load font information for U+msb on input line 166.
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
-Package CJKpunct Info: use punctuation spaces for family 'rm' with punctstyle (
-quanjiao) on input line 165.
+Package CJKpunct Info: use punctuation spaces for family 'rm' with punctstyle (quanjiao) on input line 167.
+
+
+d:/HomeMind/main.tex:182: LaTeX Error: Command \figureplaceholder already defined.
+               Or name \end... illegal, see p.192 of the manual.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.182 }
+       
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
 
 
 
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/ctex/zhmap\ctex-zhmap
--windows.tex
-File: ctex-zhmap-windows.tex 2022/07/14 v2.5.10 Windows font map loader for pdf
-TeX and DVIPDFMx (CTEX)
-{C:/Users/wblxr/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}{UGBK.sfd}{Uni
-code.sfd}) [1
+(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/ctex/zhmap\ctex-zhmap-windows.tex
+File: ctex-zhmap-windows.tex 2022/07/14 v2.5.10 Windows font map loader for pdfTeX and DVIPDFMx (CTEX)
+{C:/Users/wblxr/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}{UGBK.sfd}{Unicode.sfd}) [1
 
 ]
 
@@ -1580,255 +1164,712 @@ code.sfd}) [1
 
 ]
 
-[2
-
-]
-
-[3] (main.toc
-
-[4
-
-]
-
-[5])
+[2]
+No file main.toc.
 \tf@toc=\write5
 \openout5 = `main.toc'.
 
 
 
-[6]
+[3
+
+]
 ç¬¬ä¸€ç« 
 
+LaTeX Warning: Reference `tab:chapter1-goals' on page 1 undefined on input line 224.
 
 
-pdfTeX warning (ext4): destination with the same identifier (name{page.1}) has 
-been already used, duplicate ignored
+
+
+pdfTeX warning (ext4): destination with the same identifier (name{page.1}) has been already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.242 
+l.225 
        [1
 
 
 ]
-Underfull \hbox (badness 10000) in paragraph at lines 261--261
-[]|\C70/rm/m/n/12/90 ^^Z \C70/rm/m/n/12/8f Ç \C70/rm/m/n/12/8b í \C70/rm/m/n/12
-/8a ^^@ \C70/rm/m/n/12/5f R \C70/rm/m/n/12/4e ^^@ \C70/rm/m/n/12/53 ^^V \C70/rm
-/m/n/12/5c B ^^F |\C70/rm/m/n/12/20 ^^\|\C70/rm/m/n/12/95 ÷ \C70/rm/m/n/12/5f —
-
+Underfull \hbox (badness 10000) in paragraph at lines 240--240
+[]|\C70/rm/m/n/12/90 ^^Z \C70/rm/m/n/12/8f Ç \C70/rm/m/n/12/8b í \C70/rm/m/n/12/8a ^^@ \C70/rm/m/n/12/5f R \C70/rm/m/n/12/4e ^^@ \C70/rm/m/n/12/53 ^^V \C70/rm/m/n/12/5c B ^^F |\C70/rm/m/n/12/20 ^^\|\C70/rm/m/n/12/95 ÷ \C70/rm/m/n/12/5f —
  []
 
 
 
 [2]
+d:/HomeMind/main.tex:251: Missing endcsname inserted.
+<to be read again> 
+                   å
+l.251 ...{HomeMindå…³é”®åˆ›æ–°ä¸æŠ€æœ¯ç‰¹å¾.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:251: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: å invalid in file name. Lost: fi …³é”®åˆ›æ–°ä...
+l.251 ...{HomeMindå…³é”®åˆ›æ–°ä¸æŠ€æœ¯ç‰¹å¾.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+d:/HomeMind/main.tex:251: Missing endcsname inserted.
+<to be read again> 
+                   å
+l.251 ...{HomeMindå…³é”®åˆ›æ–°ä¸æŠ€æœ¯ç‰¹å¾.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:251: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: å invalid in file name. Lost: fi …³é”®åˆ›æ–°ä...
+l.251 ...{HomeMindå…³é”®åˆ›æ–°ä¸æŠ€æœ¯ç‰¹å¾.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+d:/HomeMind/main.tex:251: Missing endcsname inserted.
+<to be read again> 
+                   å
+l.251 ...{HomeMindå…³é”®åˆ›æ–°ä¸æŠ€æœ¯ç‰¹å¾.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:251: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: å invalid in file name. Lost: fi …³é”®åˆ›æ–°ä...
+l.251 ...{HomeMindå…³é”®åˆ›æ–°ä¸æŠ€æœ¯ç‰¹å¾.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+
+d:/HomeMind/main.tex:251: LaTeX Error: File `HomeMindå…³é”®åˆ›æ–°ä¸æŠ€æœ¯ç‰¹å¾.png' not found.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.251 ...{HomeMindå…³é”®åˆ›æ–°ä¸æŠ€æœ¯ç‰¹å¾.png}
+                                                  
+I could not locate the file with any of these extensions:
+.pdf,.png,.jpg,.mps,.jpeg,.jbig2,.jb2,.PDF,.PNG,.JPG,.JPEG,.JBIG2,.JB2,.eps
+Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+
 
 [3]
+d:/HomeMind/main.tex:271: Missing endcsname inserted.
+<to be read again> 
+                   ç
+l.271 ...æ™ºèƒ½å®¶å±…æ™ºèƒ½ä½“ç³»ç»Ÿæ€»è§ˆå›¾.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:271: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: ç invalid in file name. Lost: fi «¯ä¾§æ™ºèƒ½å...
+l.271 ...æ™ºèƒ½å®¶å±…æ™ºèƒ½ä½“ç³»ç»Ÿæ€»è§ˆå›¾.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+d:/HomeMind/main.tex:271: Missing endcsname inserted.
+<to be read again> 
+                   ç
+l.271 ...æ™ºèƒ½å®¶å±…æ™ºèƒ½ä½“ç³»ç»Ÿæ€»è§ˆå›¾.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:271: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: ç invalid in file name. Lost: fi «¯ä¾§æ™ºèƒ½å...
+l.271 ...æ™ºèƒ½å®¶å±…æ™ºèƒ½ä½“ç³»ç»Ÿæ€»è§ˆå›¾.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+d:/HomeMind/main.tex:271: Missing endcsname inserted.
+<to be read again> 
+                   ç
+l.271 ...æ™ºèƒ½å®¶å±…æ™ºèƒ½ä½“ç³»ç»Ÿæ€»è§ˆå›¾.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:271: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: ç invalid in file name. Lost: fi «¯ä¾§æ™ºèƒ½å...
+l.271 ...æ™ºèƒ½å®¶å±…æ™ºèƒ½ä½“ç³»ç»Ÿæ€»è§ˆå›¾.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+
+d:/HomeMind/main.tex:271: LaTeX Error: File `homemind_images/HomeMindç«¯ä¾§æ™ºèƒ½å®¶å±…æ™ºèƒ½ä½“ç³»ç»Ÿæ€»è§ˆå›¾.png' not found.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.271 ...æ™ºèƒ½å®¶å±…æ™ºèƒ½ä½“ç³»ç»Ÿæ€»è§ˆå›¾.png}
+                                                  
+I could not locate the file with any of these extensions:
+.pdf,.png,.jpg,.mps,.jpeg,.jbig2,.jb2,.PDF,.PNG,.JPG,.JPEG,.JBIG2,.JB2,.eps
+Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+
 
 [4]
-
-[5]
 ç¬¬äºŒç« 
 
-Underfull \hbox (badness 1552) in paragraph at lines 306--306
-[]|\C70/rm/bx/n/12/9a Ø \C70/rm/bx/n/12/98 ‘ \C70/rm/bx/n/12/4e û \C70/rm/bx/n/
-12/52 ¡ \C70/rm/bx/n/12/97 ^^@ \C70/rm/bx/n/12/89  \C70/rm/bx/n/12/67 ,
+Underfull \hbox (badness 1552) in paragraph at lines 299--299
+[]|\C70/rm/bx/n/12/9a Ø \C70/rm/bx/n/12/98 ‘ \C70/rm/bx/n/12/4e û \C70/rm/bx/n/12/52 ¡ \C70/rm/bx/n/12/97 ^^@ \C70/rm/bx/n/12/89  \C70/rm/bx/n/12/67 ,
  []
 
 
-Underfull \hbox (badness 1552) in paragraph at lines 306--306
-[]|\C70/rm/bx/n/12/5b ¶ \C70/rm/bx/n/12/5e ­ \C70/rm/bx/n/12/57 : \C70/rm/bx/n/
-12/66 o \C70/rm/bx/n/12/4e û \C70/rm/bx/n/12/52 ¡ \C70/rm/bx/n/12/7c {
+Underfull \hbox (badness 1552) in paragraph at lines 299--299
+[]|\C70/rm/bx/n/12/5b ¶ \C70/rm/bx/n/12/5e ­ \C70/rm/bx/n/12/57 : \C70/rm/bx/n/12/66 o \C70/rm/bx/n/12/4e û \C70/rm/bx/n/12/52 ¡ \C70/rm/bx/n/12/7c {
  []
 
 
-Underfull \hbox (badness 1552) in paragraph at lines 306--306
-[]|\C70/rm/bx/n/12/5b ¶ \C70/rm/bx/n/12/5e ­ \C70/rm/bx/n/12/62 ^^P \C70/rm/bx/
-n/12/54 X \C70/rm/bx/n/12/88 h \C70/rm/bx/n/12/8f ¾ \C70/rm/bx/n/12/5d î
+Underfull \hbox (badness 1552) in paragraph at lines 299--299
+[]|\C70/rm/bx/n/12/5b ¶ \C70/rm/bx/n/12/5e ­ \C70/rm/bx/n/12/62 ^^P \C70/rm/bx/n/12/54 X \C70/rm/bx/n/12/88 h \C70/rm/bx/n/12/8f ¾ \C70/rm/bx/n/12/5d î
  []
 
 
-Underfull \hbox (badness 1552) in paragraph at lines 306--306
-[]|\C70/rm/bx/n/12/4e ¤ ’ \C70/rm/bx/n/12/5b  \C70/rm/bx/n/12/65 ö \C70/rm/bx/
-n/12/60 ' \C70/rm/bx/n/12/89  \C70/rm/bx/n/12/6c B
+Underfull \hbox (badness 1552) in paragraph at lines 299--299
+[]|\C70/rm/bx/n/12/4e ¤ ’ \C70/rm/bx/n/12/5b  \C70/rm/bx/n/12/65 ö \C70/rm/bx/n/12/60 ' \C70/rm/bx/n/12/89  \C70/rm/bx/n/12/6c B
  []
 
 
-Underfull \hbox (badness 1552) in paragraph at lines 306--306
-[]|\C70/rm/bx/n/12/96  \C70/rm/bx/n/12/79 Á \C70/rm/bx/n/12/4e ^^N \C70/rm/bx/
-n/12/5b ‰ \C70/rm/bx/n/12/51 h \C70/rm/bx/n/12/89  \C70/rm/bx/n/12/6c B
+Underfull \hbox (badness 1552) in paragraph at lines 299--299
+[]|\C70/rm/bx/n/12/96  \C70/rm/bx/n/12/79 Á \C70/rm/bx/n/12/4e ^^N \C70/rm/bx/n/12/5b ‰ \C70/rm/bx/n/12/51 h \C70/rm/bx/n/12/89  \C70/rm/bx/n/12/6c B
  []
 
 
-Underfull \hbox (badness 5563) in paragraph at lines 306--306
-[]|\OT1/cmr/m/n/12 Token \C70/rm/m/n/12/53 ‹ \C70/rm/m/n/12/7f )|\C70/rm/m/n/12
-/30 ^^A| \OT1/cmr/m/n/12 Schema \C70/rm/m/n/12/68 ! \C70/rm/m/n/12/9a Œ|\C70/rm
-/m/n/12/30 ^^A|
+Underfull \hbox (badness 5563) in paragraph at lines 299--299
+[]|\OT1/cmr/m/n/12 Token \C70/rm/m/n/12/53 ‹ \C70/rm/m/n/12/7f )|\C70/rm/m/n/12/30 ^^A| \OT1/cmr/m/n/12 Schema \C70/rm/m/n/12/68 ! \C70/rm/m/n/12/9a Œ|\C70/rm/m/n/12/30 ^^A|
  []
 
 
 
-[6
+[5
 
 ]
 
-[7]
-Overfull \hbox (33.10124pt too wide) in paragraph at lines 335--336
-[]\OT1/cmr/bx/n/12 4. \C70/rm/bx/n/12/53 ï \C70/rm/bx/n/12/62 i \C70/rm/bx/n/12
-/5c U \C70/rm/bx/n/12/60 '|\C70/rm/bx/n/12/30 ^^B|  \C70/rm/m/n/12/7c û \C70/rm
-/m/n/12/7e ß \C70/rm/m/n/12/5f Å \C70/rm/m/n/12/98 { \C70/rm/m/n/12/80 ı \C70/r
-m/m/n/12/4e Î \C70/rm/m/n/12/5b ¶ \C70/rm/m/n/12/5e ­ \C70/rm/m/n/12/57 : \C70/
-rm/m/n/12/66 o \C70/rm/m/n/12/8f Û \C70/rm/m/n/12/4e ^^@ \C70/rm/m/n/12/6b e \C
-70/rm/m/n/12/62 i \C70/rm/m/n/12/5c U \C70/rm/m/n/12/52 0 \C70/rm/m/n/12/66 ô \
-C70/rm/m/n/12/59 ^^Z \C70/rm/m/n/12/8b ¾ \C70/rm/m/n/12/59 ^^G \C70/rm/m/n/12/5
-4 Œ \C70/rm/m/n/12/53 O \C70/rm/m/n/12/8b ®|\C70/rm/m/n/12/30 ^^B| \OT1/cmr/m/n
-/12 SmartHomeGateway
+[6]
+Overfull \hbox (33.10124pt too wide) in paragraph at lines 329--330
+[]\OT1/cmr/bx/n/12 4. \C70/rm/bx/n/12/53 ï \C70/rm/bx/n/12/62 i \C70/rm/bx/n/12/5c U \C70/rm/bx/n/12/60 '|\C70/rm/bx/n/12/30 ^^B|  \C70/rm/m/n/12/7c û \C70/rm/m/n/12/7e ß \C70/rm/m/n/12/5f Å \C70/rm/m/n/12/98 { \C70/rm/m/n/12/80 ı \C70/rm/m/n/12/4e Î \C70/rm/m/n/12/5b ¶ \C70/rm/m/n/12/5e ­ \C70/rm/m/n/12/57 : \C70/rm/m/n/12/66 o \C70/rm/m/n/12/8f Û \C70/rm/m/n/12/4e ^^@ \C70/rm/m/n/12/6b e \C70/rm/m/n/12/62 i \C70/rm/m/n/12/5c U \C70/rm/m/n/12/52 0 \C70/rm/m/n/12/66 ô \C70/rm/m/n/12/59 ^^Z \C70/rm/m/n/12/8b ¾ \C70/rm/m/n/12/59 ^^G \C70/rm/m/n/12/54 Œ \C70/rm/m/n/12/53 O \C70/rm/m/n/12/8b ®|\C70/rm/m/n/12/30 ^^B| \OT1/cmr/m/n/12 SmartHomeGateway
  []
 
 
-Underfull \hbox (badness 1024) in paragraph at lines 360--360
-[]|\C70/rm/m/n/12/5c ^^F \C70/rm/m/n/12/74 ^^F \C70/rm/m/n/12/89 ã \C70/rm/m/n/
-12/7e Ó \C70/rm/m/n/12/67 œ \C70/rm/m/n/12/66   \C70/rm/m/n/12/5c ^^D \C70/rm/m
-/n/12/4e : \C70/rm/m/n/12/53 ï \C70/rm/m/n/12/62 g \C70/rm/m/n/12/88 L \C70/rm/
-m/n/12/52 ¨
+Underfull \hbox (badness 1024) in paragraph at lines 355--355
+[]|\C70/rm/m/n/12/5c ^^F \C70/rm/m/n/12/74 ^^F \C70/rm/m/n/12/89 ã \C70/rm/m/n/12/7e Ó \C70/rm/m/n/12/67 œ \C70/rm/m/n/12/66   \C70/rm/m/n/12/5c ^^D \C70/rm/m/n/12/4e : \C70/rm/m/n/12/53 ï \C70/rm/m/n/12/62 g \C70/rm/m/n/12/88 L \C70/rm/m/n/12/52 ¨
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 360--360
+Underfull \hbox (badness 10000) in paragraph at lines 355--355
 []|\OT1/cmr/m/n/12 DeviceController|\C70/rm/m/n/12/30 ^^A|
  []
 
 
-Underfull \hbox (badness 1354) in paragraph at lines 360--360
-[]|\OT1/cmr/m/n/12 HomeContext|\C70/rm/m/n/12/30 ^^A| \OT1/cmr/m/n/12 SessionSt
-ore|\C70/rm/m/n/12/30 ^^A|
+Underfull \hbox (badness 1354) in paragraph at lines 355--355
+[]|\OT1/cmr/m/n/12 HomeContext|\C70/rm/m/n/12/30 ^^A| \OT1/cmr/m/n/12 SessionStore|\C70/rm/m/n/12/30 ^^A|
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 360--360
+Underfull \hbox (badness 10000) in paragraph at lines 355--355
 \OT1/cmr/m/n/12 PreferenceStore|\C70/rm/m/n/12/30 ^^A|
  []
 
 
-Underfull \hbox (badness 1314) in paragraph at lines 360--360
-[]|\OT1/cmr/m/n/12 Router|\C70/rm/m/n/12/30 ^^A| \OT1/cmr/m/n/12 Schema|\C70/rm
-/m/n/12/30 ^^A| \C70/rm/m/n/12/52   \C70/rm/m/n/12/5b Æ X \C70/rm/m/n/12/50 ¨
+Underfull \hbox (badness 1314) in paragraph at lines 355--355
+[]|\OT1/cmr/m/n/12 Router|\C70/rm/m/n/12/30 ^^A| \OT1/cmr/m/n/12 Schema|\C70/rm/m/n/12/30 ^^A| \C70/rm/m/n/12/52   \C70/rm/m/n/12/5b Æ X \C70/rm/m/n/12/50 ¨
  []
 
 
-Underfull \hbox (badness 1024) in paragraph at lines 360--360
-[]|\C70/rm/m/n/12/5e 8 \C70/rm/m/n/12/89 Ä \C70/rm/m/n/12/63 § \C70/rm/m/n/12/5
-2 6 \C70/rm/m/n/12/51 H \C70/rm/m/n/12/53 ì \C70/rm/m/n/12/56 Ş \C70/rm/m/n/12/
-91 Í \C70/rm/m/n/12/63 ’ \C70/rm/m/n/12/54 ^^N \C70/rm/m/n/12/63 	 \C70/rm/m/n/
-12/7f n
+Underfull \hbox (badness 1024) in paragraph at lines 355--355
+[]|\C70/rm/m/n/12/5e 8 \C70/rm/m/n/12/89 Ä \C70/rm/m/n/12/63 § \C70/rm/m/n/12/52 6 \C70/rm/m/n/12/51 H \C70/rm/m/n/12/53 ì \C70/rm/m/n/12/56 Ş \C70/rm/m/n/12/91 Í \C70/rm/m/n/12/63 ’ \C70/rm/m/n/12/54 ^^N \C70/rm/m/n/12/63 	 \C70/rm/m/n/12/7f n
  []
 
 
-Underfull \hbox (badness 1024) in paragraph at lines 360--360
-[]|\C70/rm/m/n/12/90 ^^Z \C70/rm/m/n/12/8f Ç \C70/rm/m/n/12/50 O \C70/rm/m/n/12
-/59 } \C70/rm/m/n/12/8b ° \C70/rm/m/n/12/5f Æ \C70/rm/m/n/12/54 Œ \C70/rm/m/n/1
-2/6f „ \C70/rm/m/n/12/6e ^^E \C70/rm/m/n/12/67 : \C70/rm/m/n/12/52 6 \C70/rm/m/
-n/12/96 M
+Underfull \hbox (badness 1024) in paragraph at lines 355--355
+[]|\C70/rm/m/n/12/90 ^^Z \C70/rm/m/n/12/8f Ç \C70/rm/m/n/12/50 O \C70/rm/m/n/12/59 } \C70/rm/m/n/12/8b ° \C70/rm/m/n/12/5f Æ \C70/rm/m/n/12/54 Œ \C70/rm/m/n/12/6f „ \C70/rm/m/n/12/6e ^^E \C70/rm/m/n/12/67 : \C70/rm/m/n/12/52 6 \C70/rm/m/n/12/96 M
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 360--360
-[]|\OT1/cmr/m/n/12 Router|\C70/rm/m/n/12/30 ^^A| \OT1/cmr/m/n/12 PreferenceStor
-e|\C70/rm/m/n/12/30 ^^A|
+Underfull \hbox (badness 10000) in paragraph at lines 355--355
+[]|\OT1/cmr/m/n/12 Router|\C70/rm/m/n/12/30 ^^A| \OT1/cmr/m/n/12 PreferenceStore|\C70/rm/m/n/12/30 ^^A|
  []
+
+
+
+[7]
+d:/HomeMind/main.tex:362: Missing endcsname inserted.
+<to be read again> 
+                   å
+l.362 ...newidth]{å›¾6HomeMindåŠŸèƒ½æ¶æ„å›¾.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:362: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: å invalid in file name. Lost: fi ›¾6HomeMindå...
+l.362 ...newidth]{å›¾6HomeMindåŠŸèƒ½æ¶æ„å›¾.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+d:/HomeMind/main.tex:362: Missing endcsname inserted.
+<to be read again> 
+                   å
+l.362 ...newidth]{å›¾6HomeMindåŠŸèƒ½æ¶æ„å›¾.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:362: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: å invalid in file name. Lost: fi ›¾6HomeMindå...
+l.362 ...newidth]{å›¾6HomeMindåŠŸèƒ½æ¶æ„å›¾.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+d:/HomeMind/main.tex:362: Missing endcsname inserted.
+<to be read again> 
+                   å
+l.362 ...newidth]{å›¾6HomeMindåŠŸèƒ½æ¶æ„å›¾.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:362: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: å invalid in file name. Lost: fi fi ›¾6HomeMi...
+l.362 ...newidth]{å›¾6HomeMindåŠŸèƒ½æ¶æ„å›¾.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+
+d:/HomeMind/main.tex:362: LaTeX Error: File `å›¾6HomeMindåŠŸèƒ½æ¶æ„å›¾.png' not found.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.362 ...newidth]{å›¾6HomeMindåŠŸèƒ½æ¶æ„å›¾.png}
+                                                  
+I could not locate the file with any of these extensions:
+.pdf,.png,.jpg,.mps,.jpeg,.jbig2,.jb2,.PDF,.PNG,.JPG,.JPEG,.JBIG2,.JB2,.eps
+Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
 
 
 
 [8]
-
-[9]
 ç¬¬ä¸‰ç« 
 
-Underfull \hbox (badness 10000) in paragraph at lines 386--386
-\C70/rm/m/n/12/4e I \C70/rm/m/n/12/88 Á \C70/rm/m/n/12/51 ³|\C70/rm/m/n/12/ff ^
-^[| \C70/rm/m/n/12/4f N \C70/rm/m/n/12/4e ã \C70/rm/m/n/12/78 ^^A \C70/rm/m/n/1
-2/57 :
+LaTeX Warning: Reference `tab:architecture-choice' on page 9 undefined on input line 375.
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 390--390
+\C70/rm/m/n/12/4e I \C70/rm/m/n/12/88 Á \C70/rm/m/n/12/51 ³|\C70/rm/m/n/12/ff ^^[| \C70/rm/m/n/12/4f N \C70/rm/m/n/12/4e ã \C70/rm/m/n/12/78 ^^A \C70/rm/m/n/12/57 :
  []
 
 
-Underfull \hbox (badness 6675) in paragraph at lines 386--386
-\C70/rm/m/n/12/66 o\OT1/cmr/m/n/12 /\C70/rm/m/n/12/89 Ä \C70/rm/m/n/12/52 ^^Y\O
-T1/cmr/m/n/12 /Change \C70/rm/m/n/12/7e  
+Underfull \hbox (badness 6675) in paragraph at lines 390--390
+\C70/rm/m/n/12/66 o\OT1/cmr/m/n/12 /\C70/rm/m/n/12/89 Ä \C70/rm/m/n/12/52 ^^Y\OT1/cmr/m/n/12 /Change \C70/rm/m/n/12/7e  
  []
 
 
-Underfull \hbox (badness 3623) in paragraph at lines 386--386
-[]|\C70/rm/m/n/12/5e 8 \C70/rm/m/n/12/89 Ä \C70/rm/m/n/12/63 § \C70/rm/m/n/12/5
-2 6 \C70/rm/m/n/12/75 1 \OT1/cmr/m/n/12 Router
+Underfull \hbox (badness 3623) in paragraph at lines 390--390
+[]|\C70/rm/m/n/12/5e 8 \C70/rm/m/n/12/89 Ä \C70/rm/m/n/12/63 § \C70/rm/m/n/12/52 6 \C70/rm/m/n/12/75 1 \OT1/cmr/m/n/12 Router
  []
 
 
-Underfull \hbox (badness 2173) in paragraph at lines 386--386
-\C70/rm/m/n/12/7a ï \C70/rm/m/n/12/4f § \C70/rm/m/n/12/50 Z \C70/rm/m/n/12/8b ¾
- \C70/rm/m/n/12/59 ^^G|\C70/rm/m/n/12/30 ^^A| \C70/rm/m/n/12/7a z \C70/rm/m/n/1
-2/95 ô|\C70/rm/m/n/12/30 ^^A|
+Underfull \hbox (badness 2173) in paragraph at lines 390--390
+\C70/rm/m/n/12/7a ï \C70/rm/m/n/12/4f § \C70/rm/m/n/12/50 Z \C70/rm/m/n/12/8b ¾ \C70/rm/m/n/12/59 ^^G|\C70/rm/m/n/12/30 ^^A| \C70/rm/m/n/12/7a z \C70/rm/m/n/12/95 ô|\C70/rm/m/n/12/30 ^^A|
  []
 
 
-Underfull \hbox (badness 1158) in paragraph at lines 386--386
-\C70/rm/m/n/12/53 O \C70/rm/m/n/12/8b ®|\C70/rm/m/n/12/30 ^^A| \OT1/cmr/m/n/12 
-Schema \C70/rm/m/n/12/4e ^^N \C70/rm/m/n/12/5b ‰
+Underfull \hbox (badness 1158) in paragraph at lines 390--390
+\C70/rm/m/n/12/53 O \C70/rm/m/n/12/8b ®|\C70/rm/m/n/12/30 ^^A| \OT1/cmr/m/n/12 Schema \C70/rm/m/n/12/4e ^^N \C70/rm/m/n/12/5b ‰
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 386--386
-[]|\C70/rm/m/n/12/63 Ğ \C70/rm/m/n/12/4f › N \C70/rm/m/n/12/5e ö \C70/rm/m/n/12
-/8f ß|\C70/rm/m/n/12/30 ^^A| \C70/rm/m/n/12/5f : \C70/rm/m/n/12/53 ï
+Underfull \hbox (badness 10000) in paragraph at lines 390--390
+[]|\C70/rm/m/n/12/63 Ğ \C70/rm/m/n/12/4f › N \C70/rm/m/n/12/5e ö \C70/rm/m/n/12/8f ß|\C70/rm/m/n/12/30 ^^A| \C70/rm/m/n/12/5f : \C70/rm/m/n/12/53 ï
  []
 
 
-Underfull \hbox (badness 6741) in paragraph at lines 386--386
-[]|\C70/rm/m/n/12/4f ^^? \C70/rm/m/n/12/75 ( \OT1/cmr/m/n/12 LSR \C70/rm/m/n/12
-/8f { \C70/rm/m/n/12/91 Ï Í
+Underfull \hbox (badness 5217) in paragraph at lines 390--390
+\C70/rm/m/n/12/57 0 \C70/rm/m/n/12/5b X \C70/rm/m/n/12/50 ¨|\C70/rm/m/n/12/30 ^^A| \OT1/cmr/m/n/12 Fernet \C70/rm/m/n/12/5b ù
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 386--386
-\C70/rm/m/n/12/63 ’ \C70/rm/m/n/12/5e |\C70/rm/m/n/12/30 ^^A| \OT1/cmr/m/n/12 
-DQN \C70/rm/m/n/12/63 ¨ \C70/rm/m/n/12/83 P
+Underfull \hbox (badness 10000) in paragraph at lines 390--390
+\C70/rm/m/n/12/79 ğ \C70/rm/m/n/12/52   \C70/rm/m/n/12/5b Æ|\C70/rm/m/n/12/30 ^^A| \OT1/cmr/m/n/12 PBKDF2-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 386--386
-\C70/rm/m/n/12/7f Q \C70/rm/m/n/12/7e Ü \C70/rm/m/n/12/54 Œ \OT1/cmr/m/n/12 Moc
-k-/l-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 386--386
-[]|\C70/rm/m/n/12/91 Ç \C70/rm/m/n/12/75 ( \OT1/cmr/m/n/12 JSON/Chro-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 386--386
-\OT1/cmr/m/n/12 maDB \C70/rm/m/n/12/67 , \C70/rm/m/n/12/57 0 \C70/rm/m/n/12/5b 
-X \C70/rm/m/n/12/50 ¨|\C70/rm/m/n/12/30 ^^A|
+Underfull \hbox (badness 1158) in paragraph at lines 390--390
+\C70/rm/m/n/12/6d > \C70/rm/m/n/12/75 ^^_|\C70/rm/m/n/12/30 ^^A| \C70/rm/m/n/12/56 ú \C70/rm/m/n/12/5b š \OT1/cmr/m/n/12 Schema
  []
 
 
 
-[10
+[9
 
 ]
-LaTeX Font Info:    Trying to load font information for C70+zhhei on input line
- 439.
+d:/HomeMind/main.tex:398: Missing endcsname inserted.
+<to be read again> 
+                   ç
+l.398 .../HomeMindç«¯ä¾§æ™ºèƒ½ä½“æ€»ä½“æ¶æ„.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
 
-(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/zhmetrics\c70zhhei.fd
-File: c70zhhei.fd 2009/09/23 4.8.2
-)
-Package CJKpunct Info: use punctuation spaces for family 'zhhei' with punctstyl
-e (quanjiao) on input line 440.
-LaTeX Font Info:    Calculating math sizes for size <8.6> on input line 445.
+d:/HomeMind/main.tex:398: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: ç invalid in file name. Lost: fi «¯ä¾§æ™ºèƒ½ä...
+l.398 .../HomeMindç«¯ä¾§æ™ºèƒ½ä½“æ€»ä½“æ¶æ„.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+d:/HomeMind/main.tex:398: Missing endcsname inserted.
+<to be read again> 
+                   ç
+l.398 .../HomeMindç«¯ä¾§æ™ºèƒ½ä½“æ€»ä½“æ¶æ„.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:398: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: ç invalid in file name. Lost: fi «¯ä¾§æ™ºèƒ½ä...
+l.398 .../HomeMindç«¯ä¾§æ™ºèƒ½ä½“æ€»ä½“æ¶æ„.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+d:/HomeMind/main.tex:398: Missing endcsname inserted.
+<to be read again> 
+                   ç
+l.398 .../HomeMindç«¯ä¾§æ™ºèƒ½ä½“æ€»ä½“æ¶æ„.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:398: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: ç invalid in file name. Lost: fi «¯ä¾§æ™ºèƒ½ä...
+l.398 .../HomeMindç«¯ä¾§æ™ºèƒ½ä½“æ€»ä½“æ¶æ„.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+
+d:/HomeMind/main.tex:398: LaTeX Error: File `homemind_images/HomeMindç«¯ä¾§æ™ºèƒ½ä½“æ€»ä½“æ¶æ„.png' not found.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.398 .../HomeMindç«¯ä¾§æ™ºèƒ½ä½“æ€»ä½“æ¶æ„.png}
+                                                  
+I could not locate the file with any of these extensions:
+.pdf,.png,.jpg,.mps,.jpeg,.jbig2,.jb2,.PDF,.PNG,.JPG,.JPEG,.JBIG2,.JB2,.eps
+Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+
+
+[10]
+d:/HomeMind/main.tex:413: Missing endcsname inserted.
+<to be read again> 
+                   æ
+l.413 ...newidth]{7HomeMindæ ¸å¿ƒæ•°æ®æµå›¾.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:413: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: æ invalid in file name. Lost: fi  ¸å¿ƒæ•°æ®æ...
+l.413 ...newidth]{7HomeMindæ ¸å¿ƒæ•°æ®æµå›¾.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+d:/HomeMind/main.tex:413: Missing endcsname inserted.
+<to be read again> 
+                   æ
+l.413 ...newidth]{7HomeMindæ ¸å¿ƒæ•°æ®æµå›¾.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:413: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: æ invalid in file name. Lost: fi  ¸å¿ƒæ•°æ®æ...
+l.413 ...newidth]{7HomeMindæ ¸å¿ƒæ•°æ®æµå›¾.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+d:/HomeMind/main.tex:413: Missing endcsname inserted.
+<to be read again> 
+                   æ
+l.413 ...newidth]{7HomeMindæ ¸å¿ƒæ•°æ®æµå›¾.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:413: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: æ invalid in file name. Lost: fi  ¸å¿ƒæ•°æ®æ...
+l.413 ...newidth]{7HomeMindæ ¸å¿ƒæ•°æ®æµå›¾.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+
+d:/HomeMind/main.tex:413: LaTeX Error: File `7HomeMindæ ¸å¿ƒæ•°æ®æµå›¾.png' not found.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.413 ...newidth]{7HomeMindæ ¸å¿ƒæ•°æ®æµå›¾.png}
+                                                  
+I could not locate the file with any of these extensions:
+.pdf,.png,.jpg,.mps,.jpeg,.jbig2,.jb2,.PDF,.PNG,.JPG,.JPEG,.JBIG2,.JB2,.eps
+Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
 
 
 [11]
+Underfull \hbox (badness 10000) in paragraph at lines 444--444
+[]|\OT1/cmr/bx/n/12 Fernet +
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 444--444
+\OT1/cmr/bx/n/12 PBKDF2-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 444--444
+\OT1/cmr/bx/n/12 HMAC-
+ []
+
+
+Underfull \hbox (badness 2103) in paragraph at lines 444--444
+\C70/rm/m/n/12/53 ï \C70/rm/m/n/12/75 1 \C70/rm/m/n/12/59 ^^V \C70/rm/m/n/12/90 è \C70/rm/m/n/12/53 ã \C70/rm/m/n/12/4e ä \C70/rm/m/n/12/6d > \C70/rm/m/n/12/75 ^^_|\C70/rm/m/n/12/ff ^^[|
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 444--444
+[]|\C70/rm/m/n/12/4f \ \C70/rm/m/n/12/4e : \C70/rm/m/n/12/54 ^^N \C70/rm/m/n/12/7e í \C70/rm/m/n/12/4f ^^A \C70/rm/m/n/12/4e ^^Z \C70/rm/m/n/12/7e §
+ []
+
+
+Underfull \hbox (badness 6300) in paragraph at lines 444--444
+[]|\C70/rm/m/n/12/5b  \C70/rm/m/n/12/73 ° \C70/rm/m/n/12/7b € \C70/rm/m/n/12/53 U|\C70/rm/m/n/12/ff ^^L| \C70/rm/m/n/12/8c ^^C \C70/rm/m/n/12/8b Õ \C70/rm/m/n/12/65 ¹
+ []
+
+
+Underfull \hbox (badness 1442) in paragraph at lines 444--444
+[]|\C70/rm/m/n/12/65 à \C70/rm/m/n/12/6c Õ \C70/rm/m/n/12/62 µ \C70/rm/m/n/12/5f ¡ \C70/rm/m/n/12/59 ^^G \C70/rm/m/n/12/4e ı \C70/rm/m/n/12/6c Ä \C70/rm/m/n/12/97 2|\C70/rm/m/n/12/30 ^^A|
+ []
+
+
 
 [12]
 
+LaTeX Warning: Reference `fig:security-cloud-governance' on page 13 undefined on input line 451.
+
+d:/HomeMind/main.tex:455: Missing endcsname inserted.
+<to be read again> 
+                   ç
+l.455 ...]{homemind_images/ç«¯äº‘ååŒæ²»ç†.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:455: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: ç invalid in file name. Lost: fi «¯äº‘ååŒæ...
+l.455 ...]{homemind_images/ç«¯äº‘ååŒæ²»ç†.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+d:/HomeMind/main.tex:455: Missing endcsname inserted.
+<to be read again> 
+                   ç
+l.455 ...]{homemind_images/ç«¯äº‘ååŒæ²»ç†.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:455: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: ç invalid in file name. Lost: fi «¯äº‘ååŒæ...
+l.455 ...]{homemind_images/ç«¯äº‘ååŒæ²»ç†.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+d:/HomeMind/main.tex:455: Missing endcsname inserted.
+<to be read again> 
+                   ç
+l.455 ...]{homemind_images/ç«¯äº‘ååŒæ²»ç†.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:455: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: ç invalid in file name. Lost: fi «¯äº‘ååŒæ...
+l.455 ...]{homemind_images/ç«¯äº‘ååŒæ²»ç†.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+
+d:/HomeMind/main.tex:455: LaTeX Error: File `homemind_images/ç«¯äº‘ååŒæ²»ç†.png' not found.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.455 ...]{homemind_images/ç«¯äº‘ååŒæ²»ç†.png}
+                                                  
+I could not locate the file with any of these extensions:
+.pdf,.png,.jpg,.mps,.jpeg,.jbig2,.jb2,.PDF,.PNG,.JPG,.JPEG,.JBIG2,.JB2,.eps
+Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+
+
 [13]
+d:/HomeMind/main.tex:473: Missing endcsname inserted.
+<to be read again> 
+                   è
+l.473 ...›¾Cå®¶åº­å®‰å…¨å¼ºåˆ¶æ¾„æ¸…åœºæ™¯å›¾.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:473: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: è invalid in file name. Lost: fi ¡¥å……å›¾Cå®¶...
+l.473 ...›¾Cå®¶åº­å®‰å…¨å¼ºåˆ¶æ¾„æ¸…åœºæ™¯å›¾.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+d:/HomeMind/main.tex:473: Missing endcsname inserted.
+<to be read again> 
+                   è
+l.473 ...›¾Cå®¶åº­å®‰å…¨å¼ºåˆ¶æ¾„æ¸…åœºæ™¯å›¾.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:473: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: è invalid in file name. Lost: fi ¡¥å……å›¾Cå®¶...
+l.473 ...›¾Cå®¶åº­å®‰å…¨å¼ºåˆ¶æ¾„æ¸…åœºæ™¯å›¾.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+d:/HomeMind/main.tex:473: Missing endcsname inserted.
+<to be read again> 
+                   è
+l.473 ...›¾Cå®¶åº­å®‰å…¨å¼ºåˆ¶æ¾„æ¸…åœºæ™¯å›¾.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:473: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: è invalid in file name. Lost: fi fi ¡¥å……å›¾C...
+l.473 ...›¾Cå®¶åº­å®‰å…¨å¼ºåˆ¶æ¾„æ¸…åœºæ™¯å›¾.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+
+d:/HomeMind/main.tex:473: LaTeX Error: File `è¡¥å……å›¾Cå®¶åº­å®‰å…¨å¼ºåˆ¶æ¾„æ¸…åœºæ™¯å›¾.png' not found.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.473 ...›¾Cå®¶åº­å®‰å…¨å¼ºåˆ¶æ¾„æ¸…åœºæ™¯å›¾.png}
+                                                  
+I could not locate the file with any of these extensions:
+.pdf,.png,.jpg,.mps,.jpeg,.jbig2,.jb2,.PDF,.PNG,.JPG,.JPEG,.JBIG2,.JB2,.eps
+Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+
 
 [14]
 ç¬¬å››ç« 
@@ -1841,17 +1882,8 @@ LaTeX Font Info:    Calculating math sizes for size <8.6> on input line 445.
 [16]
 
 [17]
-Underfull \hbox (badness 3354) in paragraph at lines 603--604
-\C70/rm/m/n/12/70 í \C70/rm/m/n/12/4e †\OT1/cmr/m/n/12 "|\C70/rm/m/n/12/ff ^^[|
- \OT1/cmr/m/n/12 "\C70/rm/m/n/12/95 ÷ \C70/rm/m/n/12/5f — ˆ\OT1/cmr/m/n/12 /\C7
-0/rm/m/n/12/95 ÷ \C70/rm/m/n/12/5f — \C70/rm/m/n/12/61 L\OT1/cmr/m/n/12 /\C70/r
-m/m/n/12/67 	 \C70/rm/m/n/12/70 ¹ \C70/rm/m/n/12/95 ÷\OT1/cmr/m/n/12 "\TS1/cmr/
-m/n/12 ^^Y\OT1/cmr/m/n/12 "\C70/rm/m/n/12/67 	 \C70/rm/m/n/12/70 ¹ \C70/rm/m/n/
-12/95 ÷\OT1/cmr/m/n/12 "|\C70/rm/m/n/12/ff ^^[| \OT1/cmr/m/n/12 "\C70/rm/m/n/12
-/51 · \C70/rm/m/n/12/5f — ˆ\OT1/cmr/m/n/12 /\C70/rm/m/n/12/59 } \C70/rm/m/n/12/
-51 ·\OT1/cmr/m/n/12 /\C70/rm/m/n/12/66 – \C70/rm/m/n/12/54 Œ \C70/rm/m/n/12/70 
-¹\OT1/cmr/m/n/12 "\TS1/cmr/m/n/12 ^^Y\OT1/cmr/m/n/12 "\C70/rm/m/n/12/59 * \C70/
-rm/m/n/12/51 · \C70/rm/m/n/12/4e †\OT1/cmr/m/n/12 "|\C70/rm/m/n/12/ff ^^[|
+Underfull \hbox (badness 3354) in paragraph at lines 556--557
+\C70/rm/m/n/12/70 í \C70/rm/m/n/12/4e †\OT1/cmr/m/n/12 "|\C70/rm/m/n/12/ff ^^[| \OT1/cmr/m/n/12 "\C70/rm/m/n/12/95 ÷ \C70/rm/m/n/12/5f — ˆ\OT1/cmr/m/n/12 /\C70/rm/m/n/12/95 ÷ \C70/rm/m/n/12/5f — \C70/rm/m/n/12/61 L\OT1/cmr/m/n/12 /\C70/rm/m/n/12/67 	 \C70/rm/m/n/12/70 ¹ \C70/rm/m/n/12/95 ÷\OT1/cmr/m/n/12 "\TS1/cmr/m/n/12 ^^Y\OT1/cmr/m/n/12 "\C70/rm/m/n/12/67 	 \C70/rm/m/n/12/70 ¹ \C70/rm/m/n/12/95 ÷\OT1/cmr/m/n/12 "|\C70/rm/m/n/12/ff ^^[| \OT1/cmr/m/n/12 "\C70/rm/m/n/12/51 · \C70/rm/m/n/12/5f — ˆ\OT1/cmr/m/n/12 /\C70/rm/m/n/12/59 } \C70/rm/m/n/12/51 ·\OT1/cmr/m/n/12 /\C70/rm/m/n/12/66 – \C70/rm/m/n/12/54 Œ \C70/rm/m/n/12/70 ¹\OT1/cmr/m/n/12 "\TS1/cmr/m/n/12 ^^Y\OT1/cmr/m/n/12 "\C70/rm/m/n/12/59 * \C70/rm/m/n/12/51 · \C70/rm/m/n/12/4e †\OT1/cmr/m/n/12 "|\C70/rm/m/n/12/ff ^^[|
  []
 
 
@@ -1863,30 +1895,88 @@ rm/m/n/12/51 · \C70/rm/m/n/12/4e †\OT1/cmr/m/n/12 "|\C70/rm/m/n/12/ff ^^[|
 [19
 
 ]
-Underfull \hbox (badness 1292) in paragraph at lines 643--644
-\C70/rm/m/n/12/5f S \C70/rm/m/n/12/52 M \C70/rm/m/n/12/6f À \C70/rm/m/n/12/6d ;
- \OT1/cmr/m/n/12 SVG \C70/rm/m/n/12/62 7 \C70/rm/m/n/12/57 ‹ \C70/rm/m/n/12/56 
-ş \C70/rm/m/n/12/53 Ê \C70/rm/m/n/12/51 v \C70/rm/m/n/12/8b ¾ \C70/rm/m/n/12/59
- ^^G \C70/rm/m/n/12/66   \C70/rm/m/n/12/5c ^^D \C70/rm/m/n/12/88 h|\C70/rm/m/n/
-12/ff ^^L| \C70/rm/m/n/12/78 n \C70/rm/m/n/12/8b ¤ \C70/rm/m/n/12/76 î \C70/rm/
-m/n/12/68 ^^G \C70/rm/m/n/12/8b ¾ \C70/rm/m/n/12/59 ^^G \C70/rm/m/n/12/5b X \C7
-0/rm/m/n/12/57 ( \C70/rm/m/n/12/54 ^^N \C70/rm/m/n/12/51  \C70/rm/m/n/12/8c ^^
-C \C70/rm/m/n/12/75 ( \OT1/cmr/m/n/12 De-vice-Con-
+Underfull \hbox (badness 1292) in paragraph at lines 596--597
+\C70/rm/m/n/12/5f S \C70/rm/m/n/12/52 M \C70/rm/m/n/12/6f À \C70/rm/m/n/12/6d ; \OT1/cmr/m/n/12 SVG \C70/rm/m/n/12/62 7 \C70/rm/m/n/12/57 ‹ \C70/rm/m/n/12/56 ş \C70/rm/m/n/12/53 Ê \C70/rm/m/n/12/51 v \C70/rm/m/n/12/8b ¾ \C70/rm/m/n/12/59 ^^G \C70/rm/m/n/12/66   \C70/rm/m/n/12/5c ^^D \C70/rm/m/n/12/88 h|\C70/rm/m/n/12/ff ^^L| \C70/rm/m/n/12/78 n \C70/rm/m/n/12/8b ¤ \C70/rm/m/n/12/76 î \C70/rm/m/n/12/68 ^^G \C70/rm/m/n/12/8b ¾ \C70/rm/m/n/12/59 ^^G \C70/rm/m/n/12/5b X \C70/rm/m/n/12/57 ( \C70/rm/m/n/12/54 ^^N \C70/rm/m/n/12/51  \C70/rm/m/n/12/8c ^^C \C70/rm/m/n/12/75 ( \OT1/cmr/m/n/12 De-vice-Con-
  []
 
 
 
 [20]
+d:/HomeMind/main.tex:610: Missing endcsname inserted.
+<to be read again> 
+                   è
+l.610 ...ç åœºæ™¯ä¸TAPè§„åˆ™ç”Ÿæˆäº¤äº’å›¾.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:610: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: è invalid in file name. Lost: fi ¡¥å……å›¾Aä½...
+l.610 ...ç åœºæ™¯ä¸TAPè§„åˆ™ç”Ÿæˆäº¤äº’å›¾.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+d:/HomeMind/main.tex:610: Missing endcsname inserted.
+<to be read again> 
+                   è
+l.610 ...ç åœºæ™¯ä¸TAPè§„åˆ™ç”Ÿæˆäº¤äº’å›¾.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:610: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: è invalid in file name. Lost: fi ¡¥å……å›¾Aä½...
+l.610 ...ç åœºæ™¯ä¸TAPè§„åˆ™ç”Ÿæˆäº¤äº’å›¾.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+d:/HomeMind/main.tex:610: Missing endcsname inserted.
+<to be read again> 
+                   è
+l.610 ...ç åœºæ™¯ä¸TAPè§„åˆ™ç”Ÿæˆäº¤äº’å›¾.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:610: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: è invalid in file name. Lost: fi fi ¡¥å……å›¾A...
+l.610 ...ç åœºæ™¯ä¸TAPè§„åˆ™ç”Ÿæˆäº¤äº’å›¾.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+
+d:/HomeMind/main.tex:610: LaTeX Error: File `è¡¥å……å›¾Aä½ä»£ç åœºæ™¯ä¸TAPè§„åˆ™ç”Ÿæˆäº¤äº’å›¾.png' not found.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.610 ...ç åœºæ™¯ä¸TAPè§„åˆ™ç”Ÿæˆäº¤äº’å›¾.png}
+                                                  
+I could not locate the file with any of these extensions:
+.pdf,.png,.jpg,.mps,.jpeg,.jbig2,.jb2,.PDF,.PNG,.JPG,.JPEG,.JBIG2,.JB2,.eps
+Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+
 
 [21]
 ç¬¬å…­ç« 
 
-Underfull \hbox (badness 1308) in paragraph at lines 671--672
-[]\C70/rm/m/n/12/6d K \C70/rm/m/n/12/8b Õ \C70/rm/m/n/12/57 ( \OT1/cmr/m/n/12 P
-ython 3.10 + Py-Torch 2.6.0 \C70/rm/m/n/12/73 ¯ \C70/rm/m/n/12/58 ƒ \C70/rm/m/n
-/12/4e - \C70/rm/m/n/12/62 g \C70/rm/m/n/12/88 L|\C70/rm/m/n/12/ff ^^L| \C70/rm
-/m/n/12/4e ; \C70/rm/m/n/12/89  \C70/rm/m/n/12/4f  \C70/rm/m/n/12/8d V \C70/r
-m/m/n/12/53 ^^E \C70/rm/m/n/12/62 ì \OT1/cmr/m/n/12 sentence-
+Underfull \hbox (badness 1308) in paragraph at lines 631--632
+[]\C70/rm/m/n/12/6d K \C70/rm/m/n/12/8b Õ \C70/rm/m/n/12/57 ( \OT1/cmr/m/n/12 Python 3.10 + Py-Torch 2.6.0 \C70/rm/m/n/12/73 ¯ \C70/rm/m/n/12/58 ƒ \C70/rm/m/n/12/4e - \C70/rm/m/n/12/62 g \C70/rm/m/n/12/88 L|\C70/rm/m/n/12/ff ^^L| \C70/rm/m/n/12/4e ; \C70/rm/m/n/12/89  \C70/rm/m/n/12/4f  \C70/rm/m/n/12/8d V \C70/rm/m/n/12/53 ^^E \C70/rm/m/n/12/62 ì \OT1/cmr/m/n/12 sentence-
  []
 
 
@@ -1894,10 +1984,23 @@ m/m/n/12/53 ^^E \C70/rm/m/n/12/62 ì \OT1/cmr/m/n/12 sentence-
 [22
 
 ]
-Underfull \hbox (badness 1769) in paragraph at lines 689--689
-[]|\C70/rm/m/n/12/52   \C70/rm/m/n/12/8f } \OT1/cmr/m/n/12 Chro-maDB|\C70/rm/m/
-n/12/30 ^^A| \OT1/cmr/m/n/12 PyTorch|\C70/rm/m/n/12/30 ^^A| \OT1/cmr/m/n/12 Web
- Server \C70/rm/m/n/12/4e ^^N
+Underfull \hbox (badness 1769) in paragraph at lines 651--651
+[]|\C70/rm/m/n/12/52   \C70/rm/m/n/12/8f } \OT1/cmr/m/n/12 Chro-maDB|\C70/rm/m/n/12/30 ^^A| \OT1/cmr/m/n/12 PyTorch|\C70/rm/m/n/12/30 ^^A| \OT1/cmr/m/n/12 Web Server \C70/rm/m/n/12/4e ^^N
+ []
+
+
+Underfull \hbox (badness 5908) in paragraph at lines 651--651
+[]|\OT1/cmr/bx/n/12 llama.cpp 1.5B
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 651--651
+[]|\C70/rm/m/n/12/53 U \C70/rm/m/n/12/72 ì \C70/rm/m/n/12/52   \C70/rm/m/n/12/8f } \OT1/cmr/m/n/12 Qwen2.5-1.5B-Instruct-Q4[]K[]M
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 651--651
+[]|\OT1/cmr/bx/n/12 Full Lo-cal +
  []
 
 
@@ -1907,36 +2010,18 @@ n/12/30 ^^A| \OT1/cmr/m/n/12 PyTorch|\C70/rm/m/n/12/30 ^^A| \OT1/cmr/m/n/12 Web
 [24]
 ç¬¬ä¸ƒç« 
 
-Underfull \hbox (badness 2229) in paragraph at lines 725--726
-[]\OT1/cmr/m/n/12 Matter \C70/rm/m/n/12/53 O \C70/rm/m/n/12/8b ® \C70/rm/m/n/12
-/90 ^^B \C70/rm/m/n/12/91 M \C70/rm/m/n/12/7c { |\C70/rm/m/n/12/ff ^^H|\OT1/cmr
-/m/n/12 MatterProtocol|\C70/rm/m/n/12/ff 	| \C70/rm/m/n/12/65 / \C70/rm/m/n/12/
-63 ^^A \OT1/cmr/m/n/12 Mat-ter \C70/rm/m/n/12/68 ^^G \C70/rm/m/n/12/51 Æ \C70/r
-m/m/n/12/66 z \C70/rm/m/n/12/80 ı \C70/rm/m/n/12/5b ¶ \C70/rm/m/n/12/5c E \C70/
-rm/m/n/12/8b ¾ \C70/rm/m/n/12/59 ^^G \C70/rm/m/n/12/8f Ş \C70/rm/m/n/12/63 ¥|\C
-70/rm/m/n/12/ff ^^[|
+Underfull \hbox (badness 2229) in paragraph at lines 687--688
+[]\OT1/cmr/m/n/12 Matter \C70/rm/m/n/12/53 O \C70/rm/m/n/12/8b ® \C70/rm/m/n/12/90 ^^B \C70/rm/m/n/12/91 M \C70/rm/m/n/12/7c { |\C70/rm/m/n/12/ff ^^H|\OT1/cmr/m/n/12 MatterProtocol|\C70/rm/m/n/12/ff 	| \C70/rm/m/n/12/65 / \C70/rm/m/n/12/63 ^^A \OT1/cmr/m/n/12 Mat-ter \C70/rm/m/n/12/68 ^^G \C70/rm/m/n/12/51 Æ \C70/rm/m/n/12/66 z \C70/rm/m/n/12/80 ı \C70/rm/m/n/12/5b ¶ \C70/rm/m/n/12/5c E \C70/rm/m/n/12/8b ¾ \C70/rm/m/n/12/59 ^^G \C70/rm/m/n/12/8f Ş \C70/rm/m/n/12/63 ¥|\C70/rm/m/n/12/ff ^^[|
  []
 
 
-Underfull \hbox (badness 1917) in paragraph at lines 725--726
-\OT1/cmr/m/n/12 MQTT \C70/rm/m/n/12/53 O \C70/rm/m/n/12/8b ® \C70/rm/m/n/12/90 
-^^B \C70/rm/m/n/12/91 M \C70/rm/m/n/12/7c { |\C70/rm/m/n/12/ff ^^H|\OT1/cmr/m/n
-/12 MQTTProtocol|\C70/rm/m/n/12/ff 	| \C70/rm/m/n/12/65 / \C70/rm/m/n/12/63 ^^A
- \C70/rm/m/n/12/57 ú \C70/rm/m/n/12/4e  \OT1/cmr/m/n/12 MQTT \C70/rm/m/n/12/76
- „ \C70/rm/m/n/12/72 i \C70/rm/m/n/12/80 T \C70/rm/m/n/12/7f Q \C70/rm/m/n/12/8
-b ¾ \C70/rm/m/n/12/59 ^^G|\C70/rm/m/n/12/ff ^^[| \C70/rm/m/n/12/5c ^^O \C70/rm/
-m/n/12/7c s s
+Underfull \hbox (badness 1917) in paragraph at lines 687--688
+\OT1/cmr/m/n/12 MQTT \C70/rm/m/n/12/53 O \C70/rm/m/n/12/8b ® \C70/rm/m/n/12/90 ^^B \C70/rm/m/n/12/91 M \C70/rm/m/n/12/7c { |\C70/rm/m/n/12/ff ^^H|\OT1/cmr/m/n/12 MQTTProtocol|\C70/rm/m/n/12/ff 	| \C70/rm/m/n/12/65 / \C70/rm/m/n/12/63 ^^A \C70/rm/m/n/12/57 ú \C70/rm/m/n/12/4e  \OT1/cmr/m/n/12 MQTT \C70/rm/m/n/12/76 „ \C70/rm/m/n/12/72 i \C70/rm/m/n/12/80 T \C70/rm/m/n/12/7f Q \C70/rm/m/n/12/8b ¾ \C70/rm/m/n/12/59 ^^G|\C70/rm/m/n/12/ff ^^[| \C70/rm/m/n/12/5c ^^O \C70/rm/m/n/12/7c s s
  []
 
 
-Underfull \hbox (badness 2698) in paragraph at lines 725--726
-\C70/rm/m/n/12/5b ¶ \C70/rm/m/n/12/53 O \C70/rm/m/n/12/8b ® \C70/rm/m/n/12/90 ^
-^B \C70/rm/m/n/12/91 M \C70/rm/m/n/12/7c { |\C70/rm/m/n/12/ff ^^H|\OT1/cmr/m/n/
-12 XiaomiProtocol|\C70/rm/m/n/12/ff 	| \C70/rm/m/n/12/65 / \C70/rm/m/n/12/63 ^^
-A \C70/rm/m/n/12/7c s \C70/rm/m/n/12/5b ¶ \C70/rm/m/n/12/75 ^^_ \C70/rm/m/n/12/
-60 ^^A \C70/rm/m/n/12/94 ş \C70/rm/m/n/12/8b ¾ \C70/rm/m/n/12/59 ^^G|\C70/rm/m/
-n/12/ff ^^[| \OT1/cmr/m/n/12 Home As-sis-tant \C70/rm/m/n/12/90 ^^B \C70/rm/m/n
-/12/91 M \C70/rm/m/n/12/7c {
+Underfull \hbox (badness 2698) in paragraph at lines 687--688
+\C70/rm/m/n/12/5b ¶ \C70/rm/m/n/12/53 O \C70/rm/m/n/12/8b ® \C70/rm/m/n/12/90 ^^B \C70/rm/m/n/12/91 M \C70/rm/m/n/12/7c { |\C70/rm/m/n/12/ff ^^H|\OT1/cmr/m/n/12 XiaomiProtocol|\C70/rm/m/n/12/ff 	| \C70/rm/m/n/12/65 / \C70/rm/m/n/12/63 ^^A \C70/rm/m/n/12/7c s \C70/rm/m/n/12/5b ¶ \C70/rm/m/n/12/75 ^^_ \C70/rm/m/n/12/60 ^^A \C70/rm/m/n/12/94 ş \C70/rm/m/n/12/8b ¾ \C70/rm/m/n/12/59 ^^G|\C70/rm/m/n/12/ff ^^[| \OT1/cmr/m/n/12 Home As-sis-tant \C70/rm/m/n/12/90 ^^B \C70/rm/m/n/12/91 M \C70/rm/m/n/12/7c {
  []
 
 
@@ -1948,16 +2033,77 @@ n/12/ff ^^[| \OT1/cmr/m/n/12 Home As-sis-tant \C70/rm/m/n/12/90 ^^B \C70/rm/m/n
 [26]
 ç¬¬å…«ç« 
 
-Underfull \hbox (badness 1097) in paragraph at lines 769--770
-[]\C70/rm/m/n/12/4e ‘ \C70/rm/m/n/12/7a ï \C70/rm/m/n/12/59 ' \C70/rm/m/n/12/6a
- ! \C70/rm/m/n/12/57 ‹ \C70/rm/m/n/12/8f “ \C70/rm/m/n/12/51 ú \C70/rm/m/n/12/5
-6 ú \C70/rm/m/n/12/5b š \OT1/cmr/m/n/12 JSON \C70/rm/m/n/12/68 < \C70/rm/m/n/12
-/5f ^^O \C70/rm/m/n/12/76 „ \C70/rm/m/n/12/51 ³ \C70/rm/m/n/12/7b V \C70/rm/m/n
-/12/5e ú \C70/rm/m/n/12/8b ®|\C70/rm/m/n/12/ff ^^L| \C70/rm/m/n/12/8f “ \C70/rm
-/m/n/12/51 ú \C70/rm/m/n/12/68 < \C70/rm/m/n/12/5f ^^O \C70/rm/m/n/12/88 « \C70
-/rm/m/n/12/4e % \C70/rm/m/n/12/68 < \C70/rm/m/n/12/7e ¦ \C70/rm/m/n/12/67 _ \C7
-0/rm/m/n/12/4e : \C70/rm/m/n/12/98 „ \C70/rm/m/n/12/5b š \C70/rm/m/n/12/4e I
+Underfull \hbox (badness 1097) in paragraph at lines 731--732
+[]\C70/rm/m/n/12/4e ‘ \C70/rm/m/n/12/7a ï \C70/rm/m/n/12/59 ' \C70/rm/m/n/12/6a ! \C70/rm/m/n/12/57 ‹ \C70/rm/m/n/12/8f “ \C70/rm/m/n/12/51 ú \C70/rm/m/n/12/56 ú \C70/rm/m/n/12/5b š \OT1/cmr/m/n/12 JSON \C70/rm/m/n/12/68 < \C70/rm/m/n/12/5f ^^O \C70/rm/m/n/12/76 „ \C70/rm/m/n/12/51 ³ \C70/rm/m/n/12/7b V \C70/rm/m/n/12/5e ú \C70/rm/m/n/12/8b ®|\C70/rm/m/n/12/ff ^^L| \C70/rm/m/n/12/8f “ \C70/rm/m/n/12/51 ú \C70/rm/m/n/12/68 < \C70/rm/m/n/12/5f ^^O \C70/rm/m/n/12/88 « \C70/rm/m/n/12/4e % \C70/rm/m/n/12/68 < \C70/rm/m/n/12/7e ¦ \C70/rm/m/n/12/67 _ \C70/rm/m/n/12/4e : \C70/rm/m/n/12/98 „ \C70/rm/m/n/12/5b š \C70/rm/m/n/12/4e I
  []
+
+d:/HomeMind/main.tex:739: Missing endcsname inserted.
+<to be read again> 
+                   ç
+l.739 ...{HomeMindç«¯äº‘ååŒå†³ç­–æµç¨‹å›¾.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:739: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: ç invalid in file name. Lost: fi «¯äº‘ååŒå...
+l.739 ...{HomeMindç«¯äº‘ååŒå†³ç­–æµç¨‹å›¾.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+d:/HomeMind/main.tex:739: Missing endcsname inserted.
+<to be read again> 
+                   ç
+l.739 ...{HomeMindç«¯äº‘ååŒå†³ç­–æµç¨‹å›¾.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:739: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: ç invalid in file name. Lost: fi «¯äº‘ååŒå...
+l.739 ...{HomeMindç«¯äº‘ååŒå†³ç­–æµç¨‹å›¾.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+d:/HomeMind/main.tex:739: Missing endcsname inserted.
+<to be read again> 
+                   ç
+l.739 ...{HomeMindç«¯äº‘ååŒå†³ç­–æµç¨‹å›¾.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:739: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: ç invalid in file name. Lost: fi «¯äº‘ååŒå...
+l.739 ...{HomeMindç«¯äº‘ååŒå†³ç­–æµç¨‹å›¾.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+
+d:/HomeMind/main.tex:739: LaTeX Error: File `HomeMindç«¯äº‘ååŒå†³ç­–æµç¨‹å›¾.png' not found.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.739 ...{HomeMindç«¯äº‘ååŒå†³ç­–æµç¨‹å›¾.png}
+                                                  
+I could not locate the file with any of these extensions:
+.pdf,.png,.jpg,.mps,.jpeg,.jbig2,.jb2,.PDF,.PNG,.JPG,.JPEG,.JBIG2,.JB2,.eps
+Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
 
 
 
@@ -1968,7 +2114,7 @@ Underfull \hbox (badness 1097) in paragraph at lines 769--770
 [28]
 ç¬¬ä¹ç« 
 
-Overfull \hbox (13.60965pt too wide) in paragraph at lines 810--810
+Overfull \hbox (13.60965pt too wide) in paragraph at lines 783--783
  |\C70/rm/m/n/12/ff ^^H|\OT1/cmr/m/n/12 HomeContext|\C70/rm/m/n/12/ff 	| 
  []
 
@@ -1981,28 +2127,13 @@ Overfull \hbox (13.60965pt too wide) in paragraph at lines 810--810
 [30]
 ç¬¬åç« 
 
-Underfull \hbox (badness 1383) in paragraph at lines 815--816
-\C70/rm/m/n/12/53 ï \C70/rm/m/n/12/89 Æ \C70/rm/m/n/12/53 ^^V|\C70/rm/m/n/12/ff
- ^^L| \C70/rm/m/n/12/75 ( \C70/rm/m/n/12/4e  \C70/rm/m/n/12/5b  \C70/rm/m/n/1
-2/73 ° \C70/rm/m/n/12/62 ? \C70/rm/m/n/12/95 ô \C70/rm/m/n/12/7e § \C70/rm/m/n/
-12/61 ^^O \C70/rm/m/n/12/56 ş \C70/rm/m/n/12/74 ^^F \C70/rm/m/n/12/89 ã \C70/rm
-/m/n/12/80 ı \C70/rm/m/n/12/52 ›|\C70/rm/m/n/12/30 ^^B| \C70/rm/m/n/12/5f S \C7
-0/rm/m/n/12/52 M \C70/rm/m/n/12/9e Ø \C70/rm/m/n/12/8b ¤ \C70/rm/m/n/12/62 7 \C
-70/rm/m/n/12/57 ‹ \C70/rm/m/n/12/56 ş \C70/rm/m/n/12/67 e \C70/rm/m/n/12/81 ê \
-OT1/cmr/m/n/12 Haus-RA-Gen \C70/rm/m/n/12/79 : \C70/rm/m/n/12/4f ‹
+Underfull \hbox (badness 1383) in paragraph at lines 788--789
+\C70/rm/m/n/12/53 ï \C70/rm/m/n/12/89 Æ \C70/rm/m/n/12/53 ^^V|\C70/rm/m/n/12/ff ^^L| \C70/rm/m/n/12/75 ( \C70/rm/m/n/12/4e  \C70/rm/m/n/12/5b  \C70/rm/m/n/12/73 ° \C70/rm/m/n/12/62 ? \C70/rm/m/n/12/95 ô \C70/rm/m/n/12/7e § \C70/rm/m/n/12/61 ^^O \C70/rm/m/n/12/56 ş \C70/rm/m/n/12/74 ^^F \C70/rm/m/n/12/89 ã \C70/rm/m/n/12/80 ı \C70/rm/m/n/12/52 ›|\C70/rm/m/n/12/30 ^^B| \C70/rm/m/n/12/5f S \C70/rm/m/n/12/52 M \C70/rm/m/n/12/9e Ø \C70/rm/m/n/12/8b ¤ \C70/rm/m/n/12/62 7 \C70/rm/m/n/12/57 ‹ \C70/rm/m/n/12/56 ş \C70/rm/m/n/12/67 e \C70/rm/m/n/12/81 ê \OT1/cmr/m/n/12 Haus-RA-Gen \C70/rm/m/n/12/79 : \C70/rm/m/n/12/4f ‹
  []
 
 
-Underfull \hbox (badness 2591) in paragraph at lines 821--822
-[]\C70/rm/m/n/12/8b ¾ \C70/rm/m/n/12/59 ^^G \C70/rm/m/n/12/66   \C70/rm/m/n/12/
-5c ^^D \C70/rm/m/n/12/65 p \C70/rm/m/n/12/63 n \C70/rm/m/n/12/4f ^^? \C70/rm/m/
-n/12/7c û \C70/rm/m/n/12/7e ß \C70/rm/m/n/12/80 ı \C70/rm/m/n/12/59 ^^_ \C70/rm
-/m/n/12/74 ^^F \C70/rm/m/n/12/89 ã\OT1/cmr/m/n/12 "\C70/rm/m/n/12/62 S \C70/rm/
-m/n/12/5f ^^@ \C70/rm/m/n/12/5b ¢ \C70/rm/m/n/12/53 … \C70/rm/m/n/12/70 o\OT1/c
-mr/m/n/12 "\C70/rm/m/n/12/7b I \C70/rm/m/n/12/5e & \C70/rm/m/n/12/62 ? \C70/rm/
-m/n/12/95 ô \C70/rm/m/n/12/4f î \C70/rm/m/n/12/99 p \C70/rm/m/n/12/76 „ \C70/rm
-/m/n/12/63 ^^G \C70/rm/m/n/12/4e ä|\C70/rm/m/n/12/ff ^^L| \C70/rm/m/n/12/90 ^^Z
- \C70/rm/m/n/12/8f Ç \C70/rm/m/n/12/67 å \C70/rm/m/n/12/8b â
+Underfull \hbox (badness 2591) in paragraph at lines 794--795
+[]\C70/rm/m/n/12/8b ¾ \C70/rm/m/n/12/59 ^^G \C70/rm/m/n/12/66   \C70/rm/m/n/12/5c ^^D \C70/rm/m/n/12/65 p \C70/rm/m/n/12/63 n \C70/rm/m/n/12/4f ^^? \C70/rm/m/n/12/7c û \C70/rm/m/n/12/7e ß \C70/rm/m/n/12/80 ı \C70/rm/m/n/12/59 ^^_ \C70/rm/m/n/12/74 ^^F \C70/rm/m/n/12/89 ã\OT1/cmr/m/n/12 "\C70/rm/m/n/12/62 S \C70/rm/m/n/12/5f ^^@ \C70/rm/m/n/12/5b ¢ \C70/rm/m/n/12/53 … \C70/rm/m/n/12/70 o\OT1/cmr/m/n/12 "\C70/rm/m/n/12/7b I \C70/rm/m/n/12/5e & \C70/rm/m/n/12/62 ? \C70/rm/m/n/12/95 ô \C70/rm/m/n/12/4f î \C70/rm/m/n/12/99 p \C70/rm/m/n/12/76 „ \C70/rm/m/n/12/63 ^^G \C70/rm/m/n/12/4e ä|\C70/rm/m/n/12/ff ^^L| \C70/rm/m/n/12/90 ^^Z \C70/rm/m/n/12/8f Ç \C70/rm/m/n/12/67 å \C70/rm/m/n/12/8b â
  []
 
 
@@ -2018,83 +2149,208 @@ m/n/12/95 ô \C70/rm/m/n/12/4f î \C70/rm/m/n/12/99 p \C70/rm/m/n/12/76 „ \C70/rm
 [33
 
 ]
-Underfull \hbox (badness 1102) in paragraph at lines 855--856
-\OT1/cmtt/m/n/12 evaluate _ command _ dataset . py$|\C70/rm/m/n/12/ff ^^L| \C70
-/rm/m/n/12/62 g \C70/rm/m/n/12/88 L \C70/rm/m/n/12/65 ¹ \C70/rm/m/n/12/5f ^^O \
-C70/rm/m/n/12/4e : \C70/rm/m/n/12/76 ô \C70/rm/m/n/12/63 ¥ \C70/rm/m/n/12/8c ^^
-C \C70/rm/m/n/12/75 ( \OT1/cmr/m/n/12 Flask \OT1/cmtt/m/n/12 test[]client|\C70/
-rm/m/n/12/ff ^^L| \C70/rm/m/n/12/4e ^^M \C70/rm/m/n/12/4f  \C70/rm/m/n/12/8d V
 
- []
+LaTeX Warning: Reference `tab:command-dataset-summary' on page 34 undefined on input line 829.
 
 
-Underfull \hbox (badness 10000) in alignment at lines 877--877
-[][][][][][] 
+Underfull \hbox (badness 1102) in paragraph at lines 829--830
+\OT1/cmtt/m/n/12 evaluate _ command _ dataset . py$|\C70/rm/m/n/12/ff ^^L| \C70/rm/m/n/12/62 g \C70/rm/m/n/12/88 L \C70/rm/m/n/12/65 ¹ \C70/rm/m/n/12/5f ^^O \C70/rm/m/n/12/4e : \C70/rm/m/n/12/76 ô \C70/rm/m/n/12/63 ¥ \C70/rm/m/n/12/8c ^^C \C70/rm/m/n/12/75 ( \OT1/cmr/m/n/12 Flask \OT1/cmtt/m/n/12 test[]client|\C70/rm/m/n/12/ff ^^L| \C70/rm/m/n/12/4e ^^M \C70/rm/m/n/12/4f  \C70/rm/m/n/12/8d V
  []
 
 
 
 [34]
+Underfull \hbox (badness 10000) in alignment at lines 851--851
+[][][][][][] 
+ []
+
 (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/zhmetrics\c70zhfs.fd)
-Underfull \hbox (badness 10000) in paragraph at lines 897--897
-[]|\C70/rm/bx/n/10.95/51 ·\OT1/cmr/bx/n/10.95 /\C70/rm/bx/n/10.95/95 ÷ \C70/rm/
-bx/n/10.95/88 h \C70/rm/bx/n/10.95/8f ¾ \C70/rm/bx/n/10.95/53 ì \C70/rm/bx/n/10
-.95/56 Ş \C70/rm/bx/n/10.95/4e ^^M
+Underfull \hbox (badness 10000) in paragraph at lines 871--871
+[]|\C70/rm/bx/n/10.95/51 ·\OT1/cmr/bx/n/10.95 /\C70/rm/bx/n/10.95/95 ÷ \C70/rm/bx/n/10.95/88 h \C70/rm/bx/n/10.95/8f ¾ \C70/rm/bx/n/10.95/53 ì \C70/rm/bx/n/10.95/56 Ş \C70/rm/bx/n/10.95/4e ^^M
  []
 
 
-Underfull \hbox (badness 1817) in paragraph at lines 897--897
-[]| |\C70/rm/m/n/10.95/20 ^^\|\C70/rm/m/n/10.95/51 s \C70/rm/m/n/10.95/95 í \C7
-0/rm/m/n/10.95/97 ó \C70/rm/m/n/10.95/54 Í|\C70/rm/m/n/10.95/20 ^^]| \C70/rm/m/
-n/10.95/5d ò \C70/rm/m/n/10.95/8f Ô \C70/rm/m/n/10.95/56 Ş \C70/zhfs/m/n/10.95/
-97 ó \C70/zhfs/m/n/10.95/54 Í[]\OT1/cmtt/m/n/10.95 off|\C70/rm/m/n/10.95/ff ^^L
-||\C70/rm/m/n/10.95/20 ^^\|\C70/rm/m/n/10.95/62 S
+Underfull \hbox (badness 1817) in paragraph at lines 871--871
+[]| |\C70/rm/m/n/10.95/20 ^^\|\C70/rm/m/n/10.95/51 s \C70/rm/m/n/10.95/95 í \C70/rm/m/n/10.95/97 ó \C70/rm/m/n/10.95/54 Í|\C70/rm/m/n/10.95/20 ^^]| \C70/rm/m/n/10.95/5d ò \C70/rm/m/n/10.95/8f Ô \C70/rm/m/n/10.95/56 Ş \C70/zhfs/m/n/10.95/97 ó \C70/zhfs/m/n/10.95/54 Í[]\OT1/cmtt/m/n/10.95 off|\C70/rm/m/n/10.95/ff ^^L||\C70/rm/m/n/10.95/20 ^^\|\C70/rm/m/n/10.95/62 S
  []
 
 
-Underfull \hbox (badness 2698) in paragraph at lines 897--897
-[]|\C70/rm/bx/n/10.95/4e ^^M \C70/rm/bx/n/10.95/65 / \C70/rm/bx/n/10.95/63 ^^A 
-\C70/rm/bx/n/10.95/8b ¾ \C70/rm/bx/n/10.95/59 ^^G \C70/rm/bx/n/10.95/8b Æ \C70/
-rm/bx/n/10.95/52 + \C70/rm/bx/n/10.95/4e ^^M
+Underfull \hbox (badness 2698) in paragraph at lines 871--871
+[]|\C70/rm/bx/n/10.95/4e ^^M \C70/rm/bx/n/10.95/65 / \C70/rm/bx/n/10.95/63 ^^A \C70/rm/bx/n/10.95/8b ¾ \C70/rm/bx/n/10.95/59 ^^G \C70/rm/bx/n/10.95/8b Æ \C70/rm/bx/n/10.95/52 + \C70/rm/bx/n/10.95/4e ^^M
  []
 
 
-Underfull \hbox (badness 2753) in paragraph at lines 897--897
-[]| |\C70/rm/m/n/10.95/20 ^^\|\C70/rm/m/n/10.95/51 ° \C70/rm/m/n/10.95/7b ±|\C7
-0/rm/m/n/10.95/20 ^^]||^^\|\C70/rm/m/n/10.95/54 – \C70/rm/m/n/10.95/55 a \C70/r
-m/m/n/10.95/67 :|\C70/rm/m/n/10.95/20 ^^]||^^\|\C70/rm/m/n/10.95/62 • \C70/rm/m
-/n/10.95/5f q \C70/rm/m/n/10.95/4e ê|\C70/rm/m/n/10.95/20 ^^]| \C70/rm/m/n/10.9
-5/5d ò \C70/rm/m/n/10.95/8f Û \C70/rm/m/n/10.95/51 e
+Underfull \hbox (badness 2753) in paragraph at lines 871--871
+[]| |\C70/rm/m/n/10.95/20 ^^\|\C70/rm/m/n/10.95/51 ° \C70/rm/m/n/10.95/7b ±|\C70/rm/m/n/10.95/20 ^^]||^^\|\C70/rm/m/n/10.95/54 – \C70/rm/m/n/10.95/55 a \C70/rm/m/n/10.95/67 :|\C70/rm/m/n/10.95/20 ^^]||^^\|\C70/rm/m/n/10.95/62 • \C70/rm/m/n/10.95/5f q \C70/rm/m/n/10.95/4e ê|\C70/rm/m/n/10.95/20 ^^]| \C70/rm/m/n/10.95/5d ò \C70/rm/m/n/10.95/8f Û \C70/rm/m/n/10.95/51 e
  []
 
 
 
 [35]
+d:/HomeMind/main.tex:880: Missing endcsname inserted.
+<to be read again> 
+                   æ
+l.880 ...\linewidth]{HomeMindæµ‹è¯•ç»“æœå›¾1.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:880: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: æ invalid in file name. Lost: fi µ‹è¯•ç»“æœå...
+l.880 ...\linewidth]{HomeMindæµ‹è¯•ç»“æœå›¾1.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+d:/HomeMind/main.tex:880: Missing endcsname inserted.
+<to be read again> 
+                   æ
+l.880 ...\linewidth]{HomeMindæµ‹è¯•ç»“æœå›¾1.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:880: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: æ invalid in file name. Lost: fi µ‹è¯•ç»“æœå...
+l.880 ...\linewidth]{HomeMindæµ‹è¯•ç»“æœå›¾1.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+d:/HomeMind/main.tex:880: Missing endcsname inserted.
+<to be read again> 
+                   æ
+l.880 ...\linewidth]{HomeMindæµ‹è¯•ç»“æœå›¾1.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:880: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: æ invalid in file name. Lost: fi µ‹è¯•ç»“æœå...
+l.880 ...\linewidth]{HomeMindæµ‹è¯•ç»“æœå›¾1.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+
+d:/HomeMind/main.tex:880: LaTeX Error: File `HomeMindæµ‹è¯•ç»“æœå›¾1.png' not found.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.880 ...\linewidth]{HomeMindæµ‹è¯•ç»“æœå›¾1.png}
+                                                  
+I could not locate the file with any of these extensions:
+.pdf,.png,.jpg,.mps,.jpeg,.jbig2,.jb2,.PDF,.PNG,.JPG,.JPEG,.JBIG2,.JB2,.eps
+Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+
 
 [36]
 
-[37]
+LaTeX Warning: Reference `fig:test-result-1' on page 37 undefined on input line 885.
 
-[38]
+
+LaTeX Warning: Reference `tab:command-dataset-summary' on page 37 undefined on input line 885.
+
+d:/HomeMind/main.tex:895: Missing endcsname inserted.
+<to be read again> 
+                   æ
+l.895 ...\linewidth]{HomeMindæµ‹è¯•ç»“æœå›¾2.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:895: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: æ invalid in file name. Lost: fi µ‹è¯•ç»“æœå...
+l.895 ...\linewidth]{HomeMindæµ‹è¯•ç»“æœå›¾2.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+d:/HomeMind/main.tex:895: Missing endcsname inserted.
+<to be read again> 
+                   æ
+l.895 ...\linewidth]{HomeMindæµ‹è¯•ç»“æœå›¾2.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:895: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: æ invalid in file name. Lost: fi µ‹è¯•ç»“æœå...
+l.895 ...\linewidth]{HomeMindæµ‹è¯•ç»“æœå›¾2.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+d:/HomeMind/main.tex:895: Missing endcsname inserted.
+<to be read again> 
+                   æ
+l.895 ...\linewidth]{HomeMindæµ‹è¯•ç»“æœå›¾2.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:895: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: æ invalid in file name. Lost: fi µ‹è¯•ç»“æœå...
+l.895 ...\linewidth]{HomeMindæµ‹è¯•ç»“æœå›¾2.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+
+d:/HomeMind/main.tex:895: LaTeX Error: File `HomeMindæµ‹è¯•ç»“æœå›¾2.png' not found.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.895 ...\linewidth]{HomeMindæµ‹è¯•ç»“æœå›¾2.png}
+                                                  
+I could not locate the file with any of these extensions:
+.pdf,.png,.jpg,.mps,.jpeg,.jbig2,.jb2,.PDF,.PNG,.JPG,.JPEG,.JBIG2,.JB2,.eps
+Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+
+LaTeX Warning: Reference `fig:test-result-2' on page 37 undefined on input line 900.
+
+
+
+[37]
 ç¬¬åäºŒç« 
 
-Underfull \hbox (badness 1668) in paragraph at lines 927--928
-[]\C70/rm/m/n/12/57 : \C70/rm/m/n/12/66 o \C70/rm/m/n/12/4e 	 |\C70/rm/m/n/12/f
-f ^^H|\C70/rm/m/n/12/5b ¶ \C70/rm/m/n/12/5e ­ \C70/rm/m/n/12/5b ‰ \C70/rm/m/n/1
-2/51 h \C70/rm/m/n/12/5f : \C70/rm/m/n/12/52 6 \C70/rm/m/n/12/6f „ \C70/rm/m/n/
-12/6e ^^E|\C70/rm/m/n/12/ff 	||^^Z| \C70/rm/m/n/12/75 ( \C70/rm/m/n/12/62 7 \C7
-0/rm/m/n/12/8b ô\OT1/cmr/m/n/12 "\C70/rm/m/n/12/62 Š \C70/rm/m/n/12/95 è ^^A \C
-70/rm/m/n/12/62 S \C70/rm/m/n/12/5f ^^@\OT1/cmr/m/n/12 "\C70/rm/m/n/12/62 ^^V\O
-T1/cmr/m/n/12 "\C70/rm/m/n/12/89 ã \C70/rm/m/n/12/96 d \C70/rm/m/n/12/73 „ \C70
-/rm/m/n/12/51 s \C70/rm/m/n/12/5b ‰ \C70/rm/m/n/12/96 2\OT1/cmr/m/n/12 "|\C70/r
-m/m/n/12/ff ^^L| \C70/rm/m/n/12/53 s \C70/rm/m/n/12/4f ^^?
+Underfull \hbox (badness 1668) in paragraph at lines 912--913
+[]\C70/rm/m/n/12/57 : \C70/rm/m/n/12/66 o \C70/rm/m/n/12/4e 	 |\C70/rm/m/n/12/ff ^^H|\C70/rm/m/n/12/5b ¶ \C70/rm/m/n/12/5e ­ \C70/rm/m/n/12/5b ‰ \C70/rm/m/n/12/51 h \C70/rm/m/n/12/5f : \C70/rm/m/n/12/52 6 \C70/rm/m/n/12/6f „ \C70/rm/m/n/12/6e ^^E|\C70/rm/m/n/12/ff 	||^^Z| \C70/rm/m/n/12/75 ( \C70/rm/m/n/12/62 7 \C70/rm/m/n/12/8b ô\OT1/cmr/m/n/12 "\C70/rm/m/n/12/62 Š \C70/rm/m/n/12/95 è ^^A \C70/rm/m/n/12/62 S \C70/rm/m/n/12/5f ^^@\OT1/cmr/m/n/12 "\C70/rm/m/n/12/62 ^^V\OT1/cmr/m/n/12 "\C70/rm/m/n/12/89 ã \C70/rm/m/n/12/96 d \C70/rm/m/n/12/73 „ \C70/rm/m/n/12/51 s \C70/rm/m/n/12/5b ‰ \C70/rm/m/n/12/96 2\OT1/cmr/m/n/12 "|\C70/rm/m/n/12/ff ^^L| \C70/rm/m/n/12/53 s \C70/rm/m/n/12/4f ^^?
  []
 
 
 
-[39
+[38
 
 ]
+
+[39]
 
 [40]
 
@@ -2105,49 +2361,48 @@ m/m/n/12/ff ^^L| \C70/rm/m/n/12/53 s \C70/rm/m/n/12/4f ^^?
 [42
 
 ]
+Underfull \hbox (badness 1810) in paragraph at lines 946--947
+[]\C70/rm/m/n/12/4e Î \C70/rm/m/n/12/5d å \C70/rm/m/n/12/7a  \C70/rm/m/n/12/5b Œ \C70/rm/m/n/12/62 ^^P \C70/rm/m/n/12/5e ¦ \C70/rm/m/n/12/77 |\C70/rm/m/n/12/ff ^^L| \C70/rm/m/n/12/5f S \C70/rm/m/n/12/52 M \C70/rm/m/n/12/7c û \C70/rm/m/n/12/7e ß \C70/rm/m/n/12/5d ò \C70/rm/m/n/12/7e Ï \C70/rm/m/n/12/51 w \C70/rm/m/n/12/59 ^^G \C70/rm/m/n/12/82 å \C70/rm/m/n/12/5e r \C70/rm/m/n/12/4e § \C70/rm/m/n/12/54 Á \C70/rm/m/n/12/53 ^^V \C70/rm/m/n/12/57 ú \C70/rm/m/n/12/78 @ \C70/rm/m/n/12/80 ı \C70/rm/m/n/12/52 ›|\C70/rm/m/n/12/ff ^^L| \C70/rm/m/n/12/53 O \C70/rm/m/n/12/8b ® \C70/rm/m/n/12/5c B \C70/rm/m/n/12/5d ò \C70/rm/m/n/12/7e Ï \C70/rm/m/n/12/63 Ğ \C70/rm/m/n/12/4f ›
+ []
+
+
 
 [43]
 
 [44]
-Underfull \hbox (badness 7704) in paragraph at lines 990--991
-[]\OT1/cmr/m/n/12 SessionStore |\C70/rm/m/n/12/ff ^^H|\OT1/cmr/m/n/12 core/memo
-ry/session[]store.py|\C70/rm/m/n/12/ff 	| \C70/rm/m/n/12/7e ô \C70/rm/m/n/12/62
- ¤ \C70/rm/m/n/12/77 í \C70/rm/m/n/12/67 ^^_ \C70/rm/m/n/12/4f ^^Z \C70/rm/m/n/
-12/8b İ \C70/rm/m/n/12/72 ¶ \C70/rm/m/n/12/60 ^^A|\C70/rm/m/n/12/ff ^^L| \C70/r
-m/m/n/12/53 ^^E \C70/rm/m/n/12/54 + \OT1/cmr/m/n/12 cur-
+
+[45]
+Underfull \hbox (badness 7704) in paragraph at lines 986--987
+[]\OT1/cmr/m/n/12 SessionStore |\C70/rm/m/n/12/ff ^^H|\OT1/cmr/m/n/12 core/memory/session[]store.py|\C70/rm/m/n/12/ff 	| \C70/rm/m/n/12/7e ô \C70/rm/m/n/12/62 ¤ \C70/rm/m/n/12/77 í \C70/rm/m/n/12/67 ^^_ \C70/rm/m/n/12/4f ^^Z \C70/rm/m/n/12/8b İ \C70/rm/m/n/12/72 ¶ \C70/rm/m/n/12/60 ^^A|\C70/rm/m/n/12/ff ^^L| \C70/rm/m/n/12/53 ^^E \C70/rm/m/n/12/54 + \OT1/cmr/m/n/12 cur-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 990--991
-\OT1/cmr/m/n/12 rent[]scene|\C70/rm/m/n/12/30 ^^A| \OT1/cmr/m/n/12 last[]user[]
-input|\C70/rm/m/n/12/30 ^^A| \OT1/cmr/m/n/12 last[]normalized[]input|\C70/rm/m/
-n/12/30 ^^A| \OT1/cmr/m/n/12 last[]action|\C70/rm/m/n/12/30 ^^A| \OT1/cmr/m/n/1
-2 last[]clarification|\C70/rm/m/n/12/30 ^^A|
+Underfull \hbox (badness 10000) in paragraph at lines 986--987
+\OT1/cmr/m/n/12 rent[]scene|\C70/rm/m/n/12/30 ^^A| \OT1/cmr/m/n/12 last[]user[]input|\C70/rm/m/n/12/30 ^^A| \OT1/cmr/m/n/12 last[]normalized[]input|\C70/rm/m/n/12/30 ^^A| \OT1/cmr/m/n/12 last[]action|\C70/rm/m/n/12/30 ^^A| \OT1/cmr/m/n/12 last[]clarification|\C70/rm/m/n/12/30 ^^A|
  []
 
 
 
-[45
+[46
 
 ]
 
-[46]
-LaTeX Font Info:    Trying to load font information for OMS+cmtt on input line 
-1015.
-LaTeX Font Info:    No file OMScmtt.fd. on input line 1015.
+[47]
+LaTeX Font Info:    Trying to load font information for OMS+cmtt on input line 1011.
+LaTeX Font Info:    No file OMScmtt.fd. on input line 1011.
 
 
 LaTeX Font Warning: Font shape `OMS/cmtt/m/n' undefined
 (Font)              using `OMS/cmsy/m/n' instead
-(Font)              for symbol `textbraceleft' on input line 1015.
+(Font)              for symbol `textbraceleft' on input line 1011.
 
 
-
-[47]
 
 [48]
 
-[49] (main.aux)
+[49]
+
+[50] (main.aux)
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2022/07/14>
@@ -2156,97 +2411,69 @@ L3 programming layer <2022/07/14>
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
-Package rerunfilecheck Info: File `main.out' has not changed.
-(rerunfilecheck)             Checksum: 63B359CD149D32344784E5B32C0FEEAC;6264.
- ) 
+
+LaTeX Warning: There were undefined references.
+
+
+LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
+
+
+Package rerunfilecheck Warning: File `main.out' has changed.
+(rerunfilecheck)                Rerun to get outlines right
+(rerunfilecheck)                or use package `bookmark'.
+
+Package rerunfilecheck Info: Checksums for `main.out':
+(rerunfilecheck)             Before: <no file>
+(rerunfilecheck)             After:  DF4FE7DF03C5930197B4A76371A5321A;6306.
+ )
+(\end occurred when \ifx on line 895 was incomplete)
+(\end occurred when \ifx on line 895 was incomplete)
+(\end occurred when \ifx on line 895 was incomplete)
+(\end occurred when \ifx on line 880 was incomplete)
+(\end occurred when \ifx on line 880 was incomplete)
+(\end occurred when \ifx on line 880 was incomplete)
+(\end occurred when \ifx on line 739 was incomplete)
+(\end occurred when \ifx on line 739 was incomplete)
+(\end occurred when \ifx on line 739 was incomplete)
+(\end occurred when \ifx on line 610 was incomplete)
+(\end occurred when \ifx on line 610 was incomplete)
+(\end occurred when \ifx on line 610 was incomplete)
+(\end occurred when \ifx on line 610 was incomplete)
+(\end occurred when \ifx on line 473 was incomplete)
+(\end occurred when \ifx on line 473 was incomplete)
+(\end occurred when \ifx on line 473 was incomplete)
+(\end occurred when \ifx on line 473 was incomplete)
+(\end occurred when \ifx on line 455 was incomplete)
+(\end occurred when \ifx on line 455 was incomplete)
+(\end occurred when \ifx on line 455 was incomplete)
+(\end occurred when \ifx on line 413 was incomplete)
+(\end occurred when \ifx on line 413 was incomplete)
+(\end occurred when \ifx on line 413 was incomplete)
+(\end occurred when \ifx on line 398 was incomplete)
+(\end occurred when \ifx on line 398 was incomplete)
+(\end occurred when \ifx on line 398 was incomplete)
+(\end occurred when \ifx on line 362 was incomplete)
+(\end occurred when \ifx on line 362 was incomplete)
+(\end occurred when \ifx on line 362 was incomplete)
+(\end occurred when \ifx on line 362 was incomplete)
+(\end occurred when \ifx on line 271 was incomplete)
+(\end occurred when \ifx on line 271 was incomplete)
+(\end occurred when \ifx on line 271 was incomplete)
+(\end occurred when \ifx on line 251 was incomplete)
+(\end occurred when \ifx on line 251 was incomplete)
+(\end occurred when \ifx on line 251 was incomplete) 
 Here is how much of TeX's memory you used:
- 37501 strings out of 467872
- 757018 string characters out of 5418597
- 1143054 words of memory out of 5000000
- 64959 multiletter control sequences out of 15000+600000
- 788416 words of font info for 631 fonts, out of 8000000 for 9000
+ 36829 strings out of 467872
+ 742704 string characters out of 5418597
+ 1126840 words of memory out of 5000000
+ 64423 multiletter control sequences out of 15000+600000
+ 746231 words of font info for 475 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 88i,12n,96p,1502b,1015s stack positions out of 10000i,1000n,20000p,200000b,200000s
-<C:/WINDOWS/Fonts/simfang.ttf> <C:\Users\wblxr\AppData\Local\MiKTeX\fonts/pk/
-ljfour/jknappen/ec/dpi657\tcrm1000.pk><C:/WINDOWS/Fonts/simfang.ttf><C:/WINDOWS
-/Fonts/simfang.ttf><C:/WINDOWS/Fonts/simfang.ttf><C:/WINDOWS/Fonts/simfang.ttf>
-<C:/WINDOWS/Fonts/simfang.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/si
-mhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/
-Fonts/simsun.ttc> <C:\Users\wblxr\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen
-/ec/dpi600\tcrm1200.pk><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simhei.tt
-f><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/s
-imhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS
-/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simhei.ttf><C:
-/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simhei
-.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Font
-s/simhei.ttf><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simhei.ttf><C:/WIND
-OWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc>
-<C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/sim
-hei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/F
-onts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/W
-INDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simhei.t
-tf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/
-simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOW
-S/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C
-:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhe
-i.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fon
-ts/simhei.ttf><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WIN
-DOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc
-><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/si
-msun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/
-Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/
-WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.
-ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts
-/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDO
-WS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><
-C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/sims
-un.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fo
-nts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WI
-NDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.tt
-c><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/s
-imsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS
-/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simsun.ttc><C:
-/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simhei
-.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Font
-s/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simsun.ttc><C:/WIND
-OWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc>
-<C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/sim
-sun.ttc><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/F
-onts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/W
-INDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.t
-tf><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/
-simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOW
-S/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simsun.ttc><C
-:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsu
-n.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fon
-ts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WIN
-DOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc
-><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/si
-mhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/
-Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/
-WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.
-ttf><C:/Users/wblxr/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/c
-m/cmbx10.pfb><C:/Users/wblxr/AppData/Local/Programs/MiKTeX/fonts/type1/public/a
-msfonts/cm/cmbx12.pfb><C:/Users/wblxr/AppData/Local/Programs/MiKTeX/fonts/type1
-/public/amsfonts/cm/cmex10.pfb><C:/Users/wblxr/AppData/Local/Programs/MiKTeX/fo
-nts/type1/public/amsfonts/cm/cmmi12.pfb><C:/Users/wblxr/AppData/Local/Programs/
-MiKTeX/fonts/type1/public/amsfonts/cm/cmmi8.pfb><C:/Users/wblxr/AppData/Local/P
-rograms/MiKTeX/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Users/wblxr/AppData
-/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr12.pfb><C:/Users/wblxr
-/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr17.pfb><C:/Use
-rs/wblxr/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr8.pfb>
-<C:/Users/wblxr/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cm
-ss8.pfb><C:/Users/wblxr/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfon
-ts/cm/cmssbx10.pfb><C:/Users/wblxr/AppData/Local/Programs/MiKTeX/fonts/type1/pu
-blic/amsfonts/cm/cmsy10.pfb><C:/Users/wblxr/AppData/Local/Programs/MiKTeX/fonts
-/type1/public/amsfonts/cm/cmsy6.pfb><C:/Users/wblxr/AppData/Local/Programs/MiKT
-eX/fonts/type1/public/amsfonts/cm/cmsy8.pfb><C:/Users/wblxr/AppData/Local/Progr
-ams/MiKTeX/fonts/type1/public/amsfonts/cm/cmtt10.pfb><C:/Users/wblxr/AppData/Lo
-cal/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmtt12.pfb><C:/Users/wblxr/A
-ppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
-Output written on main.pdf (56 pages, 1350414 bytes).
+ 88i,12n,96p,1512b,626s stack positions out of 10000i,1000n,20000p,200000b,200000s
+<C:/WINDOWS/Fonts/simfang.ttf> <C:\Users\wblxr\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi657\tcrm1000.pk><C:/WINDOWS/Fonts/simfang.ttf><C:/WINDOWS/Fonts/simfang.ttf><C:/WINDOWS/Fonts/simfang.ttf><C:/WINDOWS/Fonts/simfang.ttf><C:/WINDOWS/Fonts/simfang.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf> <C:\Users\wblxr\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\tcrm1200.pk><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/Users/wblxr/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx10.pfb><C:/Users/wblxr/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx12.pfb><C:/Users/wblxr/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmex10.pfb><C:/Users/wblxr/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi12.pfb><C:/Users/wblxr/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi8.pfb><C:/Users/wblxr/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Users/wblxr/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr12.pfb><C:/Users/wblxr/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr8.pfb><C:/Users/wblxr/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/wblxr/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy6.pfb><C:/Users/wblxr/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy8.pfb><C:/Users/wblxr/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmtt10.pfb><C:/Users/wblxr/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmtt12.pfb><C:/Users/wblxr/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
+Output written on main.pdf (54 pages, 1297428 bytes).
 PDF statistics:
- 1450 PDF objects out of 1728 (max. 8388607)
- 162 named destinations out of 1000 (max. 500000)
- 949 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 1195 PDF objects out of 1200 (max. 8388607)
+ 167 named destinations out of 1000 (max. 500000)
+ 473 words of extra memory for PDF output out of 10000 (max. 10000000)
 

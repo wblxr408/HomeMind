@@ -1,0 +1,72 @@
+{
+  "generated_at": "2026-05-03T16:37:35+08:00",
+  "repo": "D:\\HomeMind",
+  "profiles": [
+    {
+      "profile": "llama_cpp",
+      "status": "ok",
+      "error": "",
+      "checkpoints": [
+        {
+          "name": "python_start",
+          "rss_mb": 17.27
+        },
+        {
+          "name": "after_import_llama_cpp",
+          "rss_mb": 38.06
+        },
+        {
+          "name": "after_model_load",
+          "rss_mb": 1343.91
+        },
+        {
+          "name": "after_first_inference",
+          "rss_mb": 1689.77
+        }
+      ],
+      "peak_rss_mb": 1689.77,
+      "returncode": 0
+    },
+    {
+      "profile": "full_local",
+      "status": "ok",
+      "error": "",
+      "checkpoints": [
+        {
+          "name": "python_start",
+          "rss_mb": 17.36
+        },
+        {
+          "name": "after_import_chromadb",
+          "rss_mb": 89.86
+        },
+        {
+          "name": "after_chromadb_client",
+          "rss_mb": 100.27
+        },
+        {
+          "name": "after_import_torch",
+          "rss_mb": 449.21
+        },
+        {
+          "name": "after_import_llama_cpp",
+          "rss_mb": 453.04
+        },
+        {
+          "name": "after_llama_load",
+          "rss_mb": 457.04
+        },
+        {
+          "name": "after_import_web_server",
+          "rss_mb": 477.08
+        },
+        {
+          "name": "after_init_agent",
+          "rss_mb": 2206.04
+        }
+      ],
+      "peak_rss_mb": 2206.04,
+      "returncode": 0
+    }
+  ]
+}

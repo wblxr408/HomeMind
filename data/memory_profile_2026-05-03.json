@@ -1,0 +1,56 @@
+{
+  "generated_at": "2026-05-03T16:13:48+08:00",
+  "repo": "D:\\HomeMind",
+  "profiles": [
+    {
+      "profile": "web_agent",
+      "status": "ok",
+      "error": "",
+      "checkpoints": [
+        {
+          "name": "python_start",
+          "rss_mb": 19.24
+        },
+        {
+          "name": "after_import_web_server",
+          "rss_mb": 529.32
+        },
+        {
+          "name": "after_init_agent",
+          "rss_mb": 593.61
+        },
+        {
+          "name": "after_queries",
+          "rss_mb": 594.46
+        }
+      ],
+      "peak_rss_mb": 594.46,
+      "returncode": 0
+    },
+    {
+      "profile": "core_agent",
+      "status": "ok",
+      "error": "",
+      "checkpoints": [
+        {
+          "name": "python_start",
+          "rss_mb": 19.23
+        },
+        {
+          "name": "after_import_main",
+          "rss_mb": 505.78
+        },
+        {
+          "name": "after_init_agent",
+          "rss_mb": 572.59
+        },
+        {
+          "name": "after_queries",
+          "rss_mb": 572.85
+        }
+      ],
+      "peak_rss_mb": 572.85,
+      "returncode": 0
+    }
+  ]
+}

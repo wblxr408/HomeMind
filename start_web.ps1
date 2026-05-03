@@ -4,7 +4,7 @@ param(
     [string]$Mode = "simulated",
     [string]$HostAddress = "127.0.0.1",
     [int]$Port = 5000,
-    [ValidateSet("mock", "qwen25-1.5b-q4", "qwen25-3b-q4")]
+    [ValidateSet("mock", "qwen25-1.5b-q4")]
     [string]$LlmProfile = "qwen25-1.5b-q4",
     [ValidateSet("auto", "cpu", "force")]
     [string]$GpuMode = "auto",
@@ -47,14 +47,6 @@ $ProfileConfig = @{
         Threads = 4
         GpuLayers = -1
     }
-    "qwen25-3b-q4" = @{
-        Backend = "llama_cpp"
-        DisplayName = "Qwen2.5-3B-Instruct-Q4_K_M"
-        ModelPath = Join-Path $PSScriptRoot "models\Qwen2.5-3B-Instruct-Q4_K_M.gguf"
-        Context = 2048
-        Threads = 4
-        GpuLayers = -1
-    }
 }
 
 $SelectedProfile = $ProfileConfig[$LlmProfile]
@@ -70,10 +62,7 @@ if ($SelectedProfile.Backend -eq "llama_cpp" -and -not (Test-Path $SelectedProfi
     $LlmProfile = "mock"
 }
 
-$env:EDGE_LLM_PROFILE = switch ($LlmProfile) {
-    "qwen25-3b-q4" { "qwen25_3b_q4" }
-    default { "qwen25_1_5b_q4" }
-}
+$env:EDGE_LLM_PROFILE = "qwen25_1_5b_q4"
 $env:LLM_BACKEND = $SelectedProfile.Backend
 if ($SelectedProfile.ModelPath) {
     $env:LLM_MODEL_PATH = $SelectedProfile.ModelPath

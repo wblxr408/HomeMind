@@ -51,14 +51,6 @@ EDGE_LLM_PROFILES = {
         "n_threads": 4,
         "n_gpu_layers": -1,
     },
-    "qwen25_3b_q4": {
-        "display_name": "Qwen2.5-3B-Instruct-Q4_K_M",
-        "model_path": "models/Qwen2.5-3B-Instruct-Q4_K_M.gguf",
-        "backend": "llama_cpp",
-        "n_ctx": 2048,
-        "n_threads": 4,
-        "n_gpu_layers": -1,
-    },
 }
 
 
@@ -94,8 +86,12 @@ OPENAI_CONFIG = {
     "api_base": _env("LLM_API_BASE", ""),
     "api_key": _env("LLM_API_KEY", ""),
     "model": _env("LLM_MODEL", "gpt-4o-mini"),
+    "enable_fallback": _env_bool("LLM_ENABLE_CLOUD_FALLBACK", True),
     "max_retries": _env_int("OPENAI_MAX_RETRIES", 3),
     "timeout": _env_int("OPENAI_TIMEOUT", 30),
+    "log_policy": _env("CLOUD_LOG_POLICY", "none").strip().lower(),  # none | metadata
+    "log_retention_days": _env_int("CLOUD_LOG_RETENTION_DAYS", 0),
+    "log_path": _env("CLOUD_LOG_PATH", ""),
 }
 
 
@@ -210,6 +206,8 @@ SECURITY_CONFIG = {
     "rate_limit_window_s": _env_int("RATE_LIMIT_WINDOW_S", 30),
     "rate_limit_max_ops": _env_int("RATE_LIMIT_MAX_OPS", 5),
     "audit_retention_days": _env_int("AUDIT_RETENTION_DAYS", 90),
+    "audit_encrypt_fields": _env_bool("AUDIT_ENCRYPT_FIELDS", True),
+    "audit_hash_chain": _env_bool("AUDIT_HASH_CHAIN", True),
 }
 
 

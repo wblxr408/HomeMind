@@ -4,6 +4,7 @@ HomeMind 主入口
   交互层 → BSR → LSR → 理解层(LLM/DQN) → 执行层 → 学习层
 """
 
+import json
 import logging
 import os
 import sys
@@ -49,6 +50,7 @@ from demo.simulator import HomeSimulator
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
+_DLL_DIRECTORY_HANDLES = []
 
 
 class HomeMindAgent:
@@ -351,7 +353,11 @@ class HomeMindAgent:
             session_store=self.session_store,
             preference_store=self.preference_store,
         )
-        logger.info(f"云端最小上下文: {cloud_context}")
+        logger.info(
+            "云端最小上下文字段: keys=%s bytes=%d",
+            sorted(cloud_context.keys()),
+            len(json.dumps(cloud_context, ensure_ascii=False)),
+        )
         if route_info["route"] == "clarify":
             clarification = self.llm.ask_clarification(query_for_ai, ranked)
             self.session_store.update_clarification(clarification)
@@ -738,7 +744,11 @@ def _llm_first_process(self: HomeMindAgent, user_input: str) -> str:
         session_store=self.session_store,
         preference_store=self.preference_store,
     )
-    logger.info("云端最小上下文: %s", cloud_context)
+    logger.info(
+        "云端最小上下文字段: keys=%s bytes=%d",
+        sorted(cloud_context.keys()),
+        len(json.dumps(cloud_context, ensure_ascii=False)),
+    )
 
     if route_info["route"] == "cloud":
         decision = self.llm.decide_cloud(
@@ -819,6 +829,88 @@ def _llm_first_process(self: HomeMindAgent, user_input: str) -> str:
     return result
 
 
+def _main_try_cloud_rescue_intent(self: HomeMindAgent, user_input: str, query_for_ai: str) -> Optional[dict]:
+    if not self.llm.is_cloud_available():
+        return None
+    cloud_context = self.privacy_redactor.build_cloud_context(
+        self.context,
+        [],
+        session_store=self.session_store,
+        preference_store=self.preference_store,
+    )
+    rescued = self.llm.rescue_intent_with_cloud(
+        user_input,
+        normalized_query=query_for_ai,
+        context=self.context,
+        context_summary=cloud_context,
+    )
+    if rescued.get("intent_type") == "clarification_needed":
+        return None
+    return rescued
+
+
+def _main_try_cloud_rescue_decision(
+    self: HomeMindAgent,
+    user_input: str,
+    goal_query: str,
+    reason: str,
+    ranked: Optional[list] = None,
+) -> Optional[dict]:
+    if not self.llm.is_cloud_available():
+        return None
+    ranked = list(ranked or [])
+    rag_context = self.kb.get_context_prompt(goal_query, self.context)
+    cloud_context = self.privacy_redactor.build_cloud_context(
+        self.context,
+        ranked[:3],
+        session_store=self.session_store,
+        preference_store=self.preference_store,
+    )
+    decision = self.llm.rescue_decision_with_cloud(
+        goal_query,
+        self.context,
+        rag_context=rag_context,
+        context_summary=cloud_context,
+        candidate_actions=[item.get("action", "") for item in ranked[:3]],
+    )
+    if decision.get("confidence", 0.0) < self.confidence_threshold:
+        return None
+
+    validation = self.command_validator.validate(decision)
+    if not validation.valid or validation.requires_confirmation:
+        return None
+
+    decision = validation.normalized_command
+    identity = self._build_identity_context(route="cloud")
+    guard = self.runtime_security.evaluate(
+        decision,
+        validation,
+        identity,
+        runtime_context={"hour": self.context.hour, "route": "cloud"},
+    )
+    if not guard.get("allowed", False) or guard.get("effect") == "confirm":
+        return None
+
+    execution = self._execute_registered_command(decision, route="cloud")
+    if execution.get("status") != "success":
+        self.runtime_security.record_outcome(decision, success=False, confirmed=False)
+        return None
+
+    result = execution.get("response", "")
+    self.session_store.update_from_decision(decision, route="cloud", result=result)
+    self.preference_store.record_feedback(user_input, goal_query, "接受")
+    self.preference_store.record_action_accept(decision, self.context)
+    self.kb_writer.write_feedback(user_input, decision, "接受")
+    self.runtime_security.record_outcome(decision, success=True, confirmed=False)
+    return {
+        "decision": decision,
+        "validation": validation,
+        "result": result,
+        "route": "cloud",
+        "reason": reason,
+    }
+
+
 def _llm_first_process_v2(self: HomeMindAgent, user_input: str) -> str:
     started_at = time.time()
     trace_id = f"cli_{int(started_at * 1000)}"
@@ -883,12 +975,30 @@ def _llm_first_process_v2(self: HomeMindAgent, user_input: str) -> str:
         return message
 
     if intent_plan["intent_type"] == "clarification_needed":
-        message = intent_plan.get("reply_message") or "请问你是想控制设备、切换场景，还是创建定时任务？"
-        self.session_store.update_clarification(message)
+        rescued_intent = _main_try_cloud_rescue_intent(self, user_input, query_for_ai)
+        if rescued_intent is not None:
+            intent_plan = rescued_intent
+        else:
+            message = intent_plan.get("reply_message") or "请问你是想控制设备、切换场景，还是创建定时任务？"
+            self.session_store.update_clarification(message)
+            self._audit_event(
+                trace_id=trace_id,
+                query=user_input,
+                route="clarify",
+                routing_reason=intent_plan.get("reasoning", ""),
+                execution_result=message,
+                started_at=started_at,
+            )
+            return message
+
+    if intent_plan["intent_type"] == "chat_reply":
+        message = intent_plan.get("reply_message") or "你好，我在。"
+        self.session_store.append_turn("assistant", message)
+        self.session_store.save()
         self._audit_event(
             trace_id=trace_id,
             query=user_input,
-            route="clarify",
+            route="reply",
             routing_reason=intent_plan.get("reasoning", ""),
             execution_result=message,
             started_at=started_at,
@@ -937,6 +1047,25 @@ def _llm_first_process_v2(self: HomeMindAgent, user_input: str) -> str:
         session_store=self.session_store,
     )
     if not ranked:
+        rescued = _main_try_cloud_rescue_decision(
+            self,
+            user_input,
+            goal_query,
+            reason="cloud_rescue_no_candidates",
+            ranked=[],
+        )
+        if rescued is not None:
+            self._audit_event(
+                trace_id=trace_id,
+                query=user_input,
+                route=rescued["route"],
+                routing_reason=rescued["reason"],
+                decision=rescued["decision"],
+                validation=rescued["validation"],
+                execution_result=rescued["result"],
+                started_at=started_at,
+            )
+            return rescued["result"]
         clarification = self.llm.ask_clarification(goal_query, candidates)
         self.session_store.update_clarification(clarification)
         return clarification
@@ -949,6 +1078,25 @@ def _llm_first_process_v2(self: HomeMindAgent, user_input: str) -> str:
     )
     route = route_info["route"]
     if route == "clarify":
+        rescued = _main_try_cloud_rescue_decision(
+            self,
+            user_input,
+            goal_query,
+            reason="cloud_rescue_from_clarify",
+            ranked=ranked,
+        )
+        if rescued is not None:
+            self._audit_event(
+                trace_id=trace_id,
+                query=user_input,
+                route=rescued["route"],
+                routing_reason=rescued["reason"],
+                decision=rescued["decision"],
+                validation=rescued["validation"],
+                execution_result=rescued["result"],
+                started_at=started_at,
+            )
+            return rescued["result"]
         clarification = self.llm.ask_clarification(goal_query, ranked)
         self.session_store.update_clarification(clarification)
         return clarification
@@ -977,6 +1125,27 @@ def _llm_first_process_v2(self: HomeMindAgent, user_input: str) -> str:
         )
 
     if decision.get("confidence", 0.0) < self.confidence_threshold:
+        rescued = None
+        if route != "cloud":
+            rescued = _main_try_cloud_rescue_decision(
+                self,
+                user_input,
+                goal_query,
+                reason="cloud_rescue_low_confidence",
+                ranked=ranked,
+            )
+        if rescued is not None:
+            self._audit_event(
+                trace_id=trace_id,
+                query=user_input,
+                route=rescued["route"],
+                routing_reason=rescued["reason"],
+                decision=rescued["decision"],
+                validation=rescued["validation"],
+                execution_result=rescued["result"],
+                started_at=started_at,
+            )
+            return rescued["result"]
         clarification = self.llm.ask_clarification(goal_query, ranked)
         self.session_store.update_clarification(clarification)
         self._audit_event(
@@ -1086,8 +1255,47 @@ def _llm_first_process_v2(self: HomeMindAgent, user_input: str) -> str:
 HomeMindAgent.process = _llm_first_process_v2
 
 
+def _prepend_runtime_path(path: str):
+    current = os.environ.get("PATH", "")
+    parts = [p for p in current.split(os.pathsep) if p]
+    normalized = {os.path.normcase(os.path.normpath(p)) for p in parts}
+    target = os.path.normcase(os.path.normpath(path))
+    if target in normalized:
+        return
+    os.environ["PATH"] = path if not current else f"{path}{os.pathsep}{current}"
+
+
+def _bootstrap_windows_cuda_runtime():
+    """Prepare DLL lookup paths for CUDA-backed local inference on Windows."""
+    if os.name != "nt":
+        return
+
+    conda_prefix = os.environ.get("CONDA_PREFIX") or sys.prefix
+    candidates = [
+        os.path.join(conda_prefix, "Lib", "site-packages", "torch", "lib"),
+        os.path.join(conda_prefix, "bin"),
+    ]
+    prepared = []
+
+    for path in candidates:
+        if not os.path.isdir(path):
+            continue
+        _prepend_runtime_path(path)
+        if hasattr(os, "add_dll_directory"):
+            try:
+                handle = os.add_dll_directory(path)
+                _DLL_DIRECTORY_HANDLES.append(handle)
+            except OSError as exc:
+                logger.warning("Failed to add DLL directory %s: %s", path, exc)
+        prepared.append(path)
+
+    if prepared:
+        logger.info("Prepared CUDA runtime search paths: %s", prepared)
+
+
 def run_cli():
     """Start the interactive CLI agent."""
+    _bootstrap_windows_cuda_runtime()
     agent = HomeMindAgent()
     sim = HomeSimulator()
     agent.attach_simulator(sim)
@@ -1113,6 +1321,7 @@ def _init_protocol_gateway(mode: str):
 
 def run(argv: Optional[list[str]] = None):
     """Program entrypoint required by deployment: main.run."""
+    _bootstrap_windows_cuda_runtime()
     parser = argparse.ArgumentParser(description="HomeMind 中央指令器")
     parser.add_argument("--host", default="127.0.0.1", help="服务地址")
     parser.add_argument("--port", type=int, default=5000, help="服务端口")

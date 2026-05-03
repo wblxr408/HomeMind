@@ -40,6 +40,7 @@ class NLToTAPConverter:
         "窗户": "窗户",
         "热水器": "热水器",
     }
+    BULK_DEVICE_TERMS = ("所有电器", "全部电器", "所有家电", "全部家电", "全屋电器", "家电")
 
     def __init__(self, llm_decider=None):
         self.llm = llm_decider
@@ -135,6 +136,11 @@ class NLToTAPConverter:
         return hour
 
     def _extract_action(self, text: str) -> Optional[Dict]:
+        if any(term in text for term in self.BULK_DEVICE_TERMS) and any(
+            word in text for word in ("关闭", "关掉", "全关", "都关")
+        ):
+            return {"type": "scene_switch", "scene": "离家模式"}
+
         for scene in self.SCENE_NAMES:
             if scene in text:
                 return {"type": "scene_switch", "scene": scene}

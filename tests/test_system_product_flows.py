@@ -74,8 +74,47 @@ class HomeMindSystemRegressionTests(unittest.TestCase):
         agent = HomeMindAgent(confidence_threshold=0.95)
         response = agent.process("completely unrelated request")
 
-        self.assertIn(ASK_PREFIX, response)
+        self.assertTrue(ASK_PREFIX in response or "无法理解" in response or "告诉我" in response)
         self.assertTrue((REPO_ROOT / "data" / "session_state.json").exists())
+
+    def test_main_agent_unknown_request_uses_cloud_rescue_before_clarification(self):
+        from main import HomeMindAgent
+
+        agent = HomeMindAgent()
+        original_plan_intent = agent.llm.plan_intent
+        original_is_cloud_available = agent.llm.is_cloud_available
+        original_rescue_intent_with_cloud = agent.llm.rescue_intent_with_cloud
+        agent.llm.plan_intent = lambda raw_text, normalized_query="", context=None: {
+            "intent_type": "clarification_needed",
+            "route": "clarify",
+            "reply_message": "请问你是想控制设备、切换场景，还是创建定时任务？",
+            "normalized_goal": normalized_query or raw_text,
+            "requires_candidates": False,
+            "requires_automation": False,
+            "decision_confidence": 0.4,
+            "reasoning": "forced clarification for test",
+        }
+        agent.llm.is_cloud_available = lambda: True
+        agent.llm.rescue_intent_with_cloud = lambda *args, **kwargs: {
+            "intent_type": "action_command",
+            "route": "action",
+            "reply_message": "",
+            "normalized_goal": "打开空调",
+            "requires_candidates": True,
+            "requires_automation": False,
+            "decision_confidence": 0.96,
+            "reasoning": "test cloud rescue intent",
+        }
+
+        try:
+            response = agent.process("completely unrelated request")
+        finally:
+            agent.llm.plan_intent = original_plan_intent
+            agent.llm.is_cloud_available = original_is_cloud_available
+            agent.llm.rescue_intent_with_cloud = original_rescue_intent_with_cloud
+
+        self.assertIn(AC_DEVICE, response)
+        self.assertNotIn(ASK_PREFIX, response)
 
     def test_main_agent_unsupported_alarm_request_returns_guardrail_message(self):
         from main import HomeMindAgent
@@ -795,6 +834,66 @@ class WebApiSystemTests(unittest.TestCase):
         self.assertEqual(payload["proposal"]["rule_preview"]["trigger"], {"type": "holiday", "name": "\u4e94\u4e00", "month": 5, "day": 1})
         self.assertIn("\u4e94\u4e00\u5f53\u5929", payload["response"])
         self.assertIn("\u5173\u95ed\u7a7a\u8c03", payload["response"])
+
+    def test_query_national_day_bulk_device_off_returns_away_scene_automation(self):
+        response = self.client.post("/api/query", json={"query": "\u56fd\u5e86\u7684\u65f6\u5019\u7ed9\u6211\u5173\u6389\u6240\u6709\u7535\u5668"})
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.get_json()
+        self.assertEqual(payload["status"], "success")
+        self.assertEqual(payload["response_type"], "automation_proposal")
+        self.assertEqual(payload["proposal"]["rule_preview"]["trigger"], {"type": "holiday", "name": "\u56fd\u5e86", "month": 10, "day": 1})
+        self.assertEqual(payload["proposal"]["rule_preview"]["action"], {"type": "scene_switch", "scene": "\u79bb\u5bb6\u6a21\u5f0f"})
+        self.assertIn("\u56fd\u5e86\u5f53\u5929", payload["response"])
+        self.assertIn("\u79bb\u5bb6\u6a21\u5f0f", payload["response"])
+
+    def test_query_clarify_route_uses_cloud_rescue_before_asking_question(self):
+        agent = self.web_server.agent
+        original_plan_intent = agent.llm.plan_intent
+        original_is_cloud_available = agent.llm.is_cloud_available
+        original_rescue_decision_with_cloud = agent.llm.rescue_decision_with_cloud
+        original_decide_route = agent.router.decide_route
+
+        agent.llm.plan_intent = lambda raw_text, normalized_query="", context=None: {
+            "intent_type": "action_command",
+            "route": "action",
+            "reply_message": "",
+            "normalized_goal": normalized_query or raw_text,
+            "requires_candidates": True,
+            "requires_automation": False,
+            "decision_confidence": 0.8,
+            "reasoning": "forced action command",
+        }
+        agent.llm.is_cloud_available = lambda: True
+        agent.router.decide_route = lambda *args, **kwargs: {
+            "route": "clarify",
+            "reason": "forced_clarify_for_test",
+            "top_candidates": ["打开空调"],
+        }
+        agent.llm.rescue_decision_with_cloud = lambda *args, **kwargs: {
+            "action": "设备控制",
+            "device": "空调",
+            "scene": "",
+            "device_action": "on",
+            "params": {"temperature": 26},
+            "confidence": 0.97,
+            "reasoning": "test cloud rescue decision",
+        }
+
+        try:
+            response = self.client.post("/api/query", json={"query": "完全听不懂的句子"})
+        finally:
+            agent.llm.plan_intent = original_plan_intent
+            agent.llm.is_cloud_available = original_is_cloud_available
+            agent.llm.rescue_decision_with_cloud = original_rescue_decision_with_cloud
+            agent.router.decide_route = original_decide_route
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.get_json()
+        self.assertEqual(payload["status"], "success")
+        self.assertEqual(payload["response_type"], "execution_result")
+        self.assertEqual(payload["route"], "cloud")
+        self.assertIn("空调", payload["response"])
 
     def test_followup_may_day_updates_pending_automation_trigger(self):
         first = self.client.post("/api/query", json={"query": "\u665a\u4e0a7:00\u7ed9\u6211\u5173\u6389\u7a7a\u8c03"}).get_json()

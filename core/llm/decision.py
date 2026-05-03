@@ -21,7 +21,7 @@ from typing import Any, Dict, List, Optional
 
 import requests
 
-from core.config import OLLAMA_CONFIG, LLAMA_CPP_CONFIG, REACT_CONFIG
+from core.config import OLLAMA_CONFIG, LLAMA_CPP_CONFIG, OPENAI_CONFIG, REACT_CONFIG
 from core.observability import get_metrics
 from core.safety import detect_safety_sensitive_request
 
@@ -99,6 +99,7 @@ ACTION_HINTS = (
     "\u542f\u52a8",
     "打开",
     "关闭",
+    "关掉",
     "调高",
     "调低",
     "调亮",
@@ -137,6 +138,8 @@ SOFT_COMMAND_NORMALIZATIONS = (
     (("看电影", "观影", "电影模式"), "切换观影模式"),
     (("起床", "早安"), "切换早安模式"),
     (("待客", "来客人", "客人来了"), "切换待客模式"),
+    (("关掉所有电器", "关闭所有电器", "关闭全部电器", "关掉全部电器", "全关电器"), "切换离家模式"),
+    (("关掉所有家电", "关闭所有家电", "关闭全部家电", "关掉全部家电", "全关家电"), "切换离家模式"),
 )
 
 
@@ -151,6 +154,7 @@ class LLMDecider:
         api_key: str = "",
         cloud_model: str = "",
     ):
+        self.requested_backend = backend
         self.backend = backend
         self.model_path = model_path
         self.api_base = api_base
@@ -171,6 +175,7 @@ class LLMDecider:
             self._init_llama_cpp()
         elif self.backend == "openai":
             self._init_openai()
+        self._init_optional_cloud_fallback()
 
     def _init_ollama(self):
         """Connect to local Ollama server."""
@@ -272,10 +277,29 @@ class LLMDecider:
             logger.warning("Cloud backend unavailable; falling back to mock")
             self.backend = "mock"
 
+    def _init_optional_cloud_fallback(self):
+        if self._cloud_client is not None:
+            return
+        if self.requested_backend not in ("llama_cpp", "ollama"):
+            return
+        if not OPENAI_CONFIG.get("enable_fallback", True):
+            return
+        client = CloudClient(
+            api_base=self.api_base,
+            api_key=self.api_key,
+            model=self.cloud_model,
+        )
+        if client.is_available():
+            self._cloud_client = client
+            logger.info("LLMDecider enabled optional cloud fallback channel")
+
     def is_cloud_available(self) -> bool:
-        if self.backend == "openai" and self._cloud_client is not None:
-            return self._cloud_client.is_available()
-        return False
+        return self._cloud_client is not None and self._cloud_client.is_available()
+
+    def cloud_logging_status(self) -> Dict[str, Any]:
+        if self._cloud_client is None:
+            return {"policy": "none", "raw_payload_retained": False, "call_count": 0}
+        return self._cloud_client.logging_status()
 
     def _ollama_complete(self, prompt: str, max_tokens: int = 512) -> str:
         """Call Ollama API for completion."""
@@ -346,29 +370,36 @@ class LLMDecider:
         context_summary: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         route_text = str(normalized_query or query or "").strip()
+        prompt = self._build_intent_prompt(query, route_text, context_summary=context_summary)
         if self.backend == "ollama":
-            prompt = self._build_intent_prompt(query, route_text, context_summary=context_summary)
             text = self._ollama_complete(prompt, max_tokens=256)
             parsed = self._parse_intent_output(text)
-            if parsed.get("intent_type"):
+            if parsed.get("intent_type") and float(parsed.get("decision_confidence", 0.0) or 0.0) > 0.0:
                 return parsed
         elif self.backend == "llama_cpp" and self._llm is not None:
-            prompt = self._build_intent_prompt(query, route_text, context_summary=context_summary)
             output = self._llm(prompt, max_tokens=256, stop=["```"])
             text = output.get("choices", [{}])[0].get("text", "") if isinstance(output, dict) else str(output)
             parsed = self._parse_intent_output(text)
-            if parsed.get("intent_type"):
+            if parsed.get("intent_type") and float(parsed.get("decision_confidence", 0.0) or 0.0) > 0.0:
                 return parsed
         elif self.backend == "openai" and self.is_cloud_available():
-            prompt = self._build_intent_prompt(query, route_text, context_summary=context_summary)
             try:
                 text = self._cloud_client.complete(prompt, max_tokens=256)
                 parsed = self._parse_intent_output(text)
-                if parsed.get("intent_type"):
+                if parsed.get("intent_type") and float(parsed.get("decision_confidence", 0.0) or 0.0) > 0.0:
                     parsed = self._post_process_intent(parsed, route_text)
                     return parsed
             except Exception as exc:
                 logger.warning("Cloud intent planning failed: %s; falling back to mock", exc)
+        if self.backend in ("ollama", "llama_cpp") and self.is_cloud_available():
+            try:
+                text = self._cloud_client.complete(prompt, max_tokens=256)
+                parsed = self._parse_intent_output(text)
+                if parsed.get("intent_type") and float(parsed.get("decision_confidence", 0.0) or 0.0) > 0.0:
+                    parsed = self._post_process_intent(parsed, route_text)
+                    return parsed
+            except Exception as exc:
+                logger.warning("Cloud intent fallback failed after local planning miss: %s", exc)
         return self._mock_plan_intent(query, route_text, context)
 
     def decide_intent(
@@ -394,19 +425,26 @@ class LLMDecider:
         context,
         rag_context: str = "",
     ) -> Dict[str, Any]:
+        prompt = self._build_prompt(query, candidates, context, rag_context)
         if self.backend == "ollama":
-            prompt = self._build_prompt(query, candidates, context, rag_context)
             text = self._ollama_complete(prompt, max_tokens=256)
             parsed = self._parse_output(text)
             if parsed.get("confidence", 0.0) > 0:
                 return parsed
         elif self.backend == "llama_cpp" and self._llm is not None:
-            prompt = self._build_prompt(query, candidates, context, rag_context)
             output = self._llm(prompt, max_tokens=256, stop=["```"])
             text = output.get("choices", [{}])[0].get("text", "") if isinstance(output, dict) else str(output)
             parsed = self._parse_output(text)
             if parsed.get("confidence", 0.0) > 0:
                 return parsed
+        if self.backend in ("ollama", "llama_cpp") and self.is_cloud_available():
+            try:
+                text = self._cloud_client.complete(prompt, max_tokens=256)
+                parsed = self._parse_output(text)
+                if parsed.get("confidence", 0.0) > 0:
+                    return parsed
+            except Exception as exc:
+                logger.warning("Cloud decision fallback failed after local decision miss: %s", exc)
         return self._mock_decide(query, candidates, context, rag_context=rag_context)
 
     def decide_cloud(
@@ -439,6 +477,93 @@ class LLMDecider:
             return self.decide_cloud(query, candidates, context, rag_context=rag_context, context_summary=context_summary)
         return self.decide_local(query, candidates, context, rag_context=rag_context)
 
+    def rescue_intent_with_cloud(
+        self,
+        query: str,
+        normalized_query: str = "",
+        context=None,
+        context_summary: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
+        route_text = str(normalized_query or query or "").strip()
+        fallback = {
+            "intent_type": "clarification_needed",
+            "route": "clarify",
+            "reply_message": "请问你是想控制设备、切换场景，还是创建定时任务？",
+            "normalized_goal": route_text,
+            "requires_candidates": False,
+            "requires_automation": False,
+            "decision_confidence": 0.0,
+            "reasoning": "cloud_rescue_unavailable",
+        }
+        if not self.is_cloud_available():
+            return fallback
+        prompt = self._build_cloud_rescue_intent_prompt(query, route_text, context_summary=context_summary)
+        try:
+            text = self._cloud_client.complete(prompt, max_tokens=320)
+            parsed = self._parse_intent_output(text)
+            if parsed.get("intent_type"):
+                return self._post_process_intent(parsed, parsed.get("normalized_goal") or route_text or query)
+        except Exception as exc:
+            logger.warning("Cloud rescue intent failed: %s", exc)
+        return fallback
+
+    def rescue_decision_with_cloud(
+        self,
+        query: str,
+        context,
+        rag_context: str = "",
+        context_summary: Optional[Dict[str, Any]] = None,
+        candidate_actions: Optional[List[str]] = None,
+    ) -> Dict[str, Any]:
+        fallback = {
+            "action": "无法理解",
+            "device": "",
+            "scene": "",
+            "device_action": "",
+            "params": {},
+            "confidence": 0.0,
+            "reasoning": "cloud_rescue_unavailable",
+        }
+        if not self.is_cloud_available():
+            return fallback
+        prompt = self._build_cloud_rescue_decision_prompt(
+            query,
+            rag_context=rag_context,
+            context_summary=context_summary,
+            candidate_actions=candidate_actions,
+        )
+        try:
+            text = self._cloud_client.complete(prompt, max_tokens=320)
+            parsed = self._parse_output(text)
+            return self._normalize_rescue_command(parsed)
+        except Exception as exc:
+            logger.warning("Cloud rescue decision failed: %s", exc)
+        return fallback
+
+    def _normalize_rescue_command(self, command: Dict[str, Any]) -> Dict[str, Any]:
+        normalized = dict(command or {})
+        action_aliases = {
+            "device_control": "设备控制",
+            "scene_switch": "场景切换",
+            "info_query": "信息查询",
+        }
+        device_action_aliases = {
+            "turn_on": "on",
+            "turn_off": "off",
+        }
+        action = str(normalized.get("action", "") or "").strip()
+        normalized["action"] = action_aliases.get(action, action)
+        device_action = str(normalized.get("device_action", "") or "").strip()
+        normalized["device_action"] = device_action_aliases.get(device_action, device_action)
+        normalized.setdefault("device", "")
+        normalized.setdefault("scene", "")
+        normalized.setdefault("params", {})
+        normalized.setdefault("confidence", 0.0)
+        normalized.setdefault("reasoning", "")
+        if not isinstance(normalized["params"], dict):
+            normalized["params"] = {}
+        return normalized
+
     def _build_intent_prompt(
         self,
         query: str,
@@ -455,6 +580,56 @@ class LLMDecider:
             "requires_automation, decision_confidence, reasoning 字段。\n"
             '{"intent_type":"","reply_message":"","normalized_goal":"","requires_candidates":false,'
             '"requires_automation":false,"decision_confidence":0.0,"reasoning":""}'
+        )
+
+    def _build_cloud_rescue_intent_prompt(
+        self,
+        query: str,
+        normalized_query: str,
+        context_summary: Optional[Dict[str, Any]] = None,
+    ) -> str:
+        return (
+            "你是 HomeMind 的云端兜底意图理解器。\n"
+            "当本地规则没有稳定理解时，尽量把输入映射到系统已支持的能力；只有确实无法安全判断时才返回 clarification_needed。\n"
+            "支持设备：空调、灯光、电视、音响、风扇、窗户、热水器。\n"
+            "支持场景：睡眠模式、待客模式、离家模式、观影模式、起床模式、回家模式、工作模式、早安模式、晚归模式。\n"
+            "如果用户在说时间、节假日、定时条件，返回 automation_request。\n"
+            "如果用户想表达离开家时关闭所有电器/家电，可归一化为“切换离家模式”。\n"
+            "只输出 JSON，intent_type 只能是 chat_reply、action_command、clarification_needed、automation_request。\n"
+            f"用户原始输入: {query}\n"
+            f"归一化输入: {normalized_query}\n"
+            f"环境摘要: {json.dumps(context_summary or {}, ensure_ascii=False)}\n"
+            '{"intent_type":"","route":"","reply_message":"","normalized_goal":"","requires_candidates":false,'
+            '"requires_automation":false,"decision_confidence":0.0,"reasoning":""}'
+        )
+
+    def _build_cloud_rescue_decision_prompt(
+        self,
+        query: str,
+        rag_context: str = "",
+        context_summary: Optional[Dict[str, Any]] = None,
+        candidate_actions: Optional[List[str]] = None,
+    ) -> str:
+        candidate_block = ""
+        if candidate_actions:
+            candidate_block = "本地候选(仅供参考): " + "、".join(str(item) for item in candidate_actions if item) + "\n"
+        rag_block = f"参考知识:\n{rag_context}\n" if rag_context else ""
+        return (
+            "你是 HomeMind 的云端兜底执行理解器。\n"
+            "当本地候选召回不足、路由准备澄清或本地决策置信度过低时，尽量直接给出一个可执行结构化命令。\n"
+            "仅允许输出以下能力：设备控制、场景切换、信息查询。\n"
+            "设备白名单：空调、灯光、电视、音响、风扇、窗户、热水器。\n"
+            "场景白名单：睡眠模式、待客模式、离家模式、观影模式、起床模式、回家模式、工作模式、早安模式、晚归模式。\n"
+            "如果用户表达关闭所有电器/家电/全屋设备，优先映射为场景切换到离家模式。\n"
+            "舒适度默认映射：热/闷 -> 空调 on temperature=26；冷 -> 空调 adjust temperature=28；亮一点 -> 灯光 adjust brightness=100；暗一点 -> 灯光 adjust brightness=30。\n"
+            "如果仍然无法安全判断，就返回 action=\"无法理解\"，confidence 不超过 0.3。\n"
+            "只输出 JSON。\n"
+            f"环境摘要: {json.dumps(context_summary or {}, ensure_ascii=False)}\n"
+            f"{candidate_block}"
+            f"{rag_block}"
+            f"用户输入: {query}\n"
+            '{"action":"","device":"","scene":"","device_action":"","params":{},'
+            '"confidence":0.0,"reasoning":""}'
         )
 
     def _build_prompt(

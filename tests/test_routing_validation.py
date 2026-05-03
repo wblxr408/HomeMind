@@ -39,6 +39,16 @@ class LLMIntentPlanningTests(unittest.TestCase):
         self.assertEqual(result["intent_type"], "automation_request")
         self.assertTrue(result["requires_automation"])
 
+    def test_holiday_bulk_device_off_is_planned_as_automation(self):
+        result = self.llm.plan_intent("国庆的时候给我关掉所有电器")
+        self.assertEqual(result["intent_type"], "automation_request")
+        self.assertTrue(result["requires_automation"])
+
+    def test_bulk_device_off_is_normalized_to_away_scene(self):
+        result = self.llm.plan_intent("关掉所有电器")
+        self.assertEqual(result["intent_type"], "action_command")
+        self.assertEqual(result["normalized_goal"], "切换离家模式")
+
 
     def test_door_lock_is_always_planned_as_clarification(self):
         result = self.llm.plan_intent("\u6253\u5f00\u95e8\u9501")

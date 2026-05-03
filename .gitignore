@@ -1,15 +1,12 @@
-__pycache__/
+﻿__pycache__/
 *.py[cod]
 gcm-diagnose.log
 .env
 .env.*
 !.env.example
-
 .pytest_cache/
 .mypy_cache/
-
 reports/
-
 data/scenes.json
 data/preferences.json
 data/session_state.json
@@ -23,3 +20,6 @@ models/
 models/*
 !models/asr/
 !models/asr/README.md
+HomeMind-东南大学/
+drawing_prompts.md
+*.tex

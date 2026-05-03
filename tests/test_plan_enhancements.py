@@ -151,6 +151,14 @@ class ProtocolSecurityEnhancementTests(unittest.TestCase):
             else:
                 os.environ["LLM_API_KEY"] = previous
 
+    def test_cloud_client_does_not_retain_raw_payloads_by_default(self):
+        client = CloudClient(api_base="https://example.com/v1", api_key="", model="test")
+        status = client.logging_status()
+
+        self.assertEqual(status["policy"], "none")
+        self.assertFalse(status["raw_payload_retained"])
+        self.assertEqual(status["path"], "")
+
     def test_mqtt_tls_defaults_to_secure_port(self):
         protocol = MQTTProtocol(use_tls=True)
 

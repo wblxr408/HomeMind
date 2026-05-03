@@ -1,11 +1,13 @@
 import json
 import os
+import sqlite3
 import tempfile
 import unittest
 from pathlib import Path
 
-from core.governance import PolicyEngine, PolicyRule
+from core.governance import AuditLogger, PolicyEngine, PolicyRule
 from core.rag.knowledge_base import KnowledgeBase
+from core.security import reset_encrypted_storage
 from core.tools import ToolRegistry
 from tools.device_control import DeviceController
 
@@ -105,6 +107,79 @@ class AuditApiUpgradeTests(unittest.TestCase):
         payload = response.get_json()
         self.assertEqual(payload["status"], "success")
         self.assertGreaterEqual(payload["count"], 1)
+        self.assertIn("integrity", payload)
+        self.assertIn("security", payload)
+
+
+class AuditSecurityUpgradeTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        os.environ["HOMEMIND_STORAGE_KEY"] = "test-storage-key"
+        reset_encrypted_storage()
+        self.db_path = Path(self.tmp.name) / "audit.db"
+        self.audit = AuditLogger(db_path=str(self.db_path), retention_days=90)
+
+    def tearDown(self):
+        self.audit.close()
+        self.tmp.cleanup()
+        reset_encrypted_storage()
+
+    def test_audit_log_encrypts_sensitive_fields_and_verifies_hash_chain(self):
+        ok = self.audit.log(
+            trace_id="trace-1",
+            user_id="default",
+            query="打开卧室灯光",
+            route="local",
+            decision={"action": "设备控制", "device": "灯光", "params": {"room": "卧室"}, "confidence": 0.9},
+            execution_result="success",
+            validation={"valid": True, "errors": []},
+            metadata={"space": "卧室"},
+        )
+
+        self.assertTrue(ok)
+        records = self.audit.query(limit=1)
+        self.assertEqual(records[0]["query"], "打开卧室灯光")
+        self.assertTrue(records[0]["tamper_verified"])
+        self.assertTrue(self.audit.verify_integrity()["ok"])
+
+        conn = sqlite3.connect(str(self.db_path))
+        try:
+            raw = conn.execute("SELECT query, decision_device, metadata, encrypted, record_hash FROM audit_log").fetchone()
+            self.assertEqual(raw[3], 1)
+            self.assertNotIn("打开卧室灯光", raw[0])
+            self.assertNotIn("灯光", raw[1])
+            self.assertNotIn("卧室", raw[2])
+            self.assertTrue(raw[4])
+
+            conn.execute("UPDATE audit_log SET route = 'tampered' WHERE id = 1")
+            conn.commit()
+        finally:
+            conn.close()
+
+        self.assertFalse(self.audit.verify_integrity()["ok"])
+
+    def test_audit_hash_chain_detects_tail_deletion(self):
+        for index in range(2):
+            self.assertTrue(
+                self.audit.log(
+                    trace_id=f"trace-{index}",
+                    query=f"打开灯光{index}",
+                    decision={"action": "设备控制", "device": "灯光", "confidence": 0.9},
+                    validation={"valid": True, "errors": []},
+                )
+            )
+        self.assertTrue(self.audit.verify_integrity()["ok"])
+
+        conn = sqlite3.connect(str(self.db_path))
+        try:
+            conn.execute("DELETE FROM audit_log WHERE id = 2")
+            conn.commit()
+        finally:
+            conn.close()
+
+        result = self.audit.verify_integrity()
+        self.assertFalse(result["ok"])
+        self.assertEqual(result["reason"], "chain_head_mismatch")
 
 
 if __name__ == "__main__":

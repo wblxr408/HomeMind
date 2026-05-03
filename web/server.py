@@ -1790,6 +1790,8 @@ class HomeMindWebAgent:
             "last_route_reason": self.last_route_info.get("reason", ""),
             "last_cloud_context": self.last_cloud_context,
             "storage_security": storage_status,
+            "cloud_log_policy": self.llm.cloud_logging_status() if hasattr(self.llm, "cloud_logging_status") else {"policy": "none", "raw_payload_retained": False},
+            "audit_security": self.audit_logger.status() if hasattr(self.audit_logger, "status") else {},
             "minimal_fields": ["hour", "temperature", "humidity", "occupancy", "scene", "top_candidates", "preference_summary"],
         }
     
@@ -2005,7 +2007,11 @@ class HomeMindWebAgent:
                 # Step 3: LLM 决策
                 cloud_context = self._build_cloud_context(ranked[:3])
                 rag_context = self.kb.get_context_prompt(query_text, self.context) if self.kb else ""
-                print(f"[Privacy] 云端最小上下文: {cloud_context}")
+                print(
+                    "[Privacy] 云端最小上下文字段: "
+                    f"keys={sorted(cloud_context.keys())} "
+                    f"bytes={len(json.dumps(cloud_context, ensure_ascii=False))}"
+                )
                 if route_info["route"] == "clarify":
                     question = self.llm.ask_clarification(query_text, ranked)
                     self.session_store.update_clarification(question)
@@ -2895,7 +2901,11 @@ class HomeMindWebAgent:
                     }
                 cloud_context = self._build_cloud_context(ranked[:3])
                 rag_context = self.kb.get_context_prompt(query_for_ai, self.context) if self.kb else ""
-                print(f"[Privacy] 云端最小上下文: {cloud_context}")
+                print(
+                    "[Privacy] 云端最小上下文字段: "
+                    f"keys={sorted(cloud_context.keys())} "
+                    f"bytes={len(json.dumps(cloud_context, ensure_ascii=False))}"
+                )
                 if route_info["route"] == "cloud":
                     decision = self.llm.decide_cloud(
                         query_for_ai,
@@ -3069,14 +3079,36 @@ def _webagent_run_llm_first_query(self: HomeMindWebAgent, raw_text: str, normali
         }
 
     if intent_plan["intent_type"] == "clarification_needed":
-        message = intent_plan.get("reply_message") or "请问你是想控制设备、切换场景，还是创建定时任务？"
-        self.session_store.update_clarification(message)
+        rescued_intent = self._try_cloud_rescue_intent(raw_text, normalized_text)
+        if rescued_intent is not None:
+            intent_plan = rescued_intent
+        else:
+            message = intent_plan.get("reply_message") or "请问你是想控制设备、切换场景，还是创建定时任务？"
+            self.session_store.update_clarification(message)
+            return {
+                "status": "clarification",
+                "response_type": "clarification",
+                "question": message,
+                "route": "clarify",
+                "route_reason": intent_plan.get("reasoning", ""),
+                "_debug": {"intent_plan": intent_plan},
+            }
+
+    if intent_plan["intent_type"] == "chat_reply":
+        interaction = self._build_message_metadata(
+            "decision",
+            raw_text,
+            normalized_text,
+            decision_snapshot={"intent_type": intent_plan["intent_type"], "route": "reply"},
+        )
         return {
-            "status": "clarification",
-            "response_type": "clarification",
-            "question": message,
-            "route": "clarify",
+            "status": "success",
+            "response_type": "chat",
+            "message_id": interaction["message_id"],
+            "response": intent_plan.get("reply_message") or "你好，我在。",
+            "route": "reply",
             "route_reason": intent_plan.get("reasoning", ""),
+            "feedback_target": {"message_id": interaction["message_id"], "target_type": "decision"},
             "_debug": {"intent_plan": intent_plan},
         }
 
@@ -3131,6 +3163,17 @@ def _webagent_run_llm_first_query(self: HomeMindWebAgent, raw_text: str, normali
     ) if candidates else []
 
     if not ranked:
+        rescued = self._try_cloud_rescue_result(
+            raw_text,
+            normalized_text,
+            goal_query,
+            intent_plan,
+            "cloud_rescue_no_ranked_candidates",
+            candidates=candidates,
+            ranked=[],
+        )
+        if rescued is not None:
+            return rescued
         question = self.llm.ask_clarification(goal_query, candidates)
         self.session_store.update_clarification(question)
         return {
@@ -3155,6 +3198,17 @@ def _webagent_run_llm_first_query(self: HomeMindWebAgent, raw_text: str, normali
         "intent_reason": intent_plan.get("reasoning", ""),
     }
     if route_info["route"] == "clarify":
+        rescued = self._try_cloud_rescue_result(
+            raw_text,
+            normalized_text,
+            goal_query,
+            intent_plan,
+            "cloud_rescue_from_clarify",
+            candidates=candidates,
+            ranked=ranked,
+        )
+        if rescued is not None:
+            return rescued
         question = self.llm.ask_clarification(goal_query, ranked)
         self.session_store.update_clarification(question)
         return {
@@ -3169,7 +3223,11 @@ def _webagent_run_llm_first_query(self: HomeMindWebAgent, raw_text: str, normali
 
     cloud_context = self._build_cloud_context(ranked[:3])
     rag_context = self.kb.get_context_prompt(goal_query, self.context) if self.kb else ""
-    print(f"[Privacy] 云端最小上下文: {cloud_context}")
+    print(
+        "[Privacy] 云端最小上下文字段: "
+        f"keys={sorted(cloud_context.keys())} "
+        f"bytes={len(json.dumps(cloud_context, ensure_ascii=False))}"
+    )
     if route_info["route"] == "cloud":
         decision = self.llm.decide_cloud(
             goal_query,
@@ -3187,6 +3245,19 @@ def _webagent_run_llm_first_query(self: HomeMindWebAgent, raw_text: str, normali
         )
 
     if decision.get("confidence", 0.0) < self.confidence_threshold:
+        rescued = None
+        if route_info["route"] != "cloud":
+            rescued = self._try_cloud_rescue_result(
+                raw_text,
+                normalized_text,
+                goal_query,
+                intent_plan,
+                "cloud_rescue_low_confidence",
+                candidates=candidates,
+                ranked=ranked,
+            )
+        if rescued is not None:
+            return rescued
         question = self.llm.ask_clarification(goal_query, ranked)
         self.session_store.update_clarification(question)
         return {
@@ -3417,6 +3488,135 @@ def _webagent_execution_result(self: HomeMindWebAgent, command: dict, raw_text: 
         "route_reason": "pending_clarification_resolved",
         "feedback_target": {"message_id": interaction["message_id"], "target_type": "execution"},
     }
+
+
+def _webagent_try_cloud_rescue_intent(self: HomeMindWebAgent, raw_text: str, normalized_text: str) -> dict | None:
+    if not self.llm or not self.llm.is_cloud_available():
+        return None
+    cloud_context = self._build_cloud_context([])
+    rescued = self.llm.rescue_intent_with_cloud(
+        raw_text,
+        normalized_query=normalized_text,
+        context=self.context,
+        context_summary=cloud_context,
+    )
+    if rescued.get("intent_type") == "clarification_needed":
+        return None
+    return rescued
+
+
+def _webagent_try_cloud_rescue_result(
+    self: HomeMindWebAgent,
+    raw_text: str,
+    normalized_text: str,
+    goal_query: str,
+    intent_plan: dict,
+    route_reason: str,
+    candidates: list | None = None,
+    ranked: list | None = None,
+) -> dict | None:
+    if not self.llm or not self.llm.is_cloud_available():
+        return None
+    ranked = list(ranked or [])
+    candidates = list(candidates or [])
+    cloud_context = self._build_cloud_context(ranked[:3])
+    rag_context = self.kb.get_context_prompt(goal_query, self.context) if self.kb else ""
+    decision = self.llm.rescue_decision_with_cloud(
+        goal_query,
+        self.context,
+        rag_context=rag_context,
+        context_summary=cloud_context,
+        candidate_actions=[item.get("action", "") for item in ranked[:3]],
+    )
+    if decision.get("confidence", 0.0) < self.confidence_threshold:
+        return None
+
+    route_info = {
+        "route": "cloud",
+        "reason": route_reason,
+        "top_candidates": [item.get("action", "") for item in ranked[:3] if item.get("action")],
+    }
+    debug_payload = {
+        "intent_plan": intent_plan,
+        "goal_query": goal_query,
+        "candidates": candidates,
+        "ranked": ranked,
+        "route_info": route_info,
+        "decision": decision,
+    }
+
+    spatial_rejection = self._spatial_rejection_for_decision(
+        decision,
+        " ".join(part for part in [raw_text, normalized_text, goal_query] if part),
+        route_info["route"],
+    )
+    if spatial_rejection:
+        return {**spatial_rejection, "_debug": debug_payload}
+
+    validation = self._validate_decision(decision)
+    if not validation.valid or validation.requires_confirmation:
+        return None
+
+    decision = validation.normalized_command
+    debug_payload["decision"] = decision
+    action_type = decision.get("action", "")
+    device = decision.get("device", "")
+    device_action = decision.get("device_action", "")
+    scene = decision.get("scene", "")
+
+    if action_type == "设备控制" and device and device_action:
+        execution = self._execute_device_with_spatial_gate(
+            decision,
+            text=" ".join(part for part in [raw_text, normalized_text, goal_query] if part),
+            route=route_info["route"],
+        )
+        if execution.get("status") != "success":
+            return {**execution, "_debug": debug_payload}
+        message = execution.get("response", "")
+        interaction = self._build_message_metadata(
+            "execution",
+            raw_text,
+            normalized_text,
+            decision_snapshot=decision,
+        )
+        return {
+            "status": "success",
+            "response_type": "execution_result",
+            "message_id": interaction["message_id"],
+            "action": f"{device}_{device_action}",
+            "response": message,
+            "confidence": decision.get("confidence", 0.9),
+            "route": route_info["route"],
+            "route_reason": route_info["reason"],
+            "feedback_target": {"message_id": interaction["message_id"], "target_type": "execution"},
+            "_debug": debug_payload,
+        }
+
+    if action_type == "场景切换" and scene:
+        execution = self._execute_scene_with_spatial_gate(scene, route=route_info["route"])
+        if execution.get("status") != "success":
+            return {**execution, "_debug": debug_payload}
+        message = execution.get("response", "")
+        interaction = self._build_message_metadata(
+            "execution",
+            raw_text,
+            normalized_text,
+            decision_snapshot=decision,
+        )
+        return {
+            "status": "success",
+            "response_type": "execution_result",
+            "message_id": interaction["message_id"],
+            "action": "scene_switch",
+            "response": message,
+            "confidence": decision.get("confidence", 0.9),
+            "route": route_info["route"],
+            "route_reason": route_info["reason"],
+            "feedback_target": {"message_id": interaction["message_id"], "target_type": "execution"},
+            "_debug": debug_payload,
+        }
+
+    return None
 
 
 def _webagent_resolve_pending_clarification(self: HomeMindWebAgent, raw_text: str, normalized_text: str) -> dict | None:
@@ -4048,6 +4248,8 @@ HomeMindWebAgent._run_llm_first_query = _webagent_run_llm_first_query_v2
 HomeMindWebAgent._device_from_text = _webagent_device_from_text
 HomeMindWebAgent._action_from_text = _webagent_action_from_text
 HomeMindWebAgent._execution_result = _webagent_execution_result
+HomeMindWebAgent._try_cloud_rescue_intent = _webagent_try_cloud_rescue_intent
+HomeMindWebAgent._try_cloud_rescue_result = _webagent_try_cloud_rescue_result
 HomeMindWebAgent._resolve_pending_clarification = _webagent_resolve_pending_clarification
 HomeMindWebAgent.process_query = _webagent_process_query_v2
 HomeMindWebAgent._process_user_input = _webagent_process_user_input
@@ -4094,7 +4296,9 @@ def audit_logs():
     since = datetime.fromisoformat(since_raw) if since_raw else None
     until = datetime.fromisoformat(until_raw) if until_raw else None
     records = agent.audit_logger.query(since=since, until=until, user_id=user_id, limit=max(1, min(limit, 200)))
-    return jsonify({"status": "success", "records": records, "count": len(records)})
+    integrity = agent.audit_logger.verify_integrity() if hasattr(agent.audit_logger, "verify_integrity") else {}
+    security = agent.audit_logger.status() if hasattr(agent.audit_logger, "status") else {}
+    return jsonify({"status": "success", "records": records, "count": len(records), "integrity": integrity, "security": security})
 
 
 @app.route("/api/interaction/feedback", methods=["POST"])
