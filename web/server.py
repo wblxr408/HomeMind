@@ -1,4 +1,4 @@
-﻿"""
+"""
 HomeMind Web 服务 - 中央指令器
 提供 REST API 和 WebSocket 接口，连接智能家居 Agent 与前端控制面板
 """
@@ -304,6 +304,47 @@ def _default_device_state(device_type: str = "") -> dict:
     elif device_type == "water_heater":
         state["temperature"] = 45
     return state
+
+
+def _canonical_registry_device_type(device_type: str = "", semantic_device: str = "") -> str:
+    semantic_map = {
+        "空调": "climate",
+        "灯光": "light",
+        "电视": "media_player",
+        "热水器": "water_heater",
+        "风扇": "fan",
+        "音响": "speaker",
+        "窗户": "cover",
+    }
+    if semantic_device in semantic_map:
+        return semantic_map[semantic_device]
+    normalized = str(device_type or "").strip().lower()
+    alias_map = {
+        "climate": "climate",
+        "air_conditioner": "climate",
+        "hvac": "climate",
+        "light": "light",
+        "fan": "fan",
+        "speaker": "speaker",
+        "water_heater": "water_heater",
+        "media_player": "media_player",
+        "tv": "media_player",
+        "television": "media_player",
+        "window": "cover",
+        "curtain": "cover",
+        "cover": "cover",
+    }
+    return alias_map.get(normalized, "switch")
+
+
+def _registry_matches_default_only(registry: list) -> bool:
+    if len(registry) != len(DEFAULT_DEVICE_REGISTRY):
+        return False
+    default_ids = {str(item.get("id") or "").strip() for item in DEFAULT_DEVICE_REGISTRY}
+    registry_ids = {str(item.get("id") or "").strip() for item in registry}
+    if registry_ids != default_ids:
+        return False
+    return not any(str(item.get("area") or item.get("areaName") or "").strip() for item in registry)
 
 
 def _normalize_device_registry_item(item: dict) -> dict | None:
@@ -2344,6 +2385,10 @@ class HomeMindWebAgent:
 
     def _device_registry(self) -> list:
         registry = _load_device_registry()
+        preferred = self._registry_seed_from_active_floor_plan()
+        if preferred and _registry_matches_default_only(registry):
+            registry = preferred
+            _save_device_registry(registry)
         self._ensure_device_states(registry)
         return registry
 
@@ -2370,6 +2415,40 @@ class HomeMindWebAgent:
         if not mapping:
             return []
         return [device for device in mapping.get("devices", []) if isinstance(device, dict)]
+
+    def _switchable_floor_plan_devices(self) -> list:
+        controllable = []
+        allowed_semantics = set(self.DEVICE_ID_MAP.values())
+        for device in self._floor_plan_devices():
+            semantic = self._semantic_device_for_mapped_device(device)
+            if semantic in allowed_semantics:
+                controllable.append(device)
+        return controllable
+
+    def _registry_seed_from_active_floor_plan(self) -> list:
+        registry = []
+        seen = set()
+        for device in self._switchable_floor_plan_devices():
+            semantic = self._semantic_device_for_mapped_device(device)
+            name = str(device.get("name") or device.get("id") or device.get("entity_id") or "").strip()
+            device_id = _safe_device_id(device.get("id") or device.get("entity_id"), name)
+            if not name or not device_id or device_id in seen:
+                continue
+            item = {
+                "id": device_id,
+                "name": name,
+                "type": _canonical_registry_device_type(device.get("type") or device.get("device_type") or "", semantic),
+                "protocol": str(device.get("protocol") or "simulated").strip() or "simulated",
+            }
+            area = str(device.get("area") or "").strip()
+            area_name = str(device.get("areaName") or device.get("roomName") or "").strip()
+            if area:
+                item["area"] = area
+            if area_name:
+                item["areaName"] = area_name
+            registry.append(item)
+            seen.add(device_id)
+        return registry
 
     def _floor_plan_area_aliases(self) -> dict:
         mapping = self._active_floor_plan_mapping() or {}
@@ -4339,6 +4418,116 @@ def voice_feedback():
         )
 
     return jsonify({"status": "success", "record": record})
+
+# ==================== MCP 集成 ====================
+
+try:
+    import threading
+    import socket
+
+    from core.mcp.handlers import register_agent_instance, get_tool_handler
+    from core.mcp.server import mcp_server
+
+    _mcp_integrated = False
+    _mcp_thread: threading.Thread | None = None
+    _mcp_port: int = 0
+
+    def _run_mcp_stdio_server():
+        """后台线程中运行 MCP stdio Server（Claude Desktop / Cursor 使用）。"""
+        import asyncio
+        from mcp.server.stdio import stdio_server
+        asyncio.run(_stdio_serve())
+
+    async def _stdio_serve():
+        async with stdio_server() as (read_stream, write_stream):
+            await mcp_server.run(
+                read_stream,
+                write_stream,
+                mcp_server.create_initialization_options(),
+            )
+
+    def _integrate_mcp(hm_agent):
+        """将 HomeMind Agent 注入 MCP Server，使 MCP 工具可调用真实逻辑。"""
+        global _mcp_integrated, _mcp_thread, _mcp_port
+        if _mcp_integrated:
+            return
+        register_agent_instance(hm_agent)
+        _mcp_integrated = True
+        _mcp_thread = threading.Thread(target=_run_mcp_stdio_server, daemon=True)
+        _mcp_thread.start()
+        print("[MCP] stdio Server 已在后台线程启动（Claude Desktop / Cursor 使用）")
+        print("[MCP] Claude Desktop 配置: python -m main mcp")
+
+    @app.route("/mcp/call", methods=["POST"])
+    def mcp_call():
+        """直接调用 MCP 工具（JSON-RPC 风格 REST 端点）。"""
+        data = request.get_json(silent=True) or {}
+        tool_name = data.get("tool", "")
+        arguments = data.get("arguments", {})
+        if not tool_name:
+            return jsonify({"error": "missing 'tool' field"}), 400
+        handler = get_tool_handler(tool_name)
+        if handler is None:
+            return jsonify({"error": f"unknown tool: {tool_name}"}), 404
+        if not _mcp_integrated:
+            return jsonify({"error": "MCP not integrated yet"}), 503
+        import asyncio
+        try:
+            result = asyncio.get_event_loop().run_until_complete(handler(arguments))
+            return jsonify({"result": result})
+        except Exception as exc:
+            return jsonify({"error": str(exc)}), 500
+
+    @app.route("/mcp/tools", methods=["GET"])
+    def mcp_tools():
+        """列出所有可用的 MCP 工具（调试端点）。"""
+        from core.mcp import HOMEMIND_TOOLS
+        return jsonify({
+            "tools": [
+                {"name": t.name, "description": t.description, "inputSchema": t.inputSchema}
+                for t in HOMEMIND_TOOLS
+            ]
+        })
+
+    @app.route("/mcp/agent-card", methods=["GET"])
+    def mcp_agent_card():
+        """MCP Agent Card（符合 A2A 规范）。"""
+        from core.agent.protocols.a2a import AgentCard
+
+        card = AgentCard(
+            name="HomeMind",
+            description="智能家居 AI Agent，支持设备控制、场景切换、自动化规则",
+            url="http://127.0.0.1:8766",
+            version="1.0.0",
+            capabilities=[
+                "device_control", "scene_management", "automation_rules",
+                "info_query", "rag_memory",
+            ],
+            skills=[
+                {"id": "device_ctrl", "name": "设备控制"},
+                {"id": "scene_switch", "name": "场景切换"},
+                {"id": "rule_create", "name": "创建自动化规则"},
+            ],
+        )
+        return jsonify(card.to_dict())
+
+    @app.route("/mcp/status", methods=["GET"])
+    def mcp_status():
+        """MCP 集成状态。"""
+        return jsonify({
+            "mcp_integrated": _mcp_integrated,
+            "stdio_server_running": _mcp_thread is not None and _mcp_thread.is_alive(),
+            "endpoints": ["/mcp/call", "/mcp/tools", "/mcp/agent-card", "/mcp/status"],
+            "stdio_command": "python -m main mcp",
+        })
+
+    print("[MCP] 路由已注册: /mcp/call, /mcp/tools, /mcp/agent-card, /mcp/status")
+
+except ImportError:
+    def _integrate_mcp(hm_agent):
+        pass
+    print("[MCP] mcp 包未安装，MCP 集成跳过")
+
 # ==================== WebSocket 事件 ====================
 
 @socketio.on("connect")

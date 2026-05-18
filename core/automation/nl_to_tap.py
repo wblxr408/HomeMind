@@ -5,6 +5,8 @@ from __future__ import annotations
 import re
 from typing import Dict, Optional
 
+from core.config import NL_TAP_CONFIG
+
 
 class NLToTAPConverter:
     """Convert simple natural language automation requests into TAP rules."""
@@ -59,7 +61,7 @@ class NLToTAPConverter:
             "trigger": self._extract_time_condition(text),
             "conditions": [],
             "action": action,
-            "priority": 50,
+            "priority": NL_TAP_CONFIG.get("default_priority", 50),
         }
 
     def parse_scene_creation(self, nl_text: str) -> Optional[Dict]:
@@ -92,7 +94,8 @@ class NLToTAPConverter:
         explicit = self.extract_trigger(text)
         if explicit:
             return explicit
-        return {"type": "time", "at": "08:00"}
+        default_time = NL_TAP_CONFIG.get("default_time", "08:00")
+        return {"type": "time", "at": default_time}
 
     def extract_trigger(self, text: str) -> Optional[Dict]:
         for pattern in self.HOLIDAY_PATTERNS:

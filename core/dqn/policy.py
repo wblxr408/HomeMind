@@ -24,6 +24,7 @@ except Exception as exc:  # pragma: no cover - depends on local torch runtime
     TORCH_AVAILABLE = False
     TORCH_IMPORT_ERROR = exc
 
+from core.config import DQN_CONFIG, DQN_REWARDS
 from core.security import get_encrypted_storage
 
 logger = logging.getLogger(__name__)
@@ -44,27 +45,31 @@ SCENES = {
 }
 
 REWARD_MAP = {
-    "接受": 1.0,
-    "忽略": 0.0,
-    "拒绝": -0.5,
-    "纠正": -1.0,
+    "accept": DQN_REWARDS.get("accept", 1.0),
+    "ignore": DQN_REWARDS.get("ignore", 0.0),
+    "reject": DQN_REWARDS.get("reject", -0.5),
+    "correct": DQN_REWARDS.get("correct", -1.0),
+    "接受": DQN_REWARDS.get("accept", 1.0),
+    "忽略": DQN_REWARDS.get("ignore", 0.0),
+    "拒绝": DQN_REWARDS.get("reject", -0.5),
+    "纠正": DQN_REWARDS.get("correct", -1.0),
 }
 
 
 REWARD_ALIASES = {
     **REWARD_MAP,
-    "\u63a5\u53d7": 1.0,
-    "\u5ffd\u7565": 0.0,
-    "\u62d2\u7edd": -0.5,
-    "\u7ea0\u6b63": -1.0,
-    "accepted": 1.0,
-    "accept": 1.0,
-    "ignored": 0.0,
-    "ignore": 0.0,
-    "rejected": -0.5,
-    "reject": -0.5,
-    "corrected": -1.0,
-    "change": -1.0,
+    "\u63a5\u53d7": DQN_REWARDS.get("accept", 1.0),
+    "\u5ffd\u7565": DQN_REWARDS.get("ignore", 0.0),
+    "\u62d2\u7edd": DQN_REWARDS.get("reject", -0.5),
+    "\u7ea0\u6b63": DQN_REWARDS.get("correct", -1.0),
+    "accepted": DQN_REWARDS.get("accept", 1.0),
+    "accept": DQN_REWARDS.get("accept", 1.0),
+    "ignored": DQN_REWARDS.get("ignore", 0.0),
+    "ignore": DQN_REWARDS.get("ignore", 0.0),
+    "rejected": DQN_REWARDS.get("reject", -0.5),
+    "reject": DQN_REWARDS.get("reject", -0.5),
+    "corrected": DQN_REWARDS.get("correct", -1.0),
+    "change": DQN_REWARDS.get("correct", -1.0),
 }
 
 
@@ -187,20 +192,22 @@ class DQNPolicy:
     """Double DQN policy with synthetic cold-start data and incremental updates."""
 
     def __init__(self, model_dir: str = "models", seed: int = 42):
+        cfg = DQN_CONFIG
         self.state_dim = STATE_DIM
         self.action_dim = ACTION_DIM
         self.q_net = QNetwork(seed=seed, state_dim=self.state_dim, action_dim=self.action_dim)
         self.target_net = QNetwork(seed=seed, state_dim=self.state_dim, action_dim=self.action_dim)
         self._sync_target()
         self.replay = ReplayBuffer()
-        self.epsilon = 0.3
-        self.epsilon_min = 0.05
-        self.gamma = 0.95
-        self.lr = 0.001
+        self.epsilon = cfg.get("epsilon_start", 0.30)
+        self.epsilon_min = cfg.get("epsilon_min", 0.05)
+        self.gamma = cfg.get("gamma", 0.95)
+        self.lr = cfg.get("lr", 0.001)
         self.optimizer = optim.Adam(self.q_net.parameters(), lr=self.lr) if TORCH_AVAILABLE else None
         self.update_counter = 0
-        self.update_freq = 50
-        self.target_sync_freq = 250
+        self.update_freq = cfg.get("update_freq", 50)
+        self.target_sync_freq = cfg.get("target_sync_freq", 250)
+        self.batch_size = cfg.get("batch_size", 16)
         self.model_dir = model_dir
         self._storage = get_encrypted_storage()
         self.last_feedback_event: Dict[str, Any] = {}
@@ -323,7 +330,7 @@ class DQNPolicy:
             optimizer = optim.Adam(self.q_net.parameters(), lr=getattr(self, "lr", 0.001))
             self.optimizer = optimizer
 
-        batch = self.replay.sample(16)
+        batch = self.replay.sample(self.batch_size)
         if not batch:
             summary = self._learning_summary("skipped", trigger, reason="empty_replay")
             self.last_update_summary = summary
@@ -365,7 +372,7 @@ class DQNPolicy:
 
     def _numpy_light_update(self, trigger: str = "incremental") -> Dict[str, Any]:
         """Fallback update used only when PyTorch cannot be imported."""
-        batch = self.replay.sample(16)
+        batch = self.replay.sample(self.batch_size)
         if not batch:
             summary = self._learning_summary("skipped", trigger, reason="empty_replay")
             self.last_update_summary = summary

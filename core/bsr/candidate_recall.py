@@ -129,7 +129,12 @@ class BSRecall:
                 return results
 
             query_emb = encode(query)
-            sims = np.dot(action_embs, query_emb)
+            if query_emb.ndim == 1:
+                query_emb = query_emb.reshape(1, -1)
+            doc_embs = action_embs
+            if doc_embs.ndim == 1:
+                doc_embs = doc_embs.reshape(1, -1)
+            sims = np.dot(doc_embs, query_emb.T).flatten()
             top_indices = np.argsort(sims)[-4:][::-1]
 
             for idx in top_indices:

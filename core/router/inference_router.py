@@ -5,6 +5,7 @@ from __future__ import annotations
 import re
 from typing import Any, Dict, List, Optional
 
+from core.config import ROUTER_THRESHOLDS, ROUTER_EXPLICIT_PATTERNS
 from core.safety import detect_safety_sensitive_request
 
 
@@ -45,13 +46,21 @@ class InferenceRouter:
 
     def __init__(
         self,
-        local_threshold: float = 0.85,
-        cloud_threshold: float = 0.55,
+        local_threshold: float = None,
+        cloud_threshold: float = None,
         explicit_patterns: Optional[List[str]] = None,
     ):
-        self.local_threshold = local_threshold
-        self.cloud_threshold = cloud_threshold
-        patterns = explicit_patterns or [
+        self.local_threshold = (
+            local_threshold
+            if local_threshold is not None
+            else ROUTER_THRESHOLDS.get("local", 0.85)
+        )
+        self.cloud_threshold = (
+            cloud_threshold
+            if cloud_threshold is not None
+            else ROUTER_THRESHOLDS.get("cloud", 0.55)
+        )
+        patterns = explicit_patterns or ROUTER_EXPLICIT_PATTERNS or [
             r"^(打开|关闭|调高|调低|调亮|调暗|切换|查看|查询|设置)",
             r"(睡眠模式|待客模式|离家模式|观影模式|起床模式|回家模式|工作模式|早安模式|晚归模式)",
             r"(空调|灯光|电视|风扇|窗户|音响|热水器)",

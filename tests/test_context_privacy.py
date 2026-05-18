@@ -24,6 +24,7 @@ class ContextPersistenceTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         os.environ["HOMEMIND_STORAGE_KEY"] = "test-storage-key"
+        os.environ["LLM_BACKEND"] = "mock"
 
     def setUp(self):
         _cleanup()

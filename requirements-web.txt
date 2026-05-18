@@ -1,4 +1,4 @@
-﻿# HomeMind 依赖
+# HomeMind 依赖
 
 # 核心依赖
 numpy>=1.24.0
@@ -31,3 +31,19 @@ cryptography>=41.0.0  # 加密存储（DQN策略、知识库备份）
 # Voice recognition (optional, requires faster-whisper for server-side)
 # faster-whisper  # Server-side transcription (future)
 vosk>=0.3.45  # Lightweight local ASR for edge devices
+
+# ── 架构升级新增依赖 ────────────────────────────────────────────────────────
+
+# MCP 双向集成
+mcp>=1.27.0  # Model Context Protocol Python SDK
+
+# 分层 KV（L2 温存储）
+aiosqlite>=0.20.0  # 异步 SQLite
+
+# 上下文压缩
+tiktoken>=0.7.0  # Token 计数（精确预算管理）
+
+# 分布式通信（局域网发现）
+zeroconf>=0.148.0  # mDNS/DNS-SD 服务发现
+websockets>=12.0   # WebSocket 长连接
+aiohttp>=3.9.0     # 异步 HTTP Client（Mesh 传输回退）

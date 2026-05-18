@@ -81,6 +81,15 @@ class HomeMindAgent:
         self._simulator: Optional[HomeSimulator] = None
         self._last_dqn_action: Optional[int] = None
         self._restore_persisted_state()
+
+        # 注册到 MCP Server（使 MCP 工具可调用本 Agent）
+        try:
+            from core.mcp.handlers import register_agent_instance
+            register_agent_instance(self)
+            logger.info("MCP Server: Agent 已注册")
+        except ImportError:
+            logger.warning("MCP package not installed; MCP integration skipped")
+
         logger.info("HomeMind 初始化完成")
 
     def attach_simulator(self, sim: HomeSimulator):
@@ -624,6 +633,38 @@ def _llm_first_process(self: HomeMindAgent, user_input: str) -> str:
 HomeMindAgent.process = _llm_first_process
 
 
+def mcp_serve():
+    """以 MCP Server (stdio transport) 方式运行 HomeMind。
+
+    使用方式（Claude Desktop / Cursor 配置）:
+      {
+        "mcpServers": {
+          "homemind": {
+            "command": "python",
+            "args": ["-m", "main", "mcp"]
+          }
+        }
+      }
+    """
+    import asyncio
+    from mcp.server.stdio import stdio_server
+    from core.mcp.server import mcp_server
+
+    async def run():
+        agent = HomeMindAgent()
+        from core.mcp.handlers import register_agent_instance
+        register_agent_instance(agent)
+        logger.info("MCP Server 启动（stdio transport）")
+        async with stdio_server() as (read_stream, write_stream):
+            await mcp_server.run(
+                read_stream,
+                write_stream,
+                mcp_server.create_initialization_options(),
+            )
+
+    asyncio.run(run())
+
+
 def run_cli():
     """Start the interactive CLI agent."""
     agent = HomeMindAgent()
@@ -662,10 +703,13 @@ def run(argv: Optional[list[str]] = None):
         help="运行模式: simulated=模拟设备, real=真实设备",
     )
     parser.add_argument("--cli", action="store_true", help="启动交互式 CLI，而不是 Web 服务")
+    parser.add_argument("command", nargs="?", choices=["mcp"], help="子命令: mcp=启动 MCP Server")
     args = parser.parse_args(argv)
 
     if args.cli:
         return run_cli()
+    if args.command == "mcp":
+        return mcp_serve()
 
     os.environ["HOMEMIND_MODE"] = args.mode
 

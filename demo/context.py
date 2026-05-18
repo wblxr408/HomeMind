@@ -16,6 +16,7 @@ class HomeContext:
     members_home: int = 1
     day_of_week: int = 0
     last_scene: int = -1
+    current_scene: str = ""  # 当前激活的场景名称
     devices: Dict[str, str] = field(default_factory=lambda: {
         "空调": "关", "灯光": "关", "电视": "关",
         "热水器": "关", "音响": "关", "窗户": "关", "风扇": "关",

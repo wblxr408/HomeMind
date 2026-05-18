@@ -18,11 +18,14 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Iterable, Optional, Tuple
 
+from core.config import VOICE_CONFIG
+
 logger = logging.getLogger(__name__)
 
 
-DEFAULT_ZH_MODEL = Path("models/asr/vosk-model-small-cn-0.22")
-DEFAULT_EN_MODEL = Path("models/asr/vosk-model-small-en-us-0.15")
+DEFAULT_ZH_MODEL = Path(VOICE_CONFIG.get("vosk_zh_model", "models/asr/vosk-model-small-cn-0.22"))
+DEFAULT_EN_MODEL = Path(VOICE_CONFIG.get("vosk_en_model", "models/asr/vosk-model-small-en-us-0.15"))
+DEFAULT_SAMPLE_RATE = VOICE_CONFIG.get("sample_rate", 16000)
 
 
 @dataclass
@@ -54,8 +57,10 @@ class VoskASR:
         self,
         zh_model_path: Optional[str] = None,
         en_model_path: Optional[str] = None,
-        sample_rate: int = 16000,
+        sample_rate: int = None,
     ):
+        if sample_rate is None:
+            sample_rate = DEFAULT_SAMPLE_RATE
         self.sample_rate = sample_rate
         self.model_paths = {
             "zh": Path(zh_model_path or os.getenv("HOMEMIND_VOSK_ZH_MODEL", DEFAULT_ZH_MODEL)),

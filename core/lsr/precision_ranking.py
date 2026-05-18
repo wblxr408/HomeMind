@@ -11,13 +11,16 @@ from typing import Any, Dict, List
 
 import numpy as np
 
+from core.config import LSR_CONFIG
+
 
 class LSRecify:
     """Lightweight ranking model for smart-home action candidates."""
 
     def __init__(self):
-        self.weights = np.array([0.30, 0.10, 0.05, 0.20, 0.35], dtype=np.float32)
-        self.bias = 0.1
+        cfg = LSR_CONFIG.get("weights", [0.30, 0.10, 0.05, 0.20, 0.35])
+        self.weights = np.array(cfg, dtype=np.float32)
+        self.bias = LSR_CONFIG.get("bias", 0.1)
 
     def _feature_extract(self, query: str, candidate: Dict[str, Any], context, kb=None) -> np.ndarray:
         """Extract 5 ranking features for a candidate action."""
@@ -295,15 +298,18 @@ class LSRecify:
             score = float(np.dot(features, self.weights) + self.bias)
 
             action = cand.get("action", "")
+            scene_bonus = LSR_CONFIG.get("explicit_scene_bonus", 0.35)
+            device_bonus = LSR_CONFIG.get("explicit_device_bonus", 0.45)
+            device_penalty_val = LSR_CONFIG.get("explicit_device_penalty", 0.35)
             if explicit_scene_action:
                 if action == explicit_scene_action:
-                    score += 0.35
+                    score += scene_bonus
                 elif action.startswith("切换") and action != explicit_scene_action:
-                    score -= 0.35
+                    score -= scene_bonus
 
             if explicit_device_action:
                 if action == explicit_device_action:
-                    score += 0.45
+                    score += device_bonus
                 else:
                     score -= self._explicit_device_penalty(explicit_device_action, action)
 

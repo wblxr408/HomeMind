@@ -495,7 +495,7 @@ class WebApiSystemTests(unittest.TestCase):
     def test_device_registry_crud_and_control(self):
         listed = self.client.get("/api/devices")
         self.assertEqual(listed.status_code, 200)
-        self.assertIn("light", [device["id"] for device in listed.get_json()["devices"]])
+        self.assertIn("light.living_room_main", [device["id"] for device in listed.get_json()["devices"]])
 
         created = self.client.post(
             "/api/devices",
@@ -556,9 +556,12 @@ class WebApiSystemTests(unittest.TestCase):
     def test_device_registry_rejects_duplicate_ids_and_id_rename(self):
         created = self.client.post(
             "/api/devices",
-            json={"id": "light", "name": "\u91cd\u590d\u706f", "type": "light"},
+            json={"id": "light.living_room_main", "name": "\u91cd\u590d\u706f", "type": "light"},
         )
-        renamed = self.client.put("/api/devices/light", json={"id": "light_2", "name": "\u706f\u5149"})
+        renamed = self.client.put(
+            "/api/devices/light.living_room_main",
+            json={"id": "light_2", "name": "\u706f\u5149"},
+        )
 
         self.assertEqual(created.status_code, 409)
         self.assertEqual(renamed.status_code, 400)

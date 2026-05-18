@@ -177,6 +177,12 @@ python main.py
 ### 4. 运行 Web
 
 ```bash
+python main.py --mode simulated --host 127.0.0.1 --port 5000
+```
+
+兼容旧脚本的启动方式仍保留：
+
+```bash
 python run_web.py --mode simulated --port 5000
 ```
 
@@ -367,12 +373,12 @@ HomeMind 当前采用的是：
 - SVG 户型图、设备映射和设备 CRUD
 - 本地敏感数据加密与韧性恢复
 
-当前全量自动化测试结果：`99 passed`。
+当前主链代码目录 `tests/` 的全量自动化测试结果：`152 passed`。
 
 运行：
 
 ```bash
-python -m pytest -q
+python -m pytest -q tests
 ```
 
 ---

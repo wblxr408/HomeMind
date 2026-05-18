@@ -10,6 +10,8 @@ import logging
 import os
 from typing import List, Union
 
+from core.config import EMBEDDING_CONFIG
+
 logger = logging.getLogger(__name__)
 
 DEFAULT_MODEL_NAME = "all-MiniLM-L6-v2"

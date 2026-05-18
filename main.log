@@ -1,4 +1,8 @@
+<<<<<<< Updated upstream
 This is pdfTeX, Version 3.141592653-2.6-1.40.25 (MiKTeX 24.1) (preloaded format=pdflatex 2026.4.9)  30 APR 2026 11:32
+=======
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (MiKTeX 24.1) (preloaded format=pdflatex 2026.4.9)  3 MAY 2026 22:01
+>>>>>>> Stashed changes
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -559,4 +563,2119 @@ Package caption Info: hyperref package is loaded.
 Package caption Info: longtable package is loaded.
  (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/caption\ltcaption.sty
 Package: ltcaption 2021/01/08 v1.4c longtable captions (AR)
+<<<<<<< Updated upstream
 )) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/caption\subcaption.sty
+=======
+)) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/caption\subcaption.sty
+Package: subcaption 2023/07/28 v1.6b Sub-captions (AR)
+Package caption Info: New subtype `subfigure' on input line 238.
+\c@subfigure=\count325
+Package caption Info: New subtype `subtable' on input line 238.
+\c@subtable=\count326
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/float\float.sty
+Package: float 2001/11/08 v1.3d Float enhancements (AL)
+\c@float@type=\count327
+\float@exts=\toks25
+\float@box=\box63
+\@float@everytoks=\toks26
+\@floatcapt=\box64
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/fancyhdr\fancyhdr.sty
+Package: fancyhdr 2025/02/07 v5.2 Extensive control of page headers and footers
+\f@nch@headwidth=\skip63
+\f@nch@offset@elh=\skip64
+\f@nch@offset@erh=\skip65
+\f@nch@offset@olh=\skip66
+\f@nch@offset@orh=\skip67
+\f@nch@offset@elf=\skip68
+\f@nch@offset@erf=\skip69
+\f@nch@offset@olf=\skip70
+\f@nch@offset@orf=\skip71
+\f@nch@height=\skip72
+\f@nch@footalignment=\skip73
+\f@nch@widthL=\skip74
+\f@nch@widthC=\skip75
+\f@nch@widthR=\skip76
+\@temptokenb=\toks27
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/titlesec\titlesec.sty
+Package: titlesec 2025/01/04 v2.17 Sectioning titles
+\ttl@box=\box65
+\beforetitleunit=\skip77
+\aftertitleunit=\skip78
+\ttl@plus=\dimen197
+\ttl@minus=\dimen198
+\ttl@toksa=\toks28
+\titlewidth=\dimen199
+\titlewidthlast=\dimen256
+\titlewidthfirst=\dimen257
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amsmath.sty
+Package: amsmath 2023/05/13 v2.17o AMS math features
+\@mathmargin=\skip79
+
+For additional information on amsmath, use the `?' option.
+(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amstext.sty
+Package: amstext 2021/08/26 v2.01 AMS text
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amsgen.sty
+File: amsgen.sty 1999/11/30 v2.0 generic functions
+\@emptytoks=\toks29
+\ex@=\dimen258
+)) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amsbsy.sty
+Package: amsbsy 1999/11/29 v1.2d Bold Symbols
+\pmbraise@=\dimen259
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amsopn.sty
+Package: amsopn 2022/04/08 v2.04 operator names
+)
+\inf@bad=\count328
+LaTeX Info: Redefining \frac on input line 234.
+\uproot@=\count329
+\leftroot@=\count330
+LaTeX Info: Redefining \overline on input line 399.
+LaTeX Info: Redefining \colon on input line 410.
+\classnum@=\count331
+\DOTSCASE@=\count332
+LaTeX Info: Redefining \ldots on input line 496.
+LaTeX Info: Redefining \dots on input line 499.
+LaTeX Info: Redefining \cdots on input line 620.
+\Mathstrutbox@=\box66
+\strutbox@=\box67
+LaTeX Info: Redefining \big on input line 722.
+LaTeX Info: Redefining \Big on input line 723.
+LaTeX Info: Redefining \bigg on input line 724.
+LaTeX Info: Redefining \Bigg on input line 725.
+\big@size=\dimen260
+LaTeX Font Info:    Redeclaring font encoding OML on input line 743.
+LaTeX Font Info:    Redeclaring font encoding OMS on input line 744.
+\macc@depth=\count333
+LaTeX Info: Redefining \bmod on input line 905.
+LaTeX Info: Redefining \pmod on input line 910.
+LaTeX Info: Redefining \smash on input line 940.
+LaTeX Info: Redefining \relbar on input line 970.
+LaTeX Info: Redefining \Relbar on input line 971.
+\c@MaxMatrixCols=\count334
+\dotsspace@=\muskip18
+\c@parentequation=\count335
+\dspbrk@lvl=\count336
+\tag@help=\toks30
+\row@=\count337
+\column@=\count338
+\maxfields@=\count339
+\andhelp@=\toks31
+\eqnshift@=\dimen261
+\alignsep@=\dimen262
+\tagshift@=\dimen263
+\tagwidth@=\dimen264
+\totwidth@=\dimen265
+\lineht@=\dimen266
+\@envbody=\toks32
+\multlinegap=\skip80
+\multlinetaggap=\skip81
+\mathdisplay@stack=\toks33
+LaTeX Info: Redefining \[ on input line 2953.
+LaTeX Info: Redefining \] on input line 2954.
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\amssymb.sty
+Package: amssymb 2013/01/14 v3.01 AMS font symbols
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\amsfonts.sty
+Package: amsfonts 2013/01/14 v3.01 Basic AMSFonts support
+\symAMSa=\mathgroup4
+\symAMSb=\mathgroup5
+LaTeX Font Info:    Redeclaring math symbol \hbar on input line 98.
+LaTeX Font Info:    Overwriting math alphabet `\mathfrak' in version `bold'
+(Font)                  U/euf/m/n --> U/euf/b/n on input line 106.
+)) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/pgf/frontendlayer\tikz.sty (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/pgf/basiclayer\pgf.sty (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/pgf/utilities\pgfrcs.sty (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/utilities\pgfutil-common.tex
+\pgfutil@everybye=\toks34
+\pgfutil@tempdima=\dimen267
+\pgfutil@tempdimb=\dimen268
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/utilities\pgfutil-latex.def
+\pgfutil@abb=\box68
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/utilities\pgfrcs.code.tex (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf\pgf.revision.tex)
+Package: pgfrcs 2023-01-15 v3.1.10 (3.1.10)
+))
+Package: pgf 2023-01-15 v3.1.10 (3.1.10)
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/pgf/basiclayer\pgfcore.sty (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/pgf/systemlayer\pgfsys.sty (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/systemlayer\pgfsys.code.tex
+Package: pgfsys 2023-01-15 v3.1.10 (3.1.10)
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/utilities\pgfkeys.code.tex
+\pgfkeys@pathtoks=\toks35
+\pgfkeys@temptoks=\toks36
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/utilities\pgfkeyslibraryfiltered.code.tex
+\pgfkeys@tmptoks=\toks37
+))
+\pgf@x=\dimen269
+\pgf@y=\dimen270
+\pgf@xa=\dimen271
+\pgf@ya=\dimen272
+\pgf@xb=\dimen273
+\pgf@yb=\dimen274
+\pgf@xc=\dimen275
+\pgf@yc=\dimen276
+\pgf@xd=\dimen277
+\pgf@yd=\dimen278
+\w@pgf@writea=\write3
+\r@pgf@reada=\read2
+\c@pgf@counta=\count340
+\c@pgf@countb=\count341
+\c@pgf@countc=\count342
+\c@pgf@countd=\count343
+\t@pgf@toka=\toks38
+\t@pgf@tokb=\toks39
+\t@pgf@tokc=\toks40
+\pgf@sys@id@count=\count344
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/systemlayer\pgf.cfg
+File: pgf.cfg 2023-01-15 v3.1.10 (3.1.10)
+)
+Driver file for pgf: pgfsys-pdftex.def
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/systemlayer\pgfsys-pdftex.def
+File: pgfsys-pdftex.def 2023-01-15 v3.1.10 (3.1.10)
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/systemlayer\pgfsys-common-pdf.def
+File: pgfsys-common-pdf.def 2023-01-15 v3.1.10 (3.1.10)
+))) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/systemlayer\pgfsyssoftpath.code.tex
+File: pgfsyssoftpath.code.tex 2023-01-15 v3.1.10 (3.1.10)
+\pgfsyssoftpath@smallbuffer@items=\count345
+\pgfsyssoftpath@bigbuffer@items=\count346
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/systemlayer\pgfsysprotocol.code.tex
+File: pgfsysprotocol.code.tex 2023-01-15 v3.1.10 (3.1.10)
+)) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcore.code.tex
+Package: pgfcore 2023-01-15 v3.1.10 (3.1.10)
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmath.code.tex (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathutil.code.tex) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathparser.code.tex
+\pgfmath@dimen=\dimen279
+\pgfmath@count=\count347
+\pgfmath@box=\box69
+\pgfmath@toks=\toks41
+\pgfmath@stack@operand=\toks42
+\pgfmath@stack@operation=\toks43
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfunctions.code.tex) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfunctions.basic.code.tex) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfunctions.trigonometric.code.tex) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfunctions.random.code.tex) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfunctions.comparison.code.tex) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfunctions.base.code.tex) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfunctions.round.code.tex) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfunctions.misc.code.tex) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfunctions.integerarithmetics.code.tex) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathcalc.code.tex) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfloat.code.tex
+\c@pgfmathroundto@lastzeros=\count348
+)) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfint.code.tex) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcorepoints.code.tex
+File: pgfcorepoints.code.tex 2023-01-15 v3.1.10 (3.1.10)
+\pgf@picminx=\dimen280
+\pgf@picmaxx=\dimen281
+\pgf@picminy=\dimen282
+\pgf@picmaxy=\dimen283
+\pgf@pathminx=\dimen284
+\pgf@pathmaxx=\dimen285
+\pgf@pathminy=\dimen286
+\pgf@pathmaxy=\dimen287
+\pgf@xx=\dimen288
+\pgf@xy=\dimen289
+\pgf@yx=\dimen290
+\pgf@yy=\dimen291
+\pgf@zx=\dimen292
+\pgf@zy=\dimen293
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcorepathconstruct.code.tex
+File: pgfcorepathconstruct.code.tex 2023-01-15 v3.1.10 (3.1.10)
+\pgf@path@lastx=\dimen294
+\pgf@path@lasty=\dimen295
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcorepathusage.code.tex
+File: pgfcorepathusage.code.tex 2023-01-15 v3.1.10 (3.1.10)
+\pgf@shorten@end@additional=\dimen296
+\pgf@shorten@start@additional=\dimen297
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcorescopes.code.tex
+File: pgfcorescopes.code.tex 2023-01-15 v3.1.10 (3.1.10)
+\pgfpic=\box70
+\pgf@hbox=\box71
+\pgf@layerbox@main=\box72
+\pgf@picture@serial@count=\count349
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcoregraphicstate.code.tex
+File: pgfcoregraphicstate.code.tex 2023-01-15 v3.1.10 (3.1.10)
+\pgflinewidth=\dimen298
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcoretransformations.code.tex
+File: pgfcoretransformations.code.tex 2023-01-15 v3.1.10 (3.1.10)
+\pgf@pt@x=\dimen299
+\pgf@pt@y=\dimen300
+\pgf@pt@temp=\dimen301
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcorequick.code.tex
+File: pgfcorequick.code.tex 2023-01-15 v3.1.10 (3.1.10)
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcoreobjects.code.tex
+File: pgfcoreobjects.code.tex 2023-01-15 v3.1.10 (3.1.10)
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcorepathprocessing.code.tex
+File: pgfcorepathprocessing.code.tex 2023-01-15 v3.1.10 (3.1.10)
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcorearrows.code.tex
+File: pgfcorearrows.code.tex 2023-01-15 v3.1.10 (3.1.10)
+\pgfarrowsep=\dimen302
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcoreshade.code.tex
+File: pgfcoreshade.code.tex 2023-01-15 v3.1.10 (3.1.10)
+\pgf@max=\dimen303
+\pgf@sys@shading@range@num=\count350
+\pgf@shadingcount=\count351
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcoreimage.code.tex
+File: pgfcoreimage.code.tex 2023-01-15 v3.1.10 (3.1.10)
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcoreexternal.code.tex
+File: pgfcoreexternal.code.tex 2023-01-15 v3.1.10 (3.1.10)
+\pgfexternal@startupbox=\box73
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcorelayers.code.tex
+File: pgfcorelayers.code.tex 2023-01-15 v3.1.10 (3.1.10)
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcoretransparency.code.tex
+File: pgfcoretransparency.code.tex 2023-01-15 v3.1.10 (3.1.10)
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcorepatterns.code.tex
+File: pgfcorepatterns.code.tex 2023-01-15 v3.1.10 (3.1.10)
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcorerdf.code.tex
+File: pgfcorerdf.code.tex 2023-01-15 v3.1.10 (3.1.10)
+))) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/modules\pgfmoduleshapes.code.tex
+File: pgfmoduleshapes.code.tex 2023-01-15 v3.1.10 (3.1.10)
+\pgfnodeparttextbox=\box74
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/modules\pgfmoduleplot.code.tex
+File: pgfmoduleplot.code.tex 2023-01-15 v3.1.10 (3.1.10)
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/pgf/compatibility\pgfcomp-version-0-65.sty
+Package: pgfcomp-version-0-65 2023-01-15 v3.1.10 (3.1.10)
+\pgf@nodesepstart=\dimen304
+\pgf@nodesepend=\dimen305
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/pgf/compatibility\pgfcomp-version-1-18.sty
+Package: pgfcomp-version-1-18 2023-01-15 v3.1.10 (3.1.10)
+)) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/pgf/utilities\pgffor.sty (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/pgf/utilities\pgfkeys.sty (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/utilities\pgfkeys.code.tex)) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/pgf/math\pgfmath.sty (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmath.code.tex)) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/utilities\pgffor.code.tex
+Package: pgffor 2023-01-15 v3.1.10 (3.1.10)
+\pgffor@iter=\dimen306
+\pgffor@skip=\dimen307
+\pgffor@stack=\toks44
+\pgffor@toks=\toks45
+)) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/frontendlayer/tikz\tikz.code.tex
+Package: tikz 2023-01-15 v3.1.10 (3.1.10)
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/libraries\pgflibraryplothandlers.code.tex
+File: pgflibraryplothandlers.code.tex 2023-01-15 v3.1.10 (3.1.10)
+\pgf@plot@mark@count=\count352
+\pgfplotmarksize=\dimen308
+)
+\tikz@lastx=\dimen309
+\tikz@lasty=\dimen310
+\tikz@lastxsaved=\dimen311
+\tikz@lastysaved=\dimen312
+\tikz@lastmovetox=\dimen313
+\tikz@lastmovetoy=\dimen314
+\tikzleveldistance=\dimen315
+\tikzsiblingdistance=\dimen316
+\tikz@figbox=\box75
+\tikz@figbox@bg=\box76
+\tikz@tempbox=\box77
+\tikz@tempbox@bg=\box78
+\tikztreelevel=\count353
+\tikznumberofchildren=\count354
+\tikznumberofcurrentchild=\count355
+\tikz@fig@count=\count356
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/modules\pgfmodulematrix.code.tex
+File: pgfmodulematrix.code.tex 2023-01-15 v3.1.10 (3.1.10)
+\pgfmatrixcurrentrow=\count357
+\pgfmatrixcurrentcolumn=\count358
+\pgf@matrix@numberofcolumns=\count359
+)
+\tikz@expandcount=\count360
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/frontendlayer/tikz/libraries\tikzlibrarytopaths.code.tex
+File: tikzlibrarytopaths.code.tex 2023-01-15 v3.1.10 (3.1.10)
+))) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/frontendlayer/tikz/libraries\tikzlibraryfit.code.tex
+File: tikzlibraryfit.code.tex 2023-01-15 v3.1.10 (3.1.10)
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/frontendlayer/tikz/libraries\tikzlibrarypositioning.code.tex
+File: tikzlibrarypositioning.code.tex 2023-01-15 v3.1.10 (3.1.10)
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tcolorbox\tcolorbox.sty
+Package: tcolorbox 2024/01/10 version 6.2.0 text color boxes
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tools\verbatim.sty
+Package: verbatim 2023-11-06 v1.5v LaTeX2e package for verbatim enhancements
+\every@verbatim=\toks46
+\verbatim@line=\toks47
+\verbatim@in@stream=\read3
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/environ\environ.sty
+Package: environ 2014/05/04 v0.3 A new way to define environments
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/trimspaces\trimspaces.sty
+Package: trimspaces 2009/09/17 v1.1 Trim spaces around a token list
+))
+\tcb@titlebox=\box79
+\tcb@upperbox=\box80
+\tcb@lowerbox=\box81
+\tcb@phantombox=\box82
+\c@tcbbreakpart=\count361
+\c@tcblayer=\count362
+\c@tcolorbox@number=\count363
+\l__tcobox_tmpa_box=\box83
+\l__tcobox_tmpa_dim=\dimen317
+\tcb@temp=\box84
+\tcb@temp=\box85
+\tcb@temp=\box86
+\tcb@temp=\box87
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tcolorbox\tcbraster.code.tex
+Library (tcolorbox): 'tcbraster.code.tex' version '6.2.0'
+\c@tcbrastercolumn=\count364
+\c@tcbrasterrow=\count365
+\c@tcbrasternum=\count366
+\c@tcbraster=\count367
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tcolorbox\tcbskins.code.tex
+Library (tcolorbox): 'tcbskins.code.tex' version '6.2.0'
+(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tikzfill\tikzfill.image.sty
+Package: tikzfill.image 2026/03/26 v1.1.0 Image filling library for TikZ
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tikzfill\tikzlibraryfill.image.code.tex
+File: tikzlibraryfill.image.code.tex 2026/03/26 v1.1.0 Image filling library
+\l__tikzfill_tmpa_dim=\dimen318
+\l__tikzfill_tmpb_dim=\dimen319
+\l__tikzfill_img_box=\box88
+)) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tcolorbox\tcbskinsjigsaw.code.tex
+Library (tcolorbox): 'tcbskinsjigsaw.code.tex' version '6.2.0'
+)) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tcolorbox\tcbbreakable.code.tex
+Library (tcolorbox): 'tcbbreakable.code.tex' version '6.2.0'
+(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/pdfcol\pdfcol.sty
+Package: pdfcol 2022-09-21 v1.7 Handle new color stacks for pdfTeX (HO)
+)
+Package pdfcol Info: New color stack `tcb@breakable' = 1 on input line 23.
+\tcb@testbox=\box89
+\tcb@totalupperbox=\box90
+\tcb@totallowerbox=\box91
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tcolorbox\tcbhooks.code.tex
+Library (tcolorbox): 'tcbhooks.code.tex' version '6.2.0'
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tcolorbox\tcbtheorems.code.tex
+Library (tcolorbox): 'tcbtheorems.code.tex' version '6.2.0'
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tcolorbox\tcbfitting.code.tex
+Library (tcolorbox): 'tcbfitting.code.tex' version '6.2.0'
+\tcbfitdim=\dimen320
+\tcb@lowerfitdim=\dimen321
+\tcb@upperfitdim=\dimen322
+\tcb@cur@hbadness=\count368
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tcolorbox\tcblistingsutf8.code.tex
+Library (tcolorbox): 'tcblistingsutf8.code.tex' version '6.2.0'
+(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tcolorbox\tcblistings.code.tex
+Library (tcolorbox): 'tcblistings.code.tex' version '6.2.0'
+(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/listings\listings.sty
+\lst@mode=\count369
+\lst@gtempboxa=\box92
+\lst@token=\toks48
+\lst@length=\count370
+\lst@currlwidth=\dimen323
+\lst@column=\count371
+\lst@pos=\count372
+\lst@lostspace=\dimen324
+\lst@width=\dimen325
+\lst@newlines=\count373
+\lst@lineno=\count374
+\lst@maxwidth=\dimen326
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/listings\lstmisc.sty
+File: lstmisc.sty 2023/02/27 1.9 (Carsten Heinz)
+\c@lstnumber=\count375
+\lst@skipnumbers=\count376
+\lst@framebox=\box93
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/listings\listings.cfg
+File: listings.cfg 2023/02/27 1.9 listings configuration
+))
+Package: listings 2023/02/27 1.9 (Carsten Heinz)
+
+==> First Aid for listings.sty no longer applied!
+    Expected:
+        2024/09/23 1.10c (Carsten Heinz)
+    but found:
+        2023/02/27 1.9 (Carsten Heinz)
+    so I'm assuming it got fixed.
+(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tcolorbox\tcblistingscore.code.tex
+Library (tcolorbox): 'tcblistingscore.code.tex' version '6.2.0'
+(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tcolorbox\tcbprocessing.code.tex
+Library (tcolorbox): 'tcbprocessing.code.tex' version '6.2.0'
+)
+\c@tcblisting=\count377
+)) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/listingsutf8\listingsutf8.sty
+Package: listingsutf8 2019-12-10 v1.5 Allow UTF-8 in listings input (HO)
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/stringenc\stringenc.sty
+Package: stringenc 2019/11/29 v1.12 Convert strings between diff. encodings (HO)
+))) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tcolorbox\tcbexternal.code.tex
+Library (tcolorbox): 'tcbexternal.code.tex' version '6.2.0'
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tcolorbox\tcbmagazine.code.tex
+Library (tcolorbox): 'tcbmagazine.code.tex' version '6.2.0'
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tcolorbox\tcbvignette.code.tex
+Library (tcolorbox): 'tcbvignette.code.tex' version '6.2.0'
+(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/frontendlayer/tikz/libraries\tikzlibraryfadings.code.tex
+File: tikzlibraryfadings.code.tex 2023-01-15 v3.1.10 (3.1.10)
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/pgf/libraries\pgflibraryfadings.code.tex
+File: pgflibraryfadings.code.tex 2023-01-15 v3.1.10 (3.1.10)
+))) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/tcolorbox\tcbposter.code.tex
+Library (tcolorbox): 'tcbposter.code.tex' version '6.2.0'
+))
+Package hyperref Info: Option `colorlinks' set `true' on input line 35.
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/cjk/UTF8\UTF8.enc
+File: UTF8.enc 2021/10/16 4.8.5
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/cjk/UTF8\UTF8.chr
+File: UTF8.chr 2021/10/16 4.8.5
+)
+No file main.aux.
+\openout1 = `main.aux'.
+
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C00/song/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C05/song/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C09/song/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C10/song/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C20/song/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C19/song/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C40/song/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C42/song/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C43/song/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C50/song/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C52/song/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C49/song/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C60/mj/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C61/mj/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C63/mj/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C64/mj/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C65/mj/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C70/song/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C31/song/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C32/song/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C33/song/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C34/song/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C35/song/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C36/song/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C37/song/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C80/song/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C81/song/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C01/song/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C11/song/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C21/song/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C41/song/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for C62/song/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 147.
+LaTeX Font Info:    ... okay on input line 147.
+*geometry* driver: auto-detecting
+*geometry* detected driver: pdftex
+*geometry* verbose mode - [ preamble ] result:
+* driver: pdftex
+* paper: a4paper
+* layout: <same size as paper>
+* layoutoffset:(h,v)=(0.0pt,0.0pt)
+* modes: 
+* h-part:(L,W,R)=(68.28644pt, 460.935pt, 68.28644pt)
+* v-part:(T,H,B)=(68.28644pt, 708.47397pt, 68.28644pt)
+* \paperwidth=597.50787pt
+* \paperheight=845.04684pt
+* \textwidth=460.935pt
+* \textheight=708.47397pt
+* \oddsidemargin=-3.98355pt
+* \evensidemargin=-3.98355pt
+* \topmargin=-40.98355pt
+* \headheight=15.0pt
+* \headsep=25.0pt
+* \topskip=12.0pt
+* \footskip=30.0pt
+* \marginparwidth=35.0pt
+* \marginparsep=10.0pt
+* \columnsep=10.0pt
+* \skip\footins=10.8pt plus 4.0pt minus 2.0pt
+* \hoffset=0.0pt
+* \voffset=0.0pt
+* \mag=1000
+* \@twocolumnfalse
+* \@twosidefalse
+* \@mparswitchfalse
+* \@reversemarginfalse
+* (1in=72.27pt=25.4mm, 1cm=28.453pt)
+
+(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/context/base/mkii\supp-pdf.mkii
+[Loading MPS to PDF converter (version 2006.09.02).]
+\scratchcounter=\count378
+\scratchdimen=\dimen327
+\scratchbox=\box94
+\nofMPsegments=\count379
+\nofMParguments=\count380
+\everyMPshowfont=\toks49
+\MPscratchCnt=\count381
+\MPscratchDim=\dimen328
+\MPnumerator=\count382
+\makeMPintoPDFobject=\count383
+\everyMPtoPDFconversion=\toks50
+) (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/epstopdf-pkg\epstopdf-base.sty
+Package: epstopdf-base 2020-01-24 v2.11 Base part for package epstopdf
+Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 485.
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/00miktex\epstopdf-sys.cfg
+File: epstopdf-sys.cfg 2021/03/18 v2.0 Configuration of epstopdf for MiKTeX
+))
+Package hyperref Info: Link coloring ON on input line 147.
+\@outlinefile=\write4
+\openout4 = `main.out'.
+
+Package caption Info: Begin \AtBeginDocument code.
+Package caption Info: float package is loaded.
+Package caption Info: listings package is loaded.
+Package caption Info: End \AtBeginDocument code.
+\c@lstlisting=\count384
+LaTeX Font Info:    Trying to load font information for C70+rm on input line 153.
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/ctex/fd\c70rm.fd
+File: c70rm.fd 2022/07/14 v2.5.10 Chinese font definition (CTEX)
+)
+LaTeX Font Info:    Trying to load font information for U+msa on input line 164.
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsa.fd
+File: umsa.fd 2013/01/14 v3.01 AMS symbols A
+)
+LaTeX Font Info:    Trying to load font information for U+msb on input line 164.
+ (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsb.fd
+File: umsb.fd 2013/01/14 v3.01 AMS symbols B
+)
+Package CJKpunct Info: use punctuation spaces for family 'rm' with punctstyle (quanjiao) on input line 165.
+
+d:/HomeMind/main.tex:172: Missing endcsname inserted.
+<to be read again> 
+                   å
+l.172 ...6\linewidth]{homemind_images/Logoå›¾.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:172: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: å invalid in file name. Lost: fi ›¾.png.
+l.172 ...6\linewidth]{homemind_images/Logoå›¾.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+d:/HomeMind/main.tex:172: Missing endcsname inserted.
+<to be read again> 
+                   å
+l.172 ...6\linewidth]{homemind_images/Logoå›¾.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:172: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: å invalid in file name. Lost: fi ›¾.png.
+l.172 ...6\linewidth]{homemind_images/Logoå›¾.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+d:/HomeMind/main.tex:172: Missing endcsname inserted.
+<to be read again> 
+                   å
+l.172 ...6\linewidth]{homemind_images/Logoå›¾.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:172: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: å invalid in file name. Lost: fi ›¾.png.
+l.172 ...6\linewidth]{homemind_images/Logoå›¾.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+
+d:/HomeMind/main.tex:172: LaTeX Error: File `homemind_images/Logoå›¾.png' not found.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.172 ...6\linewidth]{homemind_images/Logoå›¾.png}
+                                                  
+I could not locate the file with any of these extensions:
+.pdf,.png,.jpg,.mps,.jpeg,.jbig2,.jb2,.PDF,.PNG,.JPG,.JPEG,.JBIG2,.JB2,.eps
+Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+
+Package caption Warning: The option `hypcap=true' will be ignored for this
+(caption)                particular \caption on input line 173.
+See the caption package documentation for explanation.
+
+
+
+(C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/generic/ctex/zhmap\ctex-zhmap-windows.tex
+File: ctex-zhmap-windows.tex 2022/07/14 v2.5.10 Windows font map loader for pdfTeX and DVIPDFMx (CTEX)
+{C:/Users/wblxr/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}{UGBK.sfd}{Unicode.sfd}) [1
+
+]
+
+[1
+
+]
+
+[2]
+No file main.toc.
+\tf@toc=\write5
+\openout5 = `main.toc'.
+
+
+
+[3
+
+]
+ç¬¬ä¸€ç« 
+
+
+
+pdfTeX warning (ext4): destination with the same identifier (name{page.1}) has been already used, duplicate ignored
+<to be read again> 
+                   \relax 
+l.210 \section{é¡¹ç›®ç›®æ ‡}
+                             [1
+
+
+]
+
+LaTeX Warning: Reference `tab:chapter1-goals' on page 2 undefined on input line 212.
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 228--228
+[]|\C70/rm/m/n/12/90 ^^Z \C70/rm/m/n/12/8f Ç \C70/rm/m/n/12/8b í \C70/rm/m/n/12/8a ^^@ \C70/rm/m/n/12/5f R \C70/rm/m/n/12/4e ^^@ \C70/rm/m/n/12/53 ^^V \C70/rm/m/n/12/5c B ^^F |\C70/rm/m/n/12/20 ^^\|\C70/rm/m/n/12/95 ÷ \C70/rm/m/n/12/5f —
+ []
+
+
+Underfull \hbox (badness 2753) in paragraph at lines 228--228
+\C70/rm/m/n/12/50 < \OT1/cmr/m/n/12 982.98 MB|\C70/rm/m/n/12/ff ^^L| \OT1/cmr/m/n/12 Full Lo-cal +
+ []
+
+
+
+[2]
+d:/HomeMind/main.tex:239: Missing endcsname inserted.
+<to be read again> 
+                   å
+l.239 ...{HomeMindå…³é”®åˆ›æ–°ä¸æŠ€æœ¯ç‰¹å¾.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:239: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: å invalid in file name. Lost: fi …³é”®åˆ›æ–°ä...
+l.239 ...{HomeMindå…³é”®åˆ›æ–°ä¸æŠ€æœ¯ç‰¹å¾.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+d:/HomeMind/main.tex:239: Missing endcsname inserted.
+<to be read again> 
+                   å
+l.239 ...{HomeMindå…³é”®åˆ›æ–°ä¸æŠ€æœ¯ç‰¹å¾.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:239: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: å invalid in file name. Lost: fi …³é”®åˆ›æ–°ä...
+l.239 ...{HomeMindå…³é”®åˆ›æ–°ä¸æŠ€æœ¯ç‰¹å¾.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+d:/HomeMind/main.tex:239: Missing endcsname inserted.
+<to be read again> 
+                   å
+l.239 ...{HomeMindå…³é”®åˆ›æ–°ä¸æŠ€æœ¯ç‰¹å¾.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:239: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: å invalid in file name. Lost: fi …³é”®åˆ›æ–°ä...
+l.239 ...{HomeMindå…³é”®åˆ›æ–°ä¸æŠ€æœ¯ç‰¹å¾.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+
+d:/HomeMind/main.tex:239: LaTeX Error: File `HomeMindå…³é”®åˆ›æ–°ä¸æŠ€æœ¯ç‰¹å¾.png' not found.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.239 ...{HomeMindå…³é”®åˆ›æ–°ä¸æŠ€æœ¯ç‰¹å¾.png}
+                                                  
+I could not locate the file with any of these extensions:
+.pdf,.png,.jpg,.mps,.jpeg,.jbig2,.jb2,.PDF,.PNG,.JPG,.JPEG,.JBIG2,.JB2,.eps
+Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+
+
+[3]
+d:/HomeMind/main.tex:259: Missing endcsname inserted.
+<to be read again> 
+                   ç
+l.259 ...æ™ºèƒ½å®¶å±…æ™ºèƒ½ä½“ç³»ç»Ÿæ€»è§ˆå›¾.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:259: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: ç invalid in file name. Lost: fi «¯ä¾§æ™ºèƒ½å...
+l.259 ...æ™ºèƒ½å®¶å±…æ™ºèƒ½ä½“ç³»ç»Ÿæ€»è§ˆå›¾.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+d:/HomeMind/main.tex:259: Missing endcsname inserted.
+<to be read again> 
+                   ç
+l.259 ...æ™ºèƒ½å®¶å±…æ™ºèƒ½ä½“ç³»ç»Ÿæ€»è§ˆå›¾.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:259: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: ç invalid in file name. Lost: fi «¯ä¾§æ™ºèƒ½å...
+l.259 ...æ™ºèƒ½å®¶å±…æ™ºèƒ½ä½“ç³»ç»Ÿæ€»è§ˆå›¾.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+d:/HomeMind/main.tex:259: Missing endcsname inserted.
+<to be read again> 
+                   ç
+l.259 ...æ™ºèƒ½å®¶å±…æ™ºèƒ½ä½“ç³»ç»Ÿæ€»è§ˆå›¾.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:259: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: ç invalid in file name. Lost: fi «¯ä¾§æ™ºèƒ½å...
+l.259 ...æ™ºèƒ½å®¶å±…æ™ºèƒ½ä½“ç³»ç»Ÿæ€»è§ˆå›¾.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+
+d:/HomeMind/main.tex:259: LaTeX Error: File `homemind_images/HomeMindç«¯ä¾§æ™ºèƒ½å®¶å±…æ™ºèƒ½ä½“ç³»ç»Ÿæ€»è§ˆå›¾.png' not found.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.259 ...æ™ºèƒ½å®¶å±…æ™ºèƒ½ä½“ç³»ç»Ÿæ€»è§ˆå›¾.png}
+                                                  
+I could not locate the file with any of these extensions:
+.pdf,.png,.jpg,.mps,.jpeg,.jbig2,.jb2,.PDF,.PNG,.JPG,.JPEG,.JBIG2,.JB2,.eps
+Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+
+
+[4]
+ç¬¬äºŒç« 
+
+Underfull \hbox (badness 1552) in paragraph at lines 287--287
+[]|\C70/rm/bx/n/12/9a Ø \C70/rm/bx/n/12/98 ‘ \C70/rm/bx/n/12/4e û \C70/rm/bx/n/12/52 ¡ \C70/rm/bx/n/12/97 ^^@ \C70/rm/bx/n/12/89  \C70/rm/bx/n/12/67 ,
+ []
+
+
+Underfull \hbox (badness 1552) in paragraph at lines 287--287
+[]|\C70/rm/bx/n/12/5b ¶ \C70/rm/bx/n/12/5e ­ \C70/rm/bx/n/12/57 : \C70/rm/bx/n/12/66 o \C70/rm/bx/n/12/4e û \C70/rm/bx/n/12/52 ¡ \C70/rm/bx/n/12/7c {
+ []
+
+
+Underfull \hbox (badness 1552) in paragraph at lines 287--287
+[]|\C70/rm/bx/n/12/5b ¶ \C70/rm/bx/n/12/5e ­ \C70/rm/bx/n/12/62 ^^P \C70/rm/bx/n/12/54 X \C70/rm/bx/n/12/88 h \C70/rm/bx/n/12/8f ¾ \C70/rm/bx/n/12/5d î
+ []
+
+
+Underfull \hbox (badness 1584) in paragraph at lines 287--287
+\OT1/cmr/m/n/12 Full Lo-cal + llama.cpp \C70/rm/m/n/12/5c ğ \C70/rm/m/n/12/50 <
+ []
+
+
+Underfull \hbox (badness 1552) in paragraph at lines 287--287
+[]|\C70/rm/bx/n/12/4e ¤ ’ \C70/rm/bx/n/12/5b  \C70/rm/bx/n/12/65 ö \C70/rm/bx/n/12/60 ' \C70/rm/bx/n/12/89  \C70/rm/bx/n/12/6c B
+ []
+
+
+Underfull \hbox (badness 1552) in paragraph at lines 287--287
+[]|\C70/rm/bx/n/12/96  \C70/rm/bx/n/12/79 Á \C70/rm/bx/n/12/4e ^^N \C70/rm/bx/n/12/5b ‰ \C70/rm/bx/n/12/51 h \C70/rm/bx/n/12/89  \C70/rm/bx/n/12/6c B
+ []
+
+
+Underfull \hbox (badness 5563) in paragraph at lines 287--287
+[]|\OT1/cmr/m/n/12 Token \C70/rm/m/n/12/53 ‹ \C70/rm/m/n/12/7f )|\C70/rm/m/n/12/30 ^^A| \OT1/cmr/m/n/12 Schema \C70/rm/m/n/12/68 ! \C70/rm/m/n/12/9a Œ|\C70/rm/m/n/12/30 ^^A|
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 287--287
+\OT1/cmr/m/n/12 Fernet + PBKDF2-HMAC-
+ []
+
+
+
+[5
+
+]
+
+[6]
+
+[7]
+Overfull \hbox (33.10124pt too wide) in paragraph at lines 317--318
+[]\OT1/cmr/bx/n/12 4. \C70/rm/bx/n/12/53 ï \C70/rm/bx/n/12/62 i \C70/rm/bx/n/12/5c U \C70/rm/bx/n/12/60 '|\C70/rm/bx/n/12/30 ^^B|  \C70/rm/m/n/12/7c û \C70/rm/m/n/12/7e ß \C70/rm/m/n/12/5f Å \C70/rm/m/n/12/98 { \C70/rm/m/n/12/80 ı \C70/rm/m/n/12/4e Î \C70/rm/m/n/12/5b ¶ \C70/rm/m/n/12/5e ­ \C70/rm/m/n/12/57 : \C70/rm/m/n/12/66 o \C70/rm/m/n/12/8f Û \C70/rm/m/n/12/4e ^^@ \C70/rm/m/n/12/6b e \C70/rm/m/n/12/62 i \C70/rm/m/n/12/5c U \C70/rm/m/n/12/52 0 \C70/rm/m/n/12/66 ô \C70/rm/m/n/12/59 ^^Z \C70/rm/m/n/12/8b ¾ \C70/rm/m/n/12/59 ^^G \C70/rm/m/n/12/54 Œ \C70/rm/m/n/12/53 O \C70/rm/m/n/12/8b ®|\C70/rm/m/n/12/30 ^^B| \OT1/cmr/m/n/12 SmartHomeGateway
+ []
+
+
+Underfull \hbox (badness 1024) in paragraph at lines 343--343
+[]|\C70/rm/m/n/12/5c ^^F \C70/rm/m/n/12/74 ^^F \C70/rm/m/n/12/89 ã \C70/rm/m/n/12/7e Ó \C70/rm/m/n/12/67 œ \C70/rm/m/n/12/66   \C70/rm/m/n/12/5c ^^D \C70/rm/m/n/12/4e : \C70/rm/m/n/12/53 ï \C70/rm/m/n/12/62 g \C70/rm/m/n/12/88 L \C70/rm/m/n/12/52 ¨
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 343--343
+[]|\OT1/cmr/m/n/12 DeviceController|\C70/rm/m/n/12/30 ^^A|
+ []
+
+
+Underfull \hbox (badness 1354) in paragraph at lines 343--343
+[]|\OT1/cmr/m/n/12 HomeContext|\C70/rm/m/n/12/30 ^^A| \OT1/cmr/m/n/12 SessionStore|\C70/rm/m/n/12/30 ^^A|
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 343--343
+\OT1/cmr/m/n/12 PreferenceStore|\C70/rm/m/n/12/30 ^^A|
+ []
+
+
+Underfull \hbox (badness 1314) in paragraph at lines 343--343
+[]|\OT1/cmr/m/n/12 Router|\C70/rm/m/n/12/30 ^^A| \OT1/cmr/m/n/12 Schema|\C70/rm/m/n/12/30 ^^A| \C70/rm/m/n/12/52   \C70/rm/m/n/12/5b Æ X \C70/rm/m/n/12/50 ¨
+ []
+
+
+Underfull \hbox (badness 1024) in paragraph at lines 343--343
+\C70/rm/m/n/12/4e ã \C70/rm/m/n/12/78 ^^A \C70/rm/m/n/12/75 ^^_ \C70/rm/m/n/12/62 ^^P \C70/rm/m/n/12/7c { \C70/rm/m/n/12/4e û \C70/rm/m/n/12/52 ¡ \C70/rm/m/n/12/53 ï \C70/rm/m/n/12/4e ‘ \C70/rm/m/n/12/7a ï \C70/rm/m/n/12/52 M \C70/rm/m/n/12/7f n
+ []
+
+
+Underfull \hbox (badness 1024) in paragraph at lines 343--343
+[]|\C70/rm/m/n/12/90 ^^Z \C70/rm/m/n/12/8f Ç \C70/rm/m/n/12/50 O \C70/rm/m/n/12/59 } \C70/rm/m/n/12/8b ° \C70/rm/m/n/12/5f Æ \C70/rm/m/n/12/54 Œ \C70/rm/m/n/12/6f „ \C70/rm/m/n/12/6e ^^E \C70/rm/m/n/12/67 : \C70/rm/m/n/12/52 6 \C70/rm/m/n/12/96 M
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 343--343
+[]|\OT1/cmr/m/n/12 Router|\C70/rm/m/n/12/30 ^^A| \OT1/cmr/m/n/12 PreferenceStore|\C70/rm/m/n/12/30 ^^A|
+ []
+
+
+
+[8]
+d:/HomeMind/main.tex:350: Missing endcsname inserted.
+<to be read again> 
+                   å
+l.350 ...newidth]{å›¾6HomeMindåŠŸèƒ½æ¶æ„å›¾.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:350: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: å invalid in file name. Lost: fi ›¾6HomeMindå...
+l.350 ...newidth]{å›¾6HomeMindåŠŸèƒ½æ¶æ„å›¾.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+d:/HomeMind/main.tex:350: Missing endcsname inserted.
+<to be read again> 
+                   å
+l.350 ...newidth]{å›¾6HomeMindåŠŸèƒ½æ¶æ„å›¾.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:350: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: å invalid in file name. Lost: fi ›¾6HomeMindå...
+l.350 ...newidth]{å›¾6HomeMindåŠŸèƒ½æ¶æ„å›¾.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+d:/HomeMind/main.tex:350: Missing endcsname inserted.
+<to be read again> 
+                   å
+l.350 ...newidth]{å›¾6HomeMindåŠŸèƒ½æ¶æ„å›¾.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:350: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: å invalid in file name. Lost: fi fi ›¾6HomeMi...
+l.350 ...newidth]{å›¾6HomeMindåŠŸèƒ½æ¶æ„å›¾.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+
+d:/HomeMind/main.tex:350: LaTeX Error: File `å›¾6HomeMindåŠŸèƒ½æ¶æ„å›¾.png' not found.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.350 ...newidth]{å›¾6HomeMindåŠŸèƒ½æ¶æ„å›¾.png}
+                                                  
+I could not locate the file with any of these extensions:
+.pdf,.png,.jpg,.mps,.jpeg,.jbig2,.jb2,.PDF,.PNG,.JPG,.JPEG,.JBIG2,.JB2,.eps
+Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+
+
+[9]
+ç¬¬ä¸‰ç« 
+
+LaTeX Warning: Reference `tab:architecture-choice' on page 10 undefined on input line 363.
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 378--378
+[]|\C70/rm/m/n/12/4e $ \C70/rm/m/n/12/7c { \C70/rm/m/n/12/57 : \C70/rm/m/n/12/66 o|\C70/rm/m/n/12/ff ^^Z| \C70/rm/m/n/12/5e 8 \C70/rm/m/n/12/89 Ä \C70/rm/m/n/12/63 §
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 378--378
+\C70/rm/m/n/12/52 6 \C70/rm/m/n/12/4e - \C70/rm/m/n/12/76 „ \C70/rm/m/n/12/53 × \C70/rm/m/n/12/63 § \C70/rm/m/n/12/51 \ \C70/rm/m/n/12/5e • \C70/rm/m/n/12/88 e
+ []
+
+
+Underfull \hbox (badness 3579) in paragraph at lines 378--378
+\C70/rm/m/n/12/65 Q|\C70/rm/m/n/12/ff ^^[| \C70/rm/m/n/12/4f N \C70/rm/m/n/12/4e ã \C70/rm/m/n/12/78 ^^A \C70/rm/m/n/12/57 : \C70/rm/m/n/12/66 o\OT1/cmr/m/n/12 /\C70/rm/m/n/12/89 Ä
+ []
+
+
+Underfull \hbox (badness 1168) in paragraph at lines 378--378
+\C70/rm/m/n/12/52 ^^Y|\C70/rm/m/n/12/30 ^^A| \OT1/cmr/m/n/12 BSR/LSR \C70/rm/m/n/12/4e ^^N \C70/rm/m/n/12/67 ,
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 378--378
+[]|\C70/rm/m/n/12/63 Ğ \C70/rm/m/n/12/4f › N \C70/rm/m/n/12/5e ö \C70/rm/m/n/12/8f ß|\C70/rm/m/n/12/30 ^^A| \C70/rm/m/n/12/5f : \C70/rm/m/n/12/53 ï
+ []
+
+
+Underfull \hbox (badness 5217) in paragraph at lines 378--378
+\C70/rm/m/n/12/57 0 \C70/rm/m/n/12/5b X \C70/rm/m/n/12/50 ¨|\C70/rm/m/n/12/30 ^^A| \OT1/cmr/m/n/12 Fernet \C70/rm/m/n/12/5b ù
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 378--378
+\C70/rm/m/n/12/79 ğ \C70/rm/m/n/12/52   \C70/rm/m/n/12/5b Æ|\C70/rm/m/n/12/30 ^^A| \OT1/cmr/m/n/12 PBKDF2-
+ []
+
+
+Underfull \hbox (badness 1158) in paragraph at lines 378--378
+\C70/rm/m/n/12/6d > \C70/rm/m/n/12/75 ^^_|\C70/rm/m/n/12/30 ^^A| \C70/rm/m/n/12/56 ú \C70/rm/m/n/12/5b š \OT1/cmr/m/n/12 Schema
+ []
+
+
+
+[10
+
+]
+
+[11]
+d:/HomeMind/main.tex:386: Missing endcsname inserted.
+<to be read again> 
+                   ç
+l.386 .../HomeMindç«¯ä¾§æ™ºèƒ½ä½“æ€»ä½“æ¶æ„.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:386: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: ç invalid in file name. Lost: fi «¯ä¾§æ™ºèƒ½ä...
+l.386 .../HomeMindç«¯ä¾§æ™ºèƒ½ä½“æ€»ä½“æ¶æ„.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+d:/HomeMind/main.tex:386: Missing endcsname inserted.
+<to be read again> 
+                   ç
+l.386 .../HomeMindç«¯ä¾§æ™ºèƒ½ä½“æ€»ä½“æ¶æ„.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:386: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: ç invalid in file name. Lost: fi «¯ä¾§æ™ºèƒ½ä...
+l.386 .../HomeMindç«¯ä¾§æ™ºèƒ½ä½“æ€»ä½“æ¶æ„.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+d:/HomeMind/main.tex:386: Missing endcsname inserted.
+<to be read again> 
+                   ç
+l.386 .../HomeMindç«¯ä¾§æ™ºèƒ½ä½“æ€»ä½“æ¶æ„.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:386: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: ç invalid in file name. Lost: fi «¯ä¾§æ™ºèƒ½ä...
+l.386 .../HomeMindç«¯ä¾§æ™ºèƒ½ä½“æ€»ä½“æ¶æ„.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+
+d:/HomeMind/main.tex:386: LaTeX Error: File `homemind_images/HomeMindç«¯ä¾§æ™ºèƒ½ä½“æ€»ä½“æ¶æ„.png' not found.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.386 .../HomeMindç«¯ä¾§æ™ºèƒ½ä½“æ€»ä½“æ¶æ„.png}
+                                                  
+I could not locate the file with any of these extensions:
+.pdf,.png,.jpg,.mps,.jpeg,.jbig2,.jb2,.PDF,.PNG,.JPG,.JPEG,.JBIG2,.JB2,.eps
+Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+d:/HomeMind/main.tex:401: Missing endcsname inserted.
+<to be read again> 
+                   æ
+l.401 ...newidth]{7HomeMindæ ¸å¿ƒæ•°æ®æµå›¾.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:401: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: æ invalid in file name. Lost: fi  ¸å¿ƒæ•°æ®æ...
+l.401 ...newidth]{7HomeMindæ ¸å¿ƒæ•°æ®æµå›¾.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+d:/HomeMind/main.tex:401: Missing endcsname inserted.
+<to be read again> 
+                   æ
+l.401 ...newidth]{7HomeMindæ ¸å¿ƒæ•°æ®æµå›¾.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:401: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: æ invalid in file name. Lost: fi  ¸å¿ƒæ•°æ®æ...
+l.401 ...newidth]{7HomeMindæ ¸å¿ƒæ•°æ®æµå›¾.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+d:/HomeMind/main.tex:401: Missing endcsname inserted.
+<to be read again> 
+                   æ
+l.401 ...newidth]{7HomeMindæ ¸å¿ƒæ•°æ®æµå›¾.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:401: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: æ invalid in file name. Lost: fi  ¸å¿ƒæ•°æ®æ...
+l.401 ...newidth]{7HomeMindæ ¸å¿ƒæ•°æ®æµå›¾.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+
+d:/HomeMind/main.tex:401: LaTeX Error: File `7HomeMindæ ¸å¿ƒæ•°æ®æµå›¾.png' not found.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.401 ...newidth]{7HomeMindæ ¸å¿ƒæ•°æ®æµå›¾.png}
+                                                  
+I could not locate the file with any of these extensions:
+.pdf,.png,.jpg,.mps,.jpeg,.jbig2,.jb2,.PDF,.PNG,.JPG,.JPEG,.JBIG2,.JB2,.eps
+Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+
+
+[12]
+Underfull \hbox (badness 10000) in paragraph at lines 432--432
+[]|\OT1/cmr/bx/n/12 Fernet +
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 432--432
+\OT1/cmr/bx/n/12 PBKDF2-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 432--432
+\OT1/cmr/bx/n/12 HMAC-
+ []
+
+
+Underfull \hbox (badness 2103) in paragraph at lines 432--432
+\C70/rm/m/n/12/53 ï \C70/rm/m/n/12/75 1 \C70/rm/m/n/12/59 ^^V \C70/rm/m/n/12/90 è \C70/rm/m/n/12/53 ã \C70/rm/m/n/12/4e ä \C70/rm/m/n/12/6d > \C70/rm/m/n/12/75 ^^_|\C70/rm/m/n/12/ff ^^[|
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 432--432
+[]|\C70/rm/m/n/12/4f \ \C70/rm/m/n/12/4e : \C70/rm/m/n/12/54 ^^N \C70/rm/m/n/12/7e í \C70/rm/m/n/12/4f ^^A \C70/rm/m/n/12/4e ^^Z \C70/rm/m/n/12/7e §
+ []
+
+
+Underfull \hbox (badness 6300) in paragraph at lines 432--432
+[]|\C70/rm/m/n/12/5b  \C70/rm/m/n/12/73 ° \C70/rm/m/n/12/7b € \C70/rm/m/n/12/53 U|\C70/rm/m/n/12/ff ^^L| \C70/rm/m/n/12/8c ^^C \C70/rm/m/n/12/8b Õ \C70/rm/m/n/12/65 ¹
+ []
+
+
+Underfull \hbox (badness 1442) in paragraph at lines 432--432
+[]|\C70/rm/m/n/12/65 à \C70/rm/m/n/12/6c Õ \C70/rm/m/n/12/62 µ \C70/rm/m/n/12/5f ¡ \C70/rm/m/n/12/59 ^^G \C70/rm/m/n/12/4e ı \C70/rm/m/n/12/6c Ä \C70/rm/m/n/12/97 2|\C70/rm/m/n/12/30 ^^A|
+ []
+
+
+
+[13]
+
+LaTeX Warning: Reference `fig:security-cloud-governance' on page 14 undefined on input line 439.
+
+d:/HomeMind/main.tex:443: Missing endcsname inserted.
+<to be read again> 
+                   ç
+l.443 ...]{homemind_images/ç«¯äº‘ååŒæ²»ç†.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:443: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: ç invalid in file name. Lost: fi «¯äº‘ååŒæ...
+l.443 ...]{homemind_images/ç«¯äº‘ååŒæ²»ç†.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+d:/HomeMind/main.tex:443: Missing endcsname inserted.
+<to be read again> 
+                   ç
+l.443 ...]{homemind_images/ç«¯äº‘ååŒæ²»ç†.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:443: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: ç invalid in file name. Lost: fi «¯äº‘ååŒæ...
+l.443 ...]{homemind_images/ç«¯äº‘ååŒæ²»ç†.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+d:/HomeMind/main.tex:443: Missing endcsname inserted.
+<to be read again> 
+                   ç
+l.443 ...]{homemind_images/ç«¯äº‘ååŒæ²»ç†.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:443: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: ç invalid in file name. Lost: fi «¯äº‘ååŒæ...
+l.443 ...]{homemind_images/ç«¯äº‘ååŒæ²»ç†.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+
+d:/HomeMind/main.tex:443: LaTeX Error: File `homemind_images/ç«¯äº‘ååŒæ²»ç†.png' not found.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.443 ...]{homemind_images/ç«¯äº‘ååŒæ²»ç†.png}
+                                                  
+I could not locate the file with any of these extensions:
+.pdf,.png,.jpg,.mps,.jpeg,.jbig2,.jb2,.PDF,.PNG,.JPG,.JPEG,.JBIG2,.JB2,.eps
+Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+
+
+[14]
+d:/HomeMind/main.tex:461: Missing endcsname inserted.
+<to be read again> 
+                   è
+l.461 ...›¾Cå®¶åº­å®‰å…¨å¼ºåˆ¶æ¾„æ¸…åœºæ™¯å›¾.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:461: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: è invalid in file name. Lost: fi ¡¥å……å›¾Cå®¶...
+l.461 ...›¾Cå®¶åº­å®‰å…¨å¼ºåˆ¶æ¾„æ¸…åœºæ™¯å›¾.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+d:/HomeMind/main.tex:461: Missing endcsname inserted.
+<to be read again> 
+                   è
+l.461 ...›¾Cå®¶åº­å®‰å…¨å¼ºåˆ¶æ¾„æ¸…åœºæ™¯å›¾.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:461: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: è invalid in file name. Lost: fi ¡¥å……å›¾Cå®¶...
+l.461 ...›¾Cå®¶åº­å®‰å…¨å¼ºåˆ¶æ¾„æ¸…åœºæ™¯å›¾.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+d:/HomeMind/main.tex:461: Missing endcsname inserted.
+<to be read again> 
+                   è
+l.461 ...›¾Cå®¶åº­å®‰å…¨å¼ºåˆ¶æ¾„æ¸…åœºæ™¯å›¾.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:461: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: è invalid in file name. Lost: fi fi ¡¥å……å›¾C...
+l.461 ...›¾Cå®¶åº­å®‰å…¨å¼ºåˆ¶æ¾„æ¸…åœºæ™¯å›¾.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+
+d:/HomeMind/main.tex:461: LaTeX Error: File `è¡¥å……å›¾Cå®¶åº­å®‰å…¨å¼ºåˆ¶æ¾„æ¸…åœºæ™¯å›¾.png' not found.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.461 ...›¾Cå®¶åº­å®‰å…¨å¼ºåˆ¶æ¾„æ¸…åœºæ™¯å›¾.png}
+                                                  
+I could not locate the file with any of these extensions:
+.pdf,.png,.jpg,.mps,.jpeg,.jbig2,.jb2,.PDF,.PNG,.JPG,.JPEG,.JBIG2,.JB2,.eps
+Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+
+
+[15]
+ç¬¬å››ç« 
+
+
+[16
+
+]
+
+[17]
+
+[18]
+Overfull \hbox (68.87665pt too wide) in paragraph at lines 570--572
+\C70/rm/m/n/12/4e ; \C70/rm/m/n/12/52 ¨ \C70/rm/m/n/12/63 ¨ \C70/rm/m/n/12/83 P \C70/rm/m/n/12/5f S \C70/rm/m/n/12/52 M \C70/rm/m/n/12/53 U \C70/rm/m/n/12/72 ì \C70/rm/m/n/12/4f ^^? \C70/rm/m/n/12/75 ( \OT1/cmr/m/n/12 0.8 \C70/rm/m/n/12/4f \ \C70/rm/m/n/12/4e : \C70/rm/m/n/12/81 ê \C70/rm/m/n/12/52 ¨ \C70/rm/m/n/12/62 g \C70/rm/m/n/12/88 L \C70/rm/m/n/12/96 ^^H \C70/rm/m/n/12/50 <|\C70/rm/m/n/12/ff ^^L| \C70/rm/m/n/12/89 æ \C70/rm/m/n/12/53 Ñ \C70/rm/m/n/12/90 ; \C70/rm/m/n/12/8f ‘ \C70/rm/m/n/12/4f M \C70/rm/m/n/12/4e  \OT1/cmtt/m/n/12 HomeMindAgent.proactive[]recommend|\C70/rm/m/n/12/30 ^^B|
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 570--572
+
+ []
+
+
+
+[19]
+
+[20]
+Underfull \hbox (badness 3354) in paragraph at lines 612--613
+\C70/rm/m/n/12/70 í \C70/rm/m/n/12/4e †\OT1/cmr/m/n/12 "|\C70/rm/m/n/12/ff ^^[| \OT1/cmr/m/n/12 "\C70/rm/m/n/12/95 ÷ \C70/rm/m/n/12/5f — ˆ\OT1/cmr/m/n/12 /\C70/rm/m/n/12/95 ÷ \C70/rm/m/n/12/5f — \C70/rm/m/n/12/61 L\OT1/cmr/m/n/12 /\C70/rm/m/n/12/67 	 \C70/rm/m/n/12/70 ¹ \C70/rm/m/n/12/95 ÷\OT1/cmr/m/n/12 "\TS1/cmr/m/n/12 ^^Y\OT1/cmr/m/n/12 "\C70/rm/m/n/12/67 	 \C70/rm/m/n/12/70 ¹ \C70/rm/m/n/12/95 ÷\OT1/cmr/m/n/12 "|\C70/rm/m/n/12/ff ^^[| \OT1/cmr/m/n/12 "\C70/rm/m/n/12/51 · \C70/rm/m/n/12/5f — ˆ\OT1/cmr/m/n/12 /\C70/rm/m/n/12/59 } \C70/rm/m/n/12/51 ·\OT1/cmr/m/n/12 /\C70/rm/m/n/12/66 – \C70/rm/m/n/12/54 Œ \C70/rm/m/n/12/70 ¹\OT1/cmr/m/n/12 "\TS1/cmr/m/n/12 ^^Y\OT1/cmr/m/n/12 "\C70/rm/m/n/12/59 * \C70/rm/m/n/12/51 · \C70/rm/m/n/12/4e †\OT1/cmr/m/n/12 "|\C70/rm/m/n/12/ff ^^[|
+ []
+
+
+
+[21]
+ç¬¬äº”ç« 
+
+
+[22
+
+]
+Underfull \hbox (badness 1292) in paragraph at lines 652--653
+\C70/rm/m/n/12/5f S \C70/rm/m/n/12/52 M \C70/rm/m/n/12/6f À \C70/rm/m/n/12/6d ; \OT1/cmr/m/n/12 SVG \C70/rm/m/n/12/62 7 \C70/rm/m/n/12/57 ‹ \C70/rm/m/n/12/56 ş \C70/rm/m/n/12/53 Ê \C70/rm/m/n/12/51 v \C70/rm/m/n/12/8b ¾ \C70/rm/m/n/12/59 ^^G \C70/rm/m/n/12/66   \C70/rm/m/n/12/5c ^^D \C70/rm/m/n/12/88 h|\C70/rm/m/n/12/ff ^^L| \C70/rm/m/n/12/78 n \C70/rm/m/n/12/8b ¤ \C70/rm/m/n/12/76 î \C70/rm/m/n/12/68 ^^G \C70/rm/m/n/12/8b ¾ \C70/rm/m/n/12/59 ^^G \C70/rm/m/n/12/5b X \C70/rm/m/n/12/57 ( \C70/rm/m/n/12/54 ^^N \C70/rm/m/n/12/51  \C70/rm/m/n/12/8c ^^C \C70/rm/m/n/12/75 ( \OT1/cmr/m/n/12 De-vice-Con-
+ []
+
+
+
+[23]
+
+[24]
+ç¬¬å…­ç« 
+
+Underfull \hbox (badness 1308) in paragraph at lines 680--681
+[]\C70/rm/m/n/12/6d K \C70/rm/m/n/12/8b Õ \C70/rm/m/n/12/57 ( \OT1/cmr/m/n/12 Python 3.10 + Py-Torch 2.6.0 \C70/rm/m/n/12/73 ¯ \C70/rm/m/n/12/58 ƒ \C70/rm/m/n/12/4e - \C70/rm/m/n/12/62 g \C70/rm/m/n/12/88 L|\C70/rm/m/n/12/ff ^^L| \C70/rm/m/n/12/4e ; \C70/rm/m/n/12/89  \C70/rm/m/n/12/4f  \C70/rm/m/n/12/8d V \C70/rm/m/n/12/53 ^^E \C70/rm/m/n/12/62 ì \OT1/cmr/m/n/12 sentence-
+ []
+
+
+
+[25
+
+]
+Underfull \hbox (badness 1769) in paragraph at lines 700--700
+[]|\C70/rm/m/n/12/52   \C70/rm/m/n/12/8f } \OT1/cmr/m/n/12 Chro-maDB|\C70/rm/m/n/12/30 ^^A| \OT1/cmr/m/n/12 PyTorch|\C70/rm/m/n/12/30 ^^A| \OT1/cmr/m/n/12 Web Server \C70/rm/m/n/12/4e ^^N
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 700--700
+[]|\OT1/cmr/bx/n/12 Full Lo-cal +
+ []
+
+
+
+[26]
+
+[27]
+ç¬¬ä¸ƒç« 
+
+Underfull \hbox (badness 2229) in paragraph at lines 736--737
+[]\OT1/cmr/m/n/12 Matter \C70/rm/m/n/12/53 O \C70/rm/m/n/12/8b ® \C70/rm/m/n/12/90 ^^B \C70/rm/m/n/12/91 M \C70/rm/m/n/12/7c { |\C70/rm/m/n/12/ff ^^H|\OT1/cmr/m/n/12 MatterProtocol|\C70/rm/m/n/12/ff 	| \C70/rm/m/n/12/65 / \C70/rm/m/n/12/63 ^^A \OT1/cmr/m/n/12 Mat-ter \C70/rm/m/n/12/68 ^^G \C70/rm/m/n/12/51 Æ \C70/rm/m/n/12/66 z \C70/rm/m/n/12/80 ı \C70/rm/m/n/12/5b ¶ \C70/rm/m/n/12/5c E \C70/rm/m/n/12/8b ¾ \C70/rm/m/n/12/59 ^^G \C70/rm/m/n/12/8f Ş \C70/rm/m/n/12/63 ¥|\C70/rm/m/n/12/ff ^^[|
+ []
+
+
+Underfull \hbox (badness 1917) in paragraph at lines 736--737
+\OT1/cmr/m/n/12 MQTT \C70/rm/m/n/12/53 O \C70/rm/m/n/12/8b ® \C70/rm/m/n/12/90 ^^B \C70/rm/m/n/12/91 M \C70/rm/m/n/12/7c { |\C70/rm/m/n/12/ff ^^H|\OT1/cmr/m/n/12 MQTTProtocol|\C70/rm/m/n/12/ff 	| \C70/rm/m/n/12/65 / \C70/rm/m/n/12/63 ^^A \C70/rm/m/n/12/57 ú \C70/rm/m/n/12/4e  \OT1/cmr/m/n/12 MQTT \C70/rm/m/n/12/76 „ \C70/rm/m/n/12/72 i \C70/rm/m/n/12/80 T \C70/rm/m/n/12/7f Q \C70/rm/m/n/12/8b ¾ \C70/rm/m/n/12/59 ^^G|\C70/rm/m/n/12/ff ^^[| \C70/rm/m/n/12/5c ^^O \C70/rm/m/n/12/7c s s
+ []
+
+
+Underfull \hbox (badness 2698) in paragraph at lines 736--737
+\C70/rm/m/n/12/5b ¶ \C70/rm/m/n/12/53 O \C70/rm/m/n/12/8b ® \C70/rm/m/n/12/90 ^^B \C70/rm/m/n/12/91 M \C70/rm/m/n/12/7c { |\C70/rm/m/n/12/ff ^^H|\OT1/cmr/m/n/12 XiaomiProtocol|\C70/rm/m/n/12/ff 	| \C70/rm/m/n/12/65 / \C70/rm/m/n/12/63 ^^A \C70/rm/m/n/12/7c s \C70/rm/m/n/12/5b ¶ \C70/rm/m/n/12/75 ^^_ \C70/rm/m/n/12/60 ^^A \C70/rm/m/n/12/94 ş \C70/rm/m/n/12/8b ¾ \C70/rm/m/n/12/59 ^^G|\C70/rm/m/n/12/ff ^^[| \OT1/cmr/m/n/12 Home As-sis-tant \C70/rm/m/n/12/90 ^^B \C70/rm/m/n/12/91 M \C70/rm/m/n/12/7c {
+ []
+
+
+
+[28
+
+]
+
+[29]
+ç¬¬å…«ç« 
+
+Underfull \hbox (badness 1097) in paragraph at lines 780--781
+[]\C70/rm/m/n/12/4e ‘ \C70/rm/m/n/12/7a ï \C70/rm/m/n/12/59 ' \C70/rm/m/n/12/6a ! \C70/rm/m/n/12/57 ‹ \C70/rm/m/n/12/8f “ \C70/rm/m/n/12/51 ú \C70/rm/m/n/12/56 ú \C70/rm/m/n/12/5b š \OT1/cmr/m/n/12 JSON \C70/rm/m/n/12/68 < \C70/rm/m/n/12/5f ^^O \C70/rm/m/n/12/76 „ \C70/rm/m/n/12/51 ³ \C70/rm/m/n/12/7b V \C70/rm/m/n/12/5e ú \C70/rm/m/n/12/8b ®|\C70/rm/m/n/12/ff ^^L| \C70/rm/m/n/12/8f “ \C70/rm/m/n/12/51 ú \C70/rm/m/n/12/68 < \C70/rm/m/n/12/5f ^^O \C70/rm/m/n/12/88 « \C70/rm/m/n/12/4e % \C70/rm/m/n/12/68 < \C70/rm/m/n/12/7e ¦ \C70/rm/m/n/12/67 _ \C70/rm/m/n/12/4e : \C70/rm/m/n/12/98 „ \C70/rm/m/n/12/5b š \C70/rm/m/n/12/4e I
+ []
+
+d:/HomeMind/main.tex:788: Missing endcsname inserted.
+<to be read again> 
+                   ç
+l.788 ...{HomeMindç«¯äº‘ååŒå†³ç­–æµç¨‹å›¾.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:788: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: ç invalid in file name. Lost: fi «¯äº‘ååŒå...
+l.788 ...{HomeMindç«¯äº‘ååŒå†³ç­–æµç¨‹å›¾.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+d:/HomeMind/main.tex:788: Missing endcsname inserted.
+<to be read again> 
+                   ç
+l.788 ...{HomeMindç«¯äº‘ååŒå†³ç­–æµç¨‹å›¾.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:788: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: ç invalid in file name. Lost: fi «¯äº‘ååŒå...
+l.788 ...{HomeMindç«¯äº‘ååŒå†³ç­–æµç¨‹å›¾.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+d:/HomeMind/main.tex:788: Missing endcsname inserted.
+<to be read again> 
+                   ç
+l.788 ...{HomeMindç«¯äº‘ååŒå†³ç­–æµç¨‹å›¾.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:788: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: ç invalid in file name. Lost: fi «¯äº‘ååŒå...
+l.788 ...{HomeMindç«¯äº‘ååŒå†³ç­–æµç¨‹å›¾.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+
+d:/HomeMind/main.tex:788: LaTeX Error: File `HomeMindç«¯äº‘ååŒå†³ç­–æµç¨‹å›¾.png' not found.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.788 ...{HomeMindç«¯äº‘ååŒå†³ç­–æµç¨‹å›¾.png}
+                                                  
+I could not locate the file with any of these extensions:
+.pdf,.png,.jpg,.mps,.jpeg,.jbig2,.jb2,.PDF,.PNG,.JPG,.JPEG,.JBIG2,.JB2,.eps
+Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+
+
+[30
+
+]
+
+[31]
+ç¬¬ä¹ç« 
+
+Overfull \hbox (13.60965pt too wide) in paragraph at lines 832--832
+ |\C70/rm/m/n/12/ff ^^H|\OT1/cmr/m/n/12 HomeContext|\C70/rm/m/n/12/ff 	| 
+ []
+
+
+
+[32
+
+]
+
+[33]
+ç¬¬åç« 
+
+Underfull \hbox (badness 1383) in paragraph at lines 837--838
+\C70/rm/m/n/12/53 ï \C70/rm/m/n/12/89 Æ \C70/rm/m/n/12/53 ^^V|\C70/rm/m/n/12/ff ^^L| \C70/rm/m/n/12/75 ( \C70/rm/m/n/12/4e  \C70/rm/m/n/12/5b  \C70/rm/m/n/12/73 ° \C70/rm/m/n/12/62 ? \C70/rm/m/n/12/95 ô \C70/rm/m/n/12/7e § \C70/rm/m/n/12/61 ^^O \C70/rm/m/n/12/56 ş \C70/rm/m/n/12/74 ^^F \C70/rm/m/n/12/89 ã \C70/rm/m/n/12/80 ı \C70/rm/m/n/12/52 ›|\C70/rm/m/n/12/30 ^^B| \C70/rm/m/n/12/5f S \C70/rm/m/n/12/52 M \C70/rm/m/n/12/9e Ø \C70/rm/m/n/12/8b ¤ \C70/rm/m/n/12/62 7 \C70/rm/m/n/12/57 ‹ \C70/rm/m/n/12/56 ş \C70/rm/m/n/12/67 e \C70/rm/m/n/12/81 ê \OT1/cmr/m/n/12 Haus-RA-Gen \C70/rm/m/n/12/79 : \C70/rm/m/n/12/4f ‹
+ []
+
+
+Underfull \hbox (badness 2591) in paragraph at lines 845--846
+[]\C70/rm/m/n/12/8b ¾ \C70/rm/m/n/12/59 ^^G \C70/rm/m/n/12/66   \C70/rm/m/n/12/5c ^^D \C70/rm/m/n/12/65 p \C70/rm/m/n/12/63 n \C70/rm/m/n/12/4f ^^? \C70/rm/m/n/12/7c û \C70/rm/m/n/12/7e ß \C70/rm/m/n/12/80 ı \C70/rm/m/n/12/59 ^^_ \C70/rm/m/n/12/74 ^^F \C70/rm/m/n/12/89 ã\OT1/cmr/m/n/12 "\C70/rm/m/n/12/62 S \C70/rm/m/n/12/5f ^^@ \C70/rm/m/n/12/5b ¢ \C70/rm/m/n/12/53 … \C70/rm/m/n/12/70 o\OT1/cmr/m/n/12 "\C70/rm/m/n/12/7b I \C70/rm/m/n/12/5e & \C70/rm/m/n/12/62 ? \C70/rm/m/n/12/95 ô \C70/rm/m/n/12/4f î \C70/rm/m/n/12/99 p \C70/rm/m/n/12/76 „ \C70/rm/m/n/12/63 ^^G \C70/rm/m/n/12/4e ä|\C70/rm/m/n/12/ff ^^L| \C70/rm/m/n/12/90 ^^Z \C70/rm/m/n/12/8f Ç \C70/rm/m/n/12/67 å \C70/rm/m/n/12/8b â
+ []
+
+
+
+[34
+
+]
+
+[35]
+ç¬¬åä¸€ç« 
+
+
+[36
+
+]
+
+LaTeX Warning: Reference `tab:command-dataset-summary' on page 37 undefined on input line 880.
+
+
+Underfull \hbox (badness 1102) in paragraph at lines 880--881
+\OT1/cmtt/m/n/12 evaluate _ command _ dataset . py$|\C70/rm/m/n/12/ff ^^L| \C70/rm/m/n/12/62 g \C70/rm/m/n/12/88 L \C70/rm/m/n/12/65 ¹ \C70/rm/m/n/12/5f ^^O \C70/rm/m/n/12/4e : \C70/rm/m/n/12/76 ô \C70/rm/m/n/12/63 ¥ \C70/rm/m/n/12/8c ^^C \C70/rm/m/n/12/75 ( \OT1/cmr/m/n/12 Flask \OT1/cmtt/m/n/12 test[]client|\C70/rm/m/n/12/ff ^^L| \C70/rm/m/n/12/4e ^^M \C70/rm/m/n/12/4f  \C70/rm/m/n/12/8d V
+ []
+
+
+Underfull \hbox (badness 10000) in alignment at lines 902--902
+[][][][][][] 
+ []
+
+
+
+[37] (C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex/latex/zhmetrics\c70zhfs.fd)
+Underfull \hbox (badness 10000) in paragraph at lines 922--922
+[]|\C70/rm/bx/n/10.95/51 ·\OT1/cmr/bx/n/10.95 /\C70/rm/bx/n/10.95/95 ÷ \C70/rm/bx/n/10.95/88 h \C70/rm/bx/n/10.95/8f ¾ \C70/rm/bx/n/10.95/53 ì \C70/rm/bx/n/10.95/56 Ş \C70/rm/bx/n/10.95/4e ^^M
+ []
+
+
+Underfull \hbox (badness 1817) in paragraph at lines 922--922
+[]| |\C70/rm/m/n/10.95/20 ^^\|\C70/rm/m/n/10.95/51 s \C70/rm/m/n/10.95/95 í \C70/rm/m/n/10.95/97 ó \C70/rm/m/n/10.95/54 Í|\C70/rm/m/n/10.95/20 ^^]| \C70/rm/m/n/10.95/5d ò \C70/rm/m/n/10.95/8f Ô \C70/rm/m/n/10.95/56 Ş \C70/zhfs/m/n/10.95/97 ó \C70/zhfs/m/n/10.95/54 Í[]\OT1/cmtt/m/n/10.95 off|\C70/rm/m/n/10.95/ff ^^L||\C70/rm/m/n/10.95/20 ^^\|\C70/rm/m/n/10.95/62 S
+ []
+
+
+Underfull \hbox (badness 2698) in paragraph at lines 922--922
+[]|\C70/rm/bx/n/10.95/4e ^^M \C70/rm/bx/n/10.95/65 / \C70/rm/bx/n/10.95/63 ^^A \C70/rm/bx/n/10.95/8b ¾ \C70/rm/bx/n/10.95/59 ^^G \C70/rm/bx/n/10.95/8b Æ \C70/rm/bx/n/10.95/52 + \C70/rm/bx/n/10.95/4e ^^M
+ []
+
+
+Underfull \hbox (badness 2753) in paragraph at lines 922--922
+[]| |\C70/rm/m/n/10.95/20 ^^\|\C70/rm/m/n/10.95/51 ° \C70/rm/m/n/10.95/7b ±|\C70/rm/m/n/10.95/20 ^^]||^^\|\C70/rm/m/n/10.95/54 – \C70/rm/m/n/10.95/55 a \C70/rm/m/n/10.95/67 :|\C70/rm/m/n/10.95/20 ^^]||^^\|\C70/rm/m/n/10.95/62 • \C70/rm/m/n/10.95/5f q \C70/rm/m/n/10.95/4e ê|\C70/rm/m/n/10.95/20 ^^]| \C70/rm/m/n/10.95/5d ò \C70/rm/m/n/10.95/8f Û \C70/rm/m/n/10.95/51 e
+ []
+
+
+
+[38]
+d:/HomeMind/main.tex:931: Missing endcsname inserted.
+<to be read again> 
+                   æ
+l.931 ...\linewidth]{HomeMindæµ‹è¯•ç»“æœå›¾1.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:931: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: æ invalid in file name. Lost: fi µ‹è¯•ç»“æœå...
+l.931 ...\linewidth]{HomeMindæµ‹è¯•ç»“æœå›¾1.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+d:/HomeMind/main.tex:931: Missing endcsname inserted.
+<to be read again> 
+                   æ
+l.931 ...\linewidth]{HomeMindæµ‹è¯•ç»“æœå›¾1.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:931: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: æ invalid in file name. Lost: fi µ‹è¯•ç»“æœå...
+l.931 ...\linewidth]{HomeMindæµ‹è¯•ç»“æœå›¾1.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+d:/HomeMind/main.tex:931: Missing endcsname inserted.
+<to be read again> 
+                   æ
+l.931 ...\linewidth]{HomeMindæµ‹è¯•ç»“æœå›¾1.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:931: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: æ invalid in file name. Lost: fi µ‹è¯•ç»“æœå...
+l.931 ...\linewidth]{HomeMindæµ‹è¯•ç»“æœå›¾1.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+
+d:/HomeMind/main.tex:931: LaTeX Error: File `HomeMindæµ‹è¯•ç»“æœå›¾1.png' not found.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.931 ...\linewidth]{HomeMindæµ‹è¯•ç»“æœå›¾1.png}
+                                                  
+I could not locate the file with any of these extensions:
+.pdf,.png,.jpg,.mps,.jpeg,.jbig2,.jb2,.PDF,.PNG,.JPG,.JPEG,.JBIG2,.JB2,.eps
+Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+
+
+[39]
+
+LaTeX Warning: Reference `fig:test-result-1' on page 40 undefined on input line 936.
+
+
+LaTeX Warning: Reference `tab:command-dataset-summary' on page 40 undefined on input line 936.
+
+d:/HomeMind/main.tex:946: Missing endcsname inserted.
+<to be read again> 
+                   æ
+l.946 ...\linewidth]{HomeMindæµ‹è¯•ç»“æœå›¾2.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:946: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: æ invalid in file name. Lost: fi µ‹è¯•ç»“æœå...
+l.946 ...\linewidth]{HomeMindæµ‹è¯•ç»“æœå›¾2.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+d:/HomeMind/main.tex:946: Missing endcsname inserted.
+<to be read again> 
+                   æ
+l.946 ...\linewidth]{HomeMindæµ‹è¯•ç»“æœå›¾2.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:946: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: æ invalid in file name. Lost: fi µ‹è¯•ç»“æœå...
+l.946 ...\linewidth]{HomeMindæµ‹è¯•ç»“æœå›¾2.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+d:/HomeMind/main.tex:946: Missing endcsname inserted.
+<to be read again> 
+                   æ
+l.946 ...\linewidth]{HomeMindæµ‹è¯•ç»“æœå›¾2.png}
+                                                  
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+d:/HomeMind/main.tex:946: Use of ??? doesn't match its definition.
+<argument> ???  
+                ! LaTeX Error: æ invalid in file name. Lost: fi µ‹è¯•ç»“æœå...
+l.946 ...\linewidth]{HomeMindæµ‹è¯•ç»“æœå›¾2.png}
+                                                  
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+
+
+d:/HomeMind/main.tex:946: LaTeX Error: File `HomeMindæµ‹è¯•ç»“æœå›¾2.png' not found.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.946 ...\linewidth]{HomeMindæµ‹è¯•ç»“æœå›¾2.png}
+                                                  
+I could not locate the file with any of these extensions:
+.pdf,.png,.jpg,.mps,.jpeg,.jbig2,.jb2,.PDF,.PNG,.JPG,.JPEG,.JBIG2,.JB2,.eps
+Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+
+LaTeX Warning: Reference `fig:test-result-2' on page 40 undefined on input line 951.
+
+
+
+[40]
+ç¬¬åäºŒç« 
+
+Underfull \hbox (badness 1668) in paragraph at lines 963--964
+[]\C70/rm/m/n/12/57 : \C70/rm/m/n/12/66 o \C70/rm/m/n/12/4e 	 |\C70/rm/m/n/12/ff ^^H|\C70/rm/m/n/12/5b ¶ \C70/rm/m/n/12/5e ­ \C70/rm/m/n/12/5b ‰ \C70/rm/m/n/12/51 h \C70/rm/m/n/12/5f : \C70/rm/m/n/12/52 6 \C70/rm/m/n/12/6f „ \C70/rm/m/n/12/6e ^^E|\C70/rm/m/n/12/ff 	||^^Z| \C70/rm/m/n/12/75 ( \C70/rm/m/n/12/62 7 \C70/rm/m/n/12/8b ô\OT1/cmr/m/n/12 "\C70/rm/m/n/12/62 Š \C70/rm/m/n/12/95 è ^^A \C70/rm/m/n/12/62 S \C70/rm/m/n/12/5f ^^@\OT1/cmr/m/n/12 "\C70/rm/m/n/12/62 ^^V\OT1/cmr/m/n/12 "\C70/rm/m/n/12/89 ã \C70/rm/m/n/12/96 d \C70/rm/m/n/12/73 „ \C70/rm/m/n/12/51 s \C70/rm/m/n/12/5b ‰ \C70/rm/m/n/12/96 2\OT1/cmr/m/n/12 "|\C70/rm/m/n/12/ff ^^L| \C70/rm/m/n/12/53 s \C70/rm/m/n/12/4f ^^?
+ []
+
+
+LaTeX Warning: File `ui-automation-rule-1.png' not found on input line 971.
+
+
+d:/HomeMind/main.tex:971: Package pdftex.def Error: File `ui-automation-rule-1.png' not found: using draft setting.
+
+See the pdftex.def package documentation for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.971 ...dth=\linewidth]{ui-automation-rule-1.png}
+                                                  
+Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+
+LaTeX Warning: File `ui-automation-rule-2.png' not found on input line 977.
+
+
+d:/HomeMind/main.tex:977: Package pdftex.def Error: File `ui-automation-rule-2.png' not found: using draft setting.
+
+See the pdftex.def package documentation for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.977 ...dth=\linewidth]{ui-automation-rule-2.png}
+                                                  
+Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+
+
+[41
+
+]
+
+LaTeX Warning: File `ui-svg-floorplan.png' not found on input line 988.
+
+
+d:/HomeMind/main.tex:988: Package pdftex.def Error: File `ui-svg-floorplan.png' not found: using draft setting.
+
+See the pdftex.def package documentation for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.988 ...idth=0.9\linewidth]{ui-svg-floorplan.png}
+                                                  
+Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+
+
+[42]
+
+LaTeX Warning: File `ui-entry-overview.png' not found on input line 1001.
+
+
+d:/HomeMind/main.tex:1001: Package pdftex.def Error: File `ui-entry-overview.png' not found: using draft setting.
+
+See the pdftex.def package documentation for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.1001 ...width=\linewidth]{ui-entry-overview.png}
+                                                  
+Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+
+LaTeX Warning: File `ui-dialog-chat.png' not found on input line 1007.
+
+
+d:/HomeMind/main.tex:1007: Package pdftex.def Error: File `ui-dialog-chat.png' not found: using draft setting.
+
+See the pdftex.def package documentation for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.1007 ...cs[width=\linewidth]{ui-dialog-chat.png}
+                                                  
+Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+
+
+[43]
+
+LaTeX Warning: File `ui-scene-switch-1.png' not found on input line 1018.
+
+
+d:/HomeMind/main.tex:1018: Package pdftex.def Error: File `ui-scene-switch-1.png' not found: using draft setting.
+
+See the pdftex.def package documentation for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.1018 ...width=\linewidth]{ui-scene-switch-1.png}
+                                                  
+Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+
+LaTeX Warning: File `ui-scene-switch-2.png' not found on input line 1024.
+
+
+d:/HomeMind/main.tex:1024: Package pdftex.def Error: File `ui-scene-switch-2.png' not found: using draft setting.
+
+See the pdftex.def package documentation for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.1024 ...width=\linewidth]{ui-scene-switch-2.png}
+                                                  
+Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+
+LaTeX Warning: File `ui-device-panel-1.png' not found on input line 1035.
+
+
+d:/HomeMind/main.tex:1035: Package pdftex.def Error: File `ui-device-panel-1.png' not found: using draft setting.
+
+See the pdftex.def package documentation for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.1035 ...width=\linewidth]{ui-device-panel-1.png}
+                                                  
+Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+
+LaTeX Warning: File `ui-device-panel-2.png' not found on input line 1041.
+
+
+d:/HomeMind/main.tex:1041: Package pdftex.def Error: File `ui-device-panel-2.png' not found: using draft setting.
+
+See the pdftex.def package documentation for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.1041 ...width=\linewidth]{ui-device-panel-2.png}
+                                                  
+Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+
+LaTeX Warning: File `ui-device-panel-3.png' not found on input line 1047.
+
+
+d:/HomeMind/main.tex:1047: Package pdftex.def Error: File `ui-device-panel-3.png' not found: using draft setting.
+
+See the pdftex.def package documentation for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.1047 ...width=\linewidth]{ui-device-panel-3.png}
+                                                  
+Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+
+
+[44]
+
+LaTeX Warning: File `ui-memory-preference.png' not found on input line 1058.
+
+
+d:/HomeMind/main.tex:1058: Package pdftex.def Error: File `ui-memory-preference.png' not found: using draft setting.
+
+See the pdftex.def package documentation for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.1058 ....86\linewidth]{ui-memory-preference.png}
+                                                  
+Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+
+
+[45]
+
+LaTeX Warning: File `ui-privacy-cloud-status.png' not found on input line 1067.
+
+
+d:/HomeMind/main.tex:1067: Package pdftex.def Error: File `ui-privacy-cloud-status.png' not found: using draft setting.
+
+See the pdftex.def package documentation for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.1067 ...\linewidth]{ui-privacy-cloud-status.png}
+                                                  
+Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+
+
+[46]
+ç¬¬åä¸‰ç« 
+
+
+[47
+
+]
+Underfull \hbox (badness 1810) in paragraph at lines 1091--1092
+[]\C70/rm/m/n/12/4e Î \C70/rm/m/n/12/5d å \C70/rm/m/n/12/7a  \C70/rm/m/n/12/5b Œ \C70/rm/m/n/12/62 ^^P \C70/rm/m/n/12/5e ¦ \C70/rm/m/n/12/77 |\C70/rm/m/n/12/ff ^^L| \C70/rm/m/n/12/5f S \C70/rm/m/n/12/52 M \C70/rm/m/n/12/7c û \C70/rm/m/n/12/7e ß \C70/rm/m/n/12/5d ò \C70/rm/m/n/12/7e Ï \C70/rm/m/n/12/51 w \C70/rm/m/n/12/59 ^^G \C70/rm/m/n/12/82 å \C70/rm/m/n/12/5e r \C70/rm/m/n/12/4e § \C70/rm/m/n/12/54 Á \C70/rm/m/n/12/53 ^^V \C70/rm/m/n/12/57 ú \C70/rm/m/n/12/78 @ \C70/rm/m/n/12/80 ı \C70/rm/m/n/12/52 ›|\C70/rm/m/n/12/ff ^^L| \C70/rm/m/n/12/53 O \C70/rm/m/n/12/8b ® \C70/rm/m/n/12/5c B \C70/rm/m/n/12/5d ò \C70/rm/m/n/12/7e Ï \C70/rm/m/n/12/63 Ğ \C70/rm/m/n/12/4f ›
+ []
+
+
+
+[48]
+
+[49]
+
+[50]
+Underfull \hbox (badness 7704) in paragraph at lines 1131--1132
+[]\OT1/cmr/m/n/12 SessionStore |\C70/rm/m/n/12/ff ^^H|\OT1/cmr/m/n/12 core/memory/session[]store.py|\C70/rm/m/n/12/ff 	| \C70/rm/m/n/12/7e ô \C70/rm/m/n/12/62 ¤ \C70/rm/m/n/12/77 í \C70/rm/m/n/12/67 ^^_ \C70/rm/m/n/12/4f ^^Z \C70/rm/m/n/12/8b İ \C70/rm/m/n/12/72 ¶ \C70/rm/m/n/12/60 ^^A|\C70/rm/m/n/12/ff ^^L| \C70/rm/m/n/12/53 ^^E \C70/rm/m/n/12/54 + \OT1/cmr/m/n/12 cur-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1131--1132
+\OT1/cmr/m/n/12 rent[]scene|\C70/rm/m/n/12/30 ^^A| \OT1/cmr/m/n/12 last[]user[]input|\C70/rm/m/n/12/30 ^^A| \OT1/cmr/m/n/12 last[]normalized[]input|\C70/rm/m/n/12/30 ^^A| \OT1/cmr/m/n/12 last[]action|\C70/rm/m/n/12/30 ^^A| \OT1/cmr/m/n/12 last[]clarification|\C70/rm/m/n/12/30 ^^A|
+ []
+
+
+
+[51
+
+]
+
+[52]
+LaTeX Font Info:    Trying to load font information for OMS+cmtt on input line 1156.
+LaTeX Font Info:    No file OMScmtt.fd. on input line 1156.
+
+
+LaTeX Font Warning: Font shape `OMS/cmtt/m/n' undefined
+(Font)              using `OMS/cmsy/m/n' instead
+(Font)              for symbol `textbraceleft' on input line 1156.
+
+
+
+[53]
+
+[54]
+
+[55] (main.aux)
+ ***********
+LaTeX2e <2025-11-01>
+L3 programming layer <2022/07/14>
+ ***********
+
+
+LaTeX Font Warning: Some font shapes were not available, defaults substituted.
+
+
+LaTeX Warning: There were undefined references.
+
+
+LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
+
+
+Package rerunfilecheck Warning: File `main.out' has changed.
+(rerunfilecheck)                Rerun to get outlines right
+(rerunfilecheck)                or use package `bookmark'.
+
+Package rerunfilecheck Info: Checksums for `main.out':
+(rerunfilecheck)             Before: <no file>
+(rerunfilecheck)             After:  1D0948EA7D340729308F8F78CE904E60;6306.
+ )
+(\end occurred when \ifx on line 946 was incomplete)
+(\end occurred when \ifx on line 946 was incomplete)
+(\end occurred when \ifx on line 946 was incomplete)
+(\end occurred when \ifx on line 931 was incomplete)
+(\end occurred when \ifx on line 931 was incomplete)
+(\end occurred when \ifx on line 931 was incomplete)
+(\end occurred when \ifx on line 788 was incomplete)
+(\end occurred when \ifx on line 788 was incomplete)
+(\end occurred when \ifx on line 788 was incomplete)
+(\end occurred when \ifx on line 461 was incomplete)
+(\end occurred when \ifx on line 461 was incomplete)
+(\end occurred when \ifx on line 461 was incomplete)
+(\end occurred when \ifx on line 461 was incomplete)
+(\end occurred when \ifx on line 443 was incomplete)
+(\end occurred when \ifx on line 443 was incomplete)
+(\end occurred when \ifx on line 443 was incomplete)
+(\end occurred when \ifx on line 401 was incomplete)
+(\end occurred when \ifx on line 401 was incomplete)
+(\end occurred when \ifx on line 401 was incomplete)
+(\end occurred when \ifx on line 386 was incomplete)
+(\end occurred when \ifx on line 386 was incomplete)
+(\end occurred when \ifx on line 386 was incomplete)
+(\end occurred when \ifx on line 350 was incomplete)
+(\end occurred when \ifx on line 350 was incomplete)
+(\end occurred when \ifx on line 350 was incomplete)
+(\end occurred when \ifx on line 350 was incomplete)
+(\end occurred when \ifx on line 259 was incomplete)
+(\end occurred when \ifx on line 259 was incomplete)
+(\end occurred when \ifx on line 259 was incomplete)
+(\end occurred when \ifx on line 239 was incomplete)
+(\end occurred when \ifx on line 239 was incomplete)
+(\end occurred when \ifx on line 239 was incomplete)
+(\end occurred when \ifx on line 172 was incomplete)
+(\end occurred when \ifx on line 172 was incomplete)
+(\end occurred when \ifx on line 172 was incomplete) 
+Here is how much of TeX's memory you used:
+ 37357 strings out of 467872
+ 757522 string characters out of 5418597
+ 1127849 words of memory out of 5000000
+ 64897 multiletter control sequences out of 15000+600000
+ 758419 words of font info for 520 fonts, out of 8000000 for 9000
+ 1141 hyphenation exceptions out of 8191
+ 88i,13n,96p,1560b,667s stack positions out of 10000i,1000n,20000p,200000b,200000s
+<C:/WINDOWS/Fonts/simfang.ttf> <C:\Users\wblxr\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi657\tcrm1000.pk><C:/WINDOWS/Fonts/simfang.ttf><C:/WINDOWS/Fonts/simfang.ttf><C:/WINDOWS/Fonts/simfang.ttf><C:/WINDOWS/Fonts/simfang.ttf><C:/WINDOWS/Fonts/simfang.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf> <C:\Users\wblxr\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\tcrm1200.pk><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simsun.ttc><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/WINDOWS/Fonts/simhei.ttf><C:/Users/wblxr/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx10.pfb><C:/Users/wblxr/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx12.pfb><C:/Users/wblxr/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmex10.pfb><C:/Users/wblxr/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Users/wblxr/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi12.pfb><C:/Users/wblxr/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi8.pfb><C:/Users/wblxr/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Users/wblxr/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr12.pfb><C:/Users/wblxr/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr8.pfb><C:/Users/wblxr/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/wblxr/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy6.pfb><C:/Users/wblxr/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy8.pfb><C:/Users/wblxr/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmtt10.pfb><C:/Users/wblxr/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmtt12.pfb><C:/Users/wblxr/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
+Output written on main.pdf (59 pages, 1344115 bytes).
+PDF statistics:
+ 1234 PDF objects out of 1440 (max. 8388607)
+ 178 named destinations out of 1000 (max. 500000)
+ 477 words of extra memory for PDF output out of 10000 (max. 10000000)
+
+>>>>>>> Stashed changes

@@ -1,0 +1,148 @@
+﻿============================= test session starts =============================
+platform win32 -- Python 3.11.7, pytest-7.4.3, pluggy-1.0.0 -- C:\Users\wblxr\anaconda3\python.exe
+cachedir: .pytest_cache
+hypothesis profile 'default' -> database=DirectoryBasedExampleDatabase(WindowsPath('D:/HomeMind/.hypothesis/examples'))
+rootdir: D:\HomeMind
+configfile: pytest.ini
+plugins: anyio-4.13.0, hypothesis-6.92.1, langsmith-0.7.32, asyncio-0.21.1, cov-4.1.0
+asyncio: mode=Mode.STRICT
+collecting ... collected 56 items
+
+tests/test_mock_flows.py::HomeMindCliMockFlowTests::test_cli_mock_hot_query_controls_air_conditioner FAILED [  1%]
+tests/test_mock_flows.py::HomeMindCliMockFlowTests::test_cli_mock_scene_query_switches_sleep_scene PASSED [  3%]
+tests/test_mock_flows.py::HomeMindWebMockFlowTests::test_device_and_scene_endpoints_apply_mock_state_changes PASSED [  5%]
+tests/test_mock_flows.py::HomeMindWebMockFlowTests::test_info_dqn_and_kb_endpoints_work_in_mock_mode PASSED [  7%]
+tests/test_mock_flows.py::HomeMindWebMockFlowTests::test_init_agent_reuses_existing_instance_without_restarting_threads PASSED [  8%]
+tests/test_mock_flows.py::HomeMindWebMockFlowTests::test_query_endpoint_handles_device_and_scene_commands_in_mock_mode FAILED [ 10%]
+tests/test_mock_flows.py::HomeMindWebMockFlowTests::test_status_endpoint_returns_context_devices_and_kb_status PASSED [ 12%]
+tests/test_mock_flows.py::HomeMindWebMockFlowTests::test_voice_endpoint_requires_uploaded_audio PASSED [ 14%]
+tests/test_system_product_flows.py::HomeMindSystemRegressionTests::test_low_confidence_unknown_request_asks_for_clarification FAILED [ 16%]
+tests/test_system_product_flows.py::HomeMindSystemRegressionTests::test_main_agent_greeting_returns_chat_reply PASSED [ 17%]
+tests/test_system_product_flows.py::HomeMindSystemRegressionTests::test_main_agent_hot_request_updates_device_state_and_memory FAILED [ 19%]
+tests/test_system_product_flows.py::HomeMindSystemRegressionTests::test_main_agent_leave_home_phrase_switches_away_scene PASSED [ 21%]
+tests/test_system_product_flows.py::HomeMindSystemRegressionTests::test_main_agent_time_command_requires_confirmation_then_creates_rule PASSED [ 23%]
+tests/test_system_product_flows.py::HomeMindSystemRegressionTests::test_main_agent_unsupported_alarm_request_returns_guardrail_message PASSED [ 25%]
+tests/test_system_product_flows.py::DefaultFloorPlanFixtureTests::test_default_floor_plan_and_device_mapping_are_aligned PASSED [ 26%]
+tests/test_system_product_flows.py::WebApiSystemTests::test_accepting_automation_proposal_creates_rule PASSED [ 28%]
+tests/test_system_product_flows.py::WebApiSystemTests::test_change_feedback_records_correction_mapping PASSED [ 30%]
+tests/test_system_product_flows.py::WebApiSystemTests::test_change_feedback_reexecutes_correction_and_keeps_feedback_loop PASSED [ 32%]
+tests/test_system_product_flows.py::WebApiSystemTests::test_change_feedback_revises_automation_proposal_for_next_round PASSED [ 33%]
+tests/test_system_product_flows.py::WebApiSystemTests::test_device_registry_crud_and_control PASSED [ 35%]
+tests/test_system_product_flows.py::WebApiSystemTests::test_device_registry_rejects_duplicate_ids_and_id_rename PASSED [ 37%]
+tests/test_system_product_flows.py::WebApiSystemTests::test_endpoints_return_500_when_agent_is_not_initialized PASSED [ 39%]
+tests/test_system_product_flows.py::WebApiSystemTests::test_floor_plan_crud_and_device_mapping PASSED [ 41%]
+tests/test_system_product_flows.py::WebApiSystemTests::test_followup_may_day_updates_pending_automation_trigger PASSED [ 42%]
+tests/test_system_product_flows.py::WebApiSystemTests::test_privacy_status_exposes_minimal_context_after_query PASSED [ 44%]
+tests/test_system_product_flows.py::WebApiSystemTests::test_query_close_ac_is_not_overridden_by_temperature_preference PASSED [ 46%]
+tests/test_system_product_flows.py::WebApiSystemTests::test_query_endpoint_rejects_empty_user_input PASSED [ 48%]
+tests/test_system_product_flows.py::WebApiSystemTests::test_query_follow_up_brighten_uses_previous_light_context PASSED [ 50%]
+tests/test_system_product_flows.py::WebApiSystemTests::test_query_greeting_returns_chat_response PASSED [ 51%]
+tests/test_system_product_flows.py::WebApiSystemTests::test_query_leave_home_phrase_is_not_overridden_by_return_home_preference PASSED [ 53%]
+tests/test_system_product_flows.py::WebApiSystemTests::test_query_leave_home_phrase_switches_away_scene_not_air_conditioner PASSED [ 55%]
+tests/test_system_product_flows.py::WebApiSystemTests::test_query_may_day_command_returns_holiday_automation_proposal PASSED [ 57%]
+tests/test_system_product_flows.py::WebApiSystemTests::test_query_open_light_is_not_overridden_by_dim_preference PASSED [ 58%]
+tests/test_system_product_flows.py::WebApiSystemTests::test_query_regression_device_action_mapping_uses_explicit_target PASSED [ 60%]
+tests/test_system_product_flows.py::WebApiSystemTests::test_query_regression_multi_turn_clarification_and_pronoun PASSED [ 62%]
+tests/test_system_product_flows.py::WebApiSystemTests::test_query_regression_multiple_clarification_sessions PASSED [ 64%]
+tests/test_system_product_flows.py::WebApiSystemTests::test_query_regression_natural_comfort_and_scene_coverage PASSED [ 66%]
+tests/test_system_product_flows.py::WebApiSystemTests::test_query_regression_unsupported_device_targets PASSED [ 67%]
+tests/test_system_product_flows.py::WebApiSystemTests::test_query_requires_device_in_active_floor_plan_mapping PASSED [ 69%]
+tests/test_system_product_flows.py::WebApiSystemTests::test_query_security_clarification_preempts_pending_generic_clarification PASSED [ 71%]
+tests/test_system_product_flows.py::WebApiSystemTests::test_query_security_sensitive_door_lock_always_clarifies PASSED [ 73%]
+tests/test_system_product_flows.py::WebApiSystemTests::test_query_time_command_returns_automation_proposal PASSED [ 75%]
+tests/test_system_product_flows.py::WebApiSystemTests::test_query_unsupported_alarm_request_returns_unsupported_status PASSED [ 76%]
+tests/test_system_product_flows.py::WebApiSystemTests::test_query_uses_custom_area_name_from_floor_plan_mapping PASSED [ 78%]
+tests/test_system_product_flows.py::WebApiSystemTests::test_reject_feedback_updates_interaction_metrics PASSED [ 80%]
+tests/test_system_product_flows.py::WebApiSystemTests::test_rule_evaluate_rejects_invalid_time_format PASSED [ 82%]
+tests/test_system_product_flows.py::WebApiSystemTests::test_rule_from_nl_returns_draft_and_saves_only_when_requested PASSED [ 83%]
+tests/test_system_product_flows.py::WebApiSystemTests::test_scene_crud_endpoints_manage_custom_scene_configs PASSED [ 85%]
+tests/test_system_product_flows.py::WebApiSystemTests::test_scene_crud_rejects_non_object_config PASSED [ 87%]
+tests/test_system_product_flows.py::WebApiSystemTests::test_scene_from_nl_returns_editable_draft_before_save PASSED [ 89%]
+tests/test_system_product_flows.py::WebApiSystemTests::test_scene_switch_endpoint_updates_scene_and_devices PASSED [ 91%]
+tests/test_system_product_flows.py::WebApiSystemTests::test_simulated_devices_use_space_to_disambiguate_generic_names PASSED [ 92%]
+tests/test_system_product_flows.py::WebApiSystemTests::test_svg_floor_plan_upload_is_validated_saved_and_listed PASSED [ 94%]
+tests/test_system_product_flows.py::WebApiSystemTests::test_svg_floor_plan_upload_rejects_script_content PASSED [ 96%]
+tests/test_system_product_flows.py::WebApiSystemTests::test_voice_feedback_corrected_text_is_recorded_and_reused PASSED [ 98%]
+tests/test_system_product_flows.py::WebApiSystemTests::test_voice_feedback_requires_source_text PASSED [100%]
+
+================================== FAILURES ===================================
+__ HomeMindCliMockFlowTests.test_cli_mock_hot_query_controls_air_conditioner __
+
+self = <test_mock_flows.HomeMindCliMockFlowTests testMethod=test_cli_mock_hot_query_controls_air_conditioner>
+
+    def test_cli_mock_hot_query_controls_air_conditioner(self):
+        from main import HomeMindAgent
+    
+        agent = HomeMindAgent()
+    
+        result = agent.process("有点热")
+    
+        self.assertIn("空调", result)
+>       self.assertEqual(agent.device_ctrl.get_state("空调").get("status"), "开")
+E       AssertionError: '关' != '开'
+E       - 关
+E       + 开
+
+tests\test_mock_flows.py:50: AssertionError
+------------------------------ Captured log call ------------------------------
+WARNING  core.rag.knowledge_base:knowledge_base.py:58 ChromaDB not installed; using in-memory knowledge store
+_ HomeMindWebMockFlowTests.test_query_endpoint_handles_device_and_scene_commands_in_mock_mode _
+
+self = <test_mock_flows.HomeMindWebMockFlowTests testMethod=test_query_endpoint_handles_device_and_scene_commands_in_mock_mode>
+
+    def test_query_endpoint_handles_device_and_scene_commands_in_mock_mode(self):
+        hot_response = self.client.post("/api/query", json={"query": "有点热"})
+        sleep_response = self.client.post("/api/query", json={"query": "我要睡觉了"})
+    
+        self.assertEqual(hot_response.status_code, 200)
+        self.assertEqual(sleep_response.status_code, 200)
+    
+        hot_payload = hot_response.get_json()
+        sleep_payload = sleep_response.get_json()
+    
+        self.assertEqual(hot_payload["status"], "success")
+>       self.assertEqual(hot_payload["action"], "空调_on")
+E       KeyError: 'action'
+
+tests\test_mock_flows.py:121: KeyError
+_ HomeMindSystemRegressionTests.test_low_confidence_unknown_request_asks_for_clarification _
+
+self = <test_system_product_flows.HomeMindSystemRegressionTests testMethod=test_low_confidence_unknown_request_asks_for_clarification>
+
+    def test_low_confidence_unknown_request_asks_for_clarification(self):
+        from main import HomeMindAgent
+    
+        agent = HomeMindAgent(confidence_threshold=0.95)
+        response = agent.process("completely unrelated request")
+    
+>       self.assertIn(ASK_PREFIX, response)
+E       AssertionError: '请问' not found in '您好，我无法理解您所说的内容，请提供更清晰的请求或问题。'
+
+tests\test_system_product_flows.py:77: AssertionError
+------------------------------ Captured log call ------------------------------
+WARNING  core.rag.knowledge_base:knowledge_base.py:58 ChromaDB not installed; using in-memory knowledge store
+_ HomeMindSystemRegressionTests.test_main_agent_hot_request_updates_device_state_and_memory _
+
+self = <test_system_product_flows.HomeMindSystemRegressionTests testMethod=test_main_agent_hot_request_updates_device_state_and_memory>
+
+    def test_main_agent_hot_request_updates_device_state_and_memory(self):
+        from main import HomeMindAgent
+    
+        agent = HomeMindAgent()
+        result = agent.process(HOT)
+    
+        self.assertIn(AC_DEVICE, result)
+>       self.assertEqual(agent.device_ctrl.get_state(AC_DEVICE).get("status"), ON_STATUS)
+E       AssertionError: '关' != '开'
+E       - 关
+E       + 开
+
+tests\test_system_product_flows.py:53: AssertionError
+------------------------------ Captured log call ------------------------------
+WARNING  core.rag.knowledge_base:knowledge_base.py:58 ChromaDB not installed; using in-memory knowledge store
+=========================== short test summary info ===========================
+FAILED tests/test_mock_flows.py::HomeMindCliMockFlowTests::test_cli_mock_hot_query_controls_air_conditioner
+FAILED tests/test_mock_flows.py::HomeMindWebMockFlowTests::test_query_endpoint_handles_device_and_scene_commands_in_mock_mode
+FAILED tests/test_system_product_flows.py::HomeMindSystemRegressionTests::test_low_confidence_unknown_request_asks_for_clarification
+FAILED tests/test_system_product_flows.py::HomeMindSystemRegressionTests::test_main_agent_hot_request_updates_device_state_and_memory
+======================== 4 failed, 52 passed in 55.85s ========================

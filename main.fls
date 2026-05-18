@@ -347,9 +347,6 @@ INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex\latex\cjk\UTF8\UTF8.enc
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex\latex\cjk\UTF8\UTF8.enc
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex\latex\cjk\UTF8\UTF8.chr
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex\latex\cjk\UTF8\UTF8.chr
-INPUT .\main.aux
-INPUT .\main.aux
-INPUT main.aux
 OUTPUT main.aux
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex\context\base\mkii\supp-pdf.mkii
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex\context\base\mkii\supp-pdf.mkii
@@ -464,6 +461,7 @@ INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\un
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei5e.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong63.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong65.tfm
+<<<<<<< Updated upstream
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong5e.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong4e.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei62.tfm
@@ -485,6 +483,12 @@ INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\u
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong89.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong56.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong54.tfm
+=======
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong56.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\public\cm\cmr10.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\public\cm\cmbx10.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei56.tfm
+>>>>>>> Stashed changes
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex\generic\ctex\zhmap\ctex-zhmap-windows.tex
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\tex\generic\ctex\zhmap\ctex-zhmap-windows.tex
 INPUT C:\Users\wblxr\AppData\Local\MiKTeX\fonts\map\pdftex\pdftex.map
@@ -502,8 +506,14 @@ INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\u
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong7f.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong6b.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong30.tfm
+<<<<<<< Updated upstream
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong7c.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong60.tfm
+=======
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong97.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong54.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong98.tfm
+>>>>>>> Stashed changes
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong95.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong88.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong57.tfm
@@ -515,14 +525,37 @@ INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\u
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong50.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong90.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong73.tfm
+<<<<<<< Updated upstream
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong75.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong9a.tfm
+=======
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong7c.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong75.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong6e.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong6c.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong60.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong58.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong6f.tfm
+>>>>>>> Stashed changes
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong78.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong6a.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong61.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong72.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong83.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong68.tfm
+<<<<<<< Updated upstream
+=======
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong9a.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong5d.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong9f.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong6d.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong64.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong8e.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong79.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong6a.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong72.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong61.tfm
+>>>>>>> Stashed changes
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong7d.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong84.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong70.tfm
@@ -581,6 +614,7 @@ INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\un
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei66.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong9f.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong82.tfm
+<<<<<<< Updated upstream
 INPUT .\1-2.png
 INPUT .\1-2.png
 INPUT .\1-2.png
@@ -600,6 +634,9 @@ INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\u
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong68.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong69.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong89.tfm
+=======
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\public\cm\cmtt12.tfm
+>>>>>>> Stashed changes
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei68.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei88.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong98.tfm
@@ -613,6 +650,15 @@ INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\u
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong63.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei74.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei8a.tfm
+<<<<<<< Updated upstream
+=======
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei90.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei91.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei8f.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong8c.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei7c.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei73.tfm
+>>>>>>> Stashed changes
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong99.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei51.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei95.tfm
@@ -623,10 +669,30 @@ INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\un
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei67.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei72.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei5f.tfm
+<<<<<<< Updated upstream
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei30.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei9a.tfm
+=======
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong52.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong65.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong62.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong67.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong72.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei7a.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei4f.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei30.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei97.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei5d.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei5f.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei74.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei89.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei59.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei8d.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei53.tfm
+>>>>>>> Stashed changes
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong9c.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei77.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei9a.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei61.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong87.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei88.tfm
@@ -670,8 +736,12 @@ INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\u
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong5e.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei6e.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei72.tfm
+<<<<<<< Updated upstream
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\public\cm\cmtt12.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong8e.tfm
+=======
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei5c.tfm
+>>>>>>> Stashed changes
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei60.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei88.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei60.tfm
@@ -815,6 +885,12 @@ INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\un
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei7d.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei63.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei6d.tfm
+<<<<<<< Updated upstream
+=======
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong6d.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei56.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei7f.tfm
+>>>>>>> Stashed changes
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei99.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei8b.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei53.tfm
@@ -832,6 +908,24 @@ INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\un
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\public\cm\cmbx8.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\public\cm\cmbx6.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei83.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\public\cm\cmmi10.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\public\cm\cmsy10.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\public\cm\cmex10.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\public\amsfonts\symbols\msam10.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\public\amsfonts\symbols\msbm10.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong8b.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong59.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong5f.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong8b.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong59.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong5f.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong60.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong60.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong88.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei7d.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong86.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong99.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong59.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei6a.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei57.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei8a.tfm
@@ -889,11 +983,6 @@ INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\un
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei8b.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei6d.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong96.tfm
-INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\public\cm\cmmi10.tfm
-INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\public\cm\cmsy10.tfm
-INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\public\cm\cmex10.tfm
-INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\public\amsfonts\symbols\msam10.tfm
-INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\public\amsfonts\symbols\msbm10.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei6d.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei8b.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei7c.tfm
@@ -922,8 +1011,11 @@ INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\un
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei60.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei95.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei98.tfm
+<<<<<<< Updated upstream
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong59.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong74.tfm
+=======
+>>>>>>> Stashed changes
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei51.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei8f.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong20.tfm
@@ -963,14 +1055,64 @@ INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\u
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong72.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei7c.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei5e.tfm
+<<<<<<< Updated upstream
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei6f.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei79.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei62.tfm
+=======
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\public\cm\cmbx10.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong81.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong52.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong53.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong89.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong88.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong4e.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong54.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong50.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong75.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong97.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong7f.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong8f.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong67.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong91.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong51.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong71.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong8b.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong8a.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong5b.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong57.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong66.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong6a.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong5f.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong90.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong62.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong63.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong76.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong80.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong5c.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong79.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong7a.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong95.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong56.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong59.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong72.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong60.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong64.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong4f.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong64.tfm
+>>>>>>> Stashed changes
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei6f.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\uniheiff.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\public\cm\cmr17.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\public\cm\cmbx12.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei96.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei5f.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei53.tfm
+<<<<<<< Updated upstream
+=======
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei4f.tfm
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unihei\unihei56.tfm
+>>>>>>> Stashed changes
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unisong\unisong83.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unifs\unifs67.tfm
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\tfm\zhmetrics\unifs\unifs70.tfm
@@ -989,7 +1131,13 @@ INPUT C:\WINDOWS\Fonts\simhei.ttf
 INPUT C:\WINDOWS\Fonts\simhei.ttf
 INPUT C:\WINDOWS\Fonts\simhei.ttf
 INPUT C:\WINDOWS\Fonts\simhei.ttf
+<<<<<<< Updated upstream
 INPUT C:\WINDOWS\Fonts\simsun.ttc
+=======
+INPUT C:\WINDOWS\Fonts\simhei.ttf
+INPUT C:\WINDOWS\Fonts\simsun.ttc
+INPUT C:\WINDOWS\Fonts\simhei.ttf
+>>>>>>> Stashed changes
 INPUT C:\WINDOWS\Fonts\simhei.ttf
 INPUT C:\Users\wblxr\AppData\Local\MiKTeX\fonts\pk\ljfour\jknappen\ec\dpi600\tcrm1200.pk
 INPUT C:\Users\wblxr\AppData\Local\MiKTeX\fonts\pk\ljfour\jknappen\ec\dpi600\tcrm1200.pk
@@ -1008,32 +1156,8 @@ INPUT C:\WINDOWS\Fonts\simsun.ttc
 INPUT C:\WINDOWS\Fonts\simhei.ttf
 INPUT C:\WINDOWS\Fonts\simhei.ttf
 INPUT C:\WINDOWS\Fonts\simhei.ttf
-INPUT C:\WINDOWS\Fonts\simsun.ttc
-INPUT C:\WINDOWS\Fonts\simhei.ttf
-INPUT C:\WINDOWS\Fonts\simhei.ttf
 INPUT C:\WINDOWS\Fonts\simhei.ttf
 INPUT C:\WINDOWS\Fonts\simsun.ttc
-INPUT C:\WINDOWS\Fonts\simsun.ttc
-INPUT C:\WINDOWS\Fonts\simhei.ttf
-INPUT C:\WINDOWS\Fonts\simsun.ttc
-INPUT C:\WINDOWS\Fonts\simhei.ttf
-INPUT C:\WINDOWS\Fonts\simhei.ttf
-INPUT C:\WINDOWS\Fonts\simhei.ttf
-INPUT C:\WINDOWS\Fonts\simhei.ttf
-INPUT C:\WINDOWS\Fonts\simhei.ttf
-INPUT C:\WINDOWS\Fonts\simhei.ttf
-INPUT C:\WINDOWS\Fonts\simhei.ttf
-INPUT C:\WINDOWS\Fonts\simsun.ttc
-INPUT C:\WINDOWS\Fonts\simsun.ttc
-INPUT C:\WINDOWS\Fonts\simsun.ttc
-INPUT C:\WINDOWS\Fonts\simsun.ttc
-INPUT C:\WINDOWS\Fonts\simhei.ttf
-INPUT C:\WINDOWS\Fonts\simhei.ttf
-INPUT C:\WINDOWS\Fonts\simhei.ttf
-INPUT C:\WINDOWS\Fonts\simhei.ttf
-INPUT C:\WINDOWS\Fonts\simhei.ttf
-INPUT C:\WINDOWS\Fonts\simhei.ttf
-INPUT C:\WINDOWS\Fonts\simhei.ttf
 INPUT C:\WINDOWS\Fonts\simhei.ttf
 INPUT C:\WINDOWS\Fonts\simhei.ttf
 INPUT C:\WINDOWS\Fonts\simhei.ttf
@@ -1044,6 +1168,104 @@ INPUT C:\WINDOWS\Fonts\simhei.ttf
 INPUT C:\WINDOWS\Fonts\simhei.ttf
 INPUT C:\WINDOWS\Fonts\simsun.ttc
 INPUT C:\WINDOWS\Fonts\simsun.ttc
+INPUT C:\WINDOWS\Fonts\simhei.ttf
+INPUT C:\WINDOWS\Fonts\simhei.ttf
+INPUT C:\WINDOWS\Fonts\simsun.ttc
+INPUT C:\WINDOWS\Fonts\simhei.ttf
+INPUT C:\WINDOWS\Fonts\simhei.ttf
+INPUT C:\WINDOWS\Fonts\simhei.ttf
+INPUT C:\WINDOWS\Fonts\simsun.ttc
+INPUT C:\WINDOWS\Fonts\simsun.ttc
+INPUT C:\WINDOWS\Fonts\simhei.ttf
+<<<<<<< Updated upstream
+=======
+INPUT C:\WINDOWS\Fonts\simhei.ttf
+INPUT C:\WINDOWS\Fonts\simhei.ttf
+INPUT C:\WINDOWS\Fonts\simhei.ttf
+INPUT C:\WINDOWS\Fonts\simhei.ttf
+INPUT C:\WINDOWS\Fonts\simhei.ttf
+INPUT C:\WINDOWS\Fonts\simhei.ttf
+INPUT C:\WINDOWS\Fonts\simsun.ttc
+INPUT C:\WINDOWS\Fonts\simsun.ttc
+INPUT C:\WINDOWS\Fonts\simsun.ttc
+INPUT C:\WINDOWS\Fonts\simsun.ttc
+INPUT C:\WINDOWS\Fonts\simsun.ttc
+INPUT C:\WINDOWS\Fonts\simsun.ttc
+INPUT C:\WINDOWS\Fonts\simsun.ttc
+INPUT C:\WINDOWS\Fonts\simsun.ttc
+INPUT C:\WINDOWS\Fonts\simsun.ttc
+INPUT C:\WINDOWS\Fonts\simsun.ttc
+INPUT C:\WINDOWS\Fonts\simsun.ttc
+INPUT C:\WINDOWS\Fonts\simsun.ttc
+INPUT C:\WINDOWS\Fonts\simsun.ttc
+INPUT C:\WINDOWS\Fonts\simsun.ttc
+INPUT C:\WINDOWS\Fonts\simsun.ttc
+INPUT C:\WINDOWS\Fonts\simsun.ttc
+INPUT C:\WINDOWS\Fonts\simsun.ttc
+INPUT C:\WINDOWS\Fonts\simsun.ttc
+INPUT C:\WINDOWS\Fonts\simsun.ttc
+INPUT C:\WINDOWS\Fonts\simsun.ttc
+INPUT C:\WINDOWS\Fonts\simsun.ttc
+INPUT C:\WINDOWS\Fonts\simsun.ttc
+INPUT C:\WINDOWS\Fonts\simsun.ttc
+INPUT C:\WINDOWS\Fonts\simsun.ttc
+INPUT C:\WINDOWS\Fonts\simsun.ttc
+INPUT C:\WINDOWS\Fonts\simsun.ttc
+INPUT C:\WINDOWS\Fonts\simsun.ttc
+INPUT C:\WINDOWS\Fonts\simsun.ttc
+INPUT C:\WINDOWS\Fonts\simsun.ttc
+INPUT C:\WINDOWS\Fonts\simsun.ttc
+INPUT C:\WINDOWS\Fonts\simsun.ttc
+INPUT C:\WINDOWS\Fonts\simsun.ttc
+INPUT C:\WINDOWS\Fonts\simsun.ttc
+INPUT C:\WINDOWS\Fonts\simsun.ttc
+INPUT C:\WINDOWS\Fonts\simsun.ttc
+INPUT C:\WINDOWS\Fonts\simsun.ttc
+INPUT C:\WINDOWS\Fonts\simsun.ttc
+INPUT C:\WINDOWS\Fonts\simsun.ttc
+INPUT C:\WINDOWS\Fonts\simsun.ttc
+INPUT C:\WINDOWS\Fonts\simsun.ttc
+INPUT C:\WINDOWS\Fonts\simsun.ttc
+INPUT C:\WINDOWS\Fonts\simsun.ttc
+INPUT C:\WINDOWS\Fonts\simsun.ttc
+INPUT C:\WINDOWS\Fonts\simsun.ttc
+INPUT C:\WINDOWS\Fonts\simsun.ttc
+INPUT C:\WINDOWS\Fonts\simsun.ttc
+INPUT C:\WINDOWS\Fonts\simsun.ttc
+INPUT C:\WINDOWS\Fonts\simsun.ttc
+INPUT C:\WINDOWS\Fonts\simsun.ttc
+INPUT C:\WINDOWS\Fonts\simsun.ttc
+>>>>>>> Stashed changes
+INPUT C:\WINDOWS\Fonts\simsun.ttc
+INPUT C:\WINDOWS\Fonts\simhei.ttf
+INPUT C:\WINDOWS\Fonts\simhei.ttf
+INPUT C:\WINDOWS\Fonts\simhei.ttf
+<<<<<<< Updated upstream
+INPUT C:\WINDOWS\Fonts\simhei.ttf
+INPUT C:\WINDOWS\Fonts\simhei.ttf
+INPUT C:\WINDOWS\Fonts\simhei.ttf
+INPUT C:\WINDOWS\Fonts\simhei.ttf
+INPUT C:\WINDOWS\Fonts\simsun.ttc
+INPUT C:\WINDOWS\Fonts\simsun.ttc
+INPUT C:\WINDOWS\Fonts\simsun.ttc
+INPUT C:\WINDOWS\Fonts\simsun.ttc
+INPUT C:\WINDOWS\Fonts\simhei.ttf
+INPUT C:\WINDOWS\Fonts\simhei.ttf
+INPUT C:\WINDOWS\Fonts\simhei.ttf
+INPUT C:\WINDOWS\Fonts\simhei.ttf
+INPUT C:\WINDOWS\Fonts\simhei.ttf
+INPUT C:\WINDOWS\Fonts\simhei.ttf
+INPUT C:\WINDOWS\Fonts\simhei.ttf
+INPUT C:\WINDOWS\Fonts\simhei.ttf
+INPUT C:\WINDOWS\Fonts\simhei.ttf
+INPUT C:\WINDOWS\Fonts\simhei.ttf
+INPUT C:\WINDOWS\Fonts\simhei.ttf
+INPUT C:\WINDOWS\Fonts\simhei.ttf
+INPUT C:\WINDOWS\Fonts\simhei.ttf
+INPUT C:\WINDOWS\Fonts\simhei.ttf
+INPUT C:\WINDOWS\Fonts\simhei.ttf
+INPUT C:\WINDOWS\Fonts\simsun.ttc
+INPUT C:\WINDOWS\Fonts\simsun.ttc
 INPUT C:\WINDOWS\Fonts\simsun.ttc
 INPUT C:\WINDOWS\Fonts\simsun.ttc
 INPUT C:\WINDOWS\Fonts\simsun.ttc
@@ -1075,6 +1297,8 @@ INPUT C:\WINDOWS\Fonts\simsun.ttc
 INPUT C:\WINDOWS\Fonts\simsun.ttc
 INPUT C:\WINDOWS\Fonts\simhei.ttf
 INPUT C:\WINDOWS\Fonts\simhei.ttf
+=======
+>>>>>>> Stashed changes
 INPUT C:\WINDOWS\Fonts\simsun.ttc
 INPUT C:\WINDOWS\Fonts\simsun.ttc
 INPUT C:\WINDOWS\Fonts\simsun.ttc
@@ -1139,6 +1363,8 @@ INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\type1\public\amsfonts\c
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\type1\public\amsfonts\cm\cmbx12.pfb
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\type1\public\amsfonts\cm\cmex10.pfb
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\type1\public\amsfonts\cm\cmex10.pfb
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\type1\public\amsfonts\cm\cmmi10.pfb
+INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\type1\public\amsfonts\cm\cmmi10.pfb
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\type1\public\amsfonts\cm\cmmi12.pfb
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\type1\public\amsfonts\cm\cmmi12.pfb
 INPUT C:\Users\wblxr\AppData\Local\Programs\MiKTeX\fonts\type1\public\amsfonts\cm\cmmi8.pfb

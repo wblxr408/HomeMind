@@ -3,6 +3,7 @@
 from copy import deepcopy
 from typing import Any, Dict, List
 
+from core.config import VALIDATOR_CONFIG
 from core.automation.scene_store import SceneStore
 from tools.scene_switch import SCENE_CONFIGS
 
@@ -20,7 +21,7 @@ class CommandValidator:
         "热水器": {"on", "off", "adjust"},
         "风扇": {"on", "off", "adjust"},
         "音响": {"on", "off", "adjust"},
-        "窗户": {"open", "close"},
+        "窗户": {"on", "off", "adjust"},
     }
     VALID_ACTION_TYPES = {"设备控制", "场景切换", "信息查询"}
     PARAM_RANGES = {
@@ -75,7 +76,44 @@ class CommandValidator:
         normalized.setdefault("query_type", "")
         if not isinstance(normalized["params"], dict):
             normalized["params"] = {}
+
+        # 归一化 action 类型：Cloud LLM 可能返回 "打开空调" 而非 "设备控制"
+        action = normalized.get("action", "")
+        if action not in self.VALID_ACTION_TYPES:
+            # 尝试从 action 文本推断类型和参数
+            fixed = self._fix_action_field(action, normalized)
+            if fixed:
+                normalized = fixed
+
         return normalized
+
+    def _fix_action_field(self, action: str, command: Dict[str, Any]) -> Dict[str, Any] | None:
+        """
+        尝试修复 Cloud LLM 返回的非法 action 值。
+        例如：action="打开空调" → action="设备控制", device="空调", device_action="on"
+        """
+        from core.llm.decision import DEVICE_ACTION_MAP, SCENE_ACTION_MAP
+
+        # 匹配设备控制：action 字段包含设备+动作
+        for key, (ctrl_type, device, device_action, params) in DEVICE_ACTION_MAP.items():
+            if key in action:
+                command["action"] = "设备控制"
+                command["device"] = device
+                command["device_action"] = device_action
+                # 合并 LLM 返回的参数和已知参数
+                existing_params = dict(command.get("params", {}))
+                existing_params.update(params)
+                command["params"] = existing_params
+                return command
+
+        # 匹配场景切换
+        for key, scene in SCENE_ACTION_MAP.items():
+            if key in action or scene in action:
+                command["action"] = "场景切换"
+                command["scene"] = scene
+                return command
+
+        return None
 
     def _validate_device_control(self, command: Dict[str, Any]) -> List[str]:
         errors: List[str] = []
@@ -115,7 +153,9 @@ class CommandValidator:
         params = command.get("params", {})
 
         if action == "设备控制":
-            if device == "热水器" and float(params.get("temperature", 45) or 45) >= 60:
+            risk_temp = VALIDATOR_CONFIG.get("water_heater_risk_temp", 60)
+            default_temp = VALIDATOR_CONFIG.get("water_heater_default_temp", 45)
+            if device == "热水器" and float(params.get("temperature", default_temp) or default_temp) >= risk_temp:
                 return "high"
             if device in ("窗户", "热水器"):
                 return "medium"

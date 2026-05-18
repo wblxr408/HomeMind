@@ -1,7 +1,13 @@
 # Fdb version 4
+<<<<<<< Updated upstream
 ["pdflatex"] 1777519678.79965 "d:/HomeMind/main.tex" "main.pdf" "main" 1777519685.26025 0
   "1-2.png" 1777083625.15291 883287 4e1fa340d5d6759d3b85d3e0e80d5150 ""
   "C:/Users/wblxr/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map" 1777090001.31493 82507 a9eef8696c92627b87e9975edea03b2a ""
+=======
+["pdflatex"] 1777816877.19 "d:/HomeMind/main.tex" "main.pdf" "main" 1777816880.96499 2
+  "7HomeMind核心数据流图.png" 0 -1 0 ""
+  "C:/Users/wblxr/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map" 1777629651.10528 82507 a9eef8696c92627b87e9975edea03b2a ""
+>>>>>>> Stashed changes
   "C:/Users/wblxr/AppData/Local/MiKTeX/fonts/pk/ljfour/jknappen/ec/dpi600/tcrm1200.pk" 1757130280.32684 14064 f0bd3919867c789e9d5f63d32254d427 ""
   "C:/Users/wblxr/AppData/Local/MiKTeX/fonts/pk/ljfour/jknappen/ec/dpi657/tcrm1000.pk" 1757130227.7847 12648 77ae6fa9fb8a7308f3358ab6e07e7f20 ""
   "C:/Users/wblxr/AppData/Local/MiKTeX/miktex/data/le/pdftex/pdflatex.fmt" 1775722942.60269 13312012 ddebebda194561e55379a908b4137b38 ""
@@ -174,6 +180,8 @@
   "C:/Users/wblxr/AppData/Local/Programs/MiKTeX/fonts/tfm/zhmetrics/unisong/unisong82.tfm" 1247154072 1172 97758becb7742daa4b4c772be88e9009 ""
   "C:/Users/wblxr/AppData/Local/Programs/MiKTeX/fonts/tfm/zhmetrics/unisong/unisong83.tfm" 1247154072 1172 7dfd9db201c758b6a39baf9f8fe63ca3 ""
   "C:/Users/wblxr/AppData/Local/Programs/MiKTeX/fonts/tfm/zhmetrics/unisong/unisong84.tfm" 1247154072 1172 28184c57fe14bd0a42eeec4fe056b9b7 ""
+  "C:/Users/wblxr/AppData/Local/Programs/MiKTeX/fonts/tfm/zhmetrics/unisong/unisong85.tfm" 1247154072 1172 1e0042ffb16f156fe969c5931939aa12 ""
+  "C:/Users/wblxr/AppData/Local/Programs/MiKTeX/fonts/tfm/zhmetrics/unisong/unisong86.tfm" 1247154072 1172 1c2dc910b8ad781a19e026043f33b0fe ""
   "C:/Users/wblxr/AppData/Local/Programs/MiKTeX/fonts/tfm/zhmetrics/unisong/unisong87.tfm" 1247154072 1172 06e85627c3a0a05a4c601cf04b9ff18d ""
   "C:/Users/wblxr/AppData/Local/Programs/MiKTeX/fonts/tfm/zhmetrics/unisong/unisong88.tfm" 1247154072 1172 e80b61bcc19bffe1009dc0e70ca042e8 ""
   "C:/Users/wblxr/AppData/Local/Programs/MiKTeX/fonts/tfm/zhmetrics/unisong/unisong89.tfm" 1247154072 1172 8b185a44b25b68fee81f017ffd4f4c82 ""
@@ -199,6 +207,7 @@
   "C:/Users/wblxr/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx10.pfb" 1247596666 34811 78b52f49e893bcba91bd7581cdc144c0 ""
   "C:/Users/wblxr/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx12.pfb" 1247596666 32080 340ef9bf63678554ee606688e7b5339d ""
   "C:/Users/wblxr/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmex10.pfb" 1247596667 30251 6afa5cb1d0204815a708a080681d4674 ""
+  "C:/Users/wblxr/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi10.pfb" 1247596667 36299 5f9df58c2139e7edcf37c8fca4bd384d ""
   "C:/Users/wblxr/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi12.pfb" 1247596667 36741 fa121aac0049305630cf160b86157ee4 ""
   "C:/Users/wblxr/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi8.pfb" 1247596666 35469 70d41d2b9ea31d5d813066df7c99281c ""
   "C:/Users/wblxr/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr10.pfb" 1247596667 35752 024fb6c41858982481f6968b5fc26508 ""
@@ -413,10 +422,39 @@
   "C:/WINDOWS/Fonts/simfang.ttf" 1770779586.16117 10570564 f3f3601a7787e4777a7195a58d1f0846 ""
   "C:/WINDOWS/Fonts/simhei.ttf" 1770779586.14987 9745792 4093871a7f48e43b9ce7c38da0c34809 ""
   "C:/WINDOWS/Fonts/simsun.ttc" 1770779586.50871 18316748 73cfc7ea003795574ce8ea5da111fc42 ""
+<<<<<<< Updated upstream
   "d:/HomeMind/main.tex" 1777519677.36144 93454 3cb2c371aad7ae3c542315cdc8124cc6 ""
   "main.aux" 1777519683.56601 12383 2d4d79eca0cee51809131e7d4be02007 "pdflatex"
   "main.out" 1777519683.58102 6264 7c8d77081b72d075aca5c9569c298ea6 "pdflatex"
   "main.toc" 1777519683.58402 4988 acf9dec5907180df0f2931d5bceb70d6 "pdflatex"
+=======
+  "HomeMind关键创新与技术特征.png" 0 -1 0 ""
+  "HomeMind测试结果图1.png" 0 -1 0 ""
+  "HomeMind测试结果图2.png" 0 -1 0 ""
+  "HomeMind端云协同决策流程图.png" 0 -1 0 ""
+  "d:/HomeMind/main.tex" 1777816871.95007 116923 cdc045cbd25ccfab7df44f16e9648d25 ""
+  "homemind_images/HomeMind端侧智能体总体架构.png" 0 -1 0 ""
+  "homemind_images/HomeMind端侧智能家居智能体系统总览图.png" 0 -1 0 ""
+  "homemind_images/Logo图.png" 0 -1 0 ""
+  "homemind_images/端云协同治理.png" 0 -1 0 ""
+  "main.aux" 1777816880.07321 16718 50a42bfd9cff3f8620640d6fedcd4390 "pdflatex"
+  "main.out" 1777816880.0855 6306 1d0948ea7d340729308f8f78ce904e60 "pdflatex"
+  "main.toc" 1777816880.0875 5025 b896017c6b195cdc67c5729a0e6ba58e "pdflatex"
+  "ui-automation-rule-1.png" 0 -1 0 ""
+  "ui-automation-rule-2.png" 0 -1 0 ""
+  "ui-device-panel-1.png" 0 -1 0 ""
+  "ui-device-panel-2.png" 0 -1 0 ""
+  "ui-device-panel-3.png" 0 -1 0 ""
+  "ui-dialog-chat.png" 0 -1 0 ""
+  "ui-entry-overview.png" 0 -1 0 ""
+  "ui-memory-preference.png" 0 -1 0 ""
+  "ui-privacy-cloud-status.png" 0 -1 0 ""
+  "ui-scene-switch-1.png" 0 -1 0 ""
+  "ui-scene-switch-2.png" 0 -1 0 ""
+  "ui-svg-floorplan.png" 0 -1 0 ""
+  "图6HomeMind功能架构图.png" 0 -1 0 ""
+  "补充图C家庭安全强制澄清场景图.png" 0 -1 0 ""
+>>>>>>> Stashed changes
   (generated)
   "main.aux"
   "main.log"

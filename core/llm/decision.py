@@ -15,6 +15,17 @@ import logging
 import re
 from typing import Any, Dict, List, Optional
 
+
+from core.config import (
+    DECISION_CONFIDENCE,
+    LLAMA_CPP_CONFIG,
+    LLM_DECISION_RULES,
+    OLLAMA_CONFIG,
+    OPENAI_CONFIG,
+    PROMPT_TEMPLATES,
+    REACT_CONFIG,
+)
+from core.observability import get_metrics
 from core.safety import detect_safety_sensitive_request
 
 from .cloud_client import CloudClient
@@ -22,25 +33,13 @@ from .cloud_client import CloudClient
 logger = logging.getLogger(__name__)
 
 DEVICE_ACTION_MAP = {
-    "打开空调": ("设备控制", "空调", "on", {"temperature": 26}),
-    "关闭空调": ("设备控制", "空调", "off", {}),
-    "调高空调温度": ("设备控制", "空调", "adjust", {"temperature": 28}),
-    "调低空调温度": ("设备控制", "空调", "adjust", {"temperature": 24}),
-    "打开灯光": ("设备控制", "灯光", "on", {"brightness": 100}),
-    "关闭灯光": ("设备控制", "灯光", "off", {}),
-    "调亮灯光": ("设备控制", "灯光", "adjust", {"brightness": 100}),
-    "调暗灯光": ("设备控制", "灯光", "adjust", {"brightness": 30}),
-    "打开电视": ("设备控制", "电视", "on", {}),
-    "关闭电视": ("设备控制", "电视", "off", {}),
-    "打开风扇": ("设备控制", "风扇", "on", {}),
-    "关闭风扇": ("设备控制", "风扇", "off", {}),
-    "打开窗户": ("设备控制", "窗户", "open", {}),
-    "关闭窗户": ("设备控制", "窗户", "close", {}),
-    "打开音响": ("设备控制", "音响", "on", {"volume": 30}),
-    "关闭音响": ("设备控制", "音响", "off", {}),
-    "打开暖气": ("设备控制", "空调", "on", {"temperature": 24, "mode": "制热"}),
-    "打开热水器": ("设备控制", "热水器", "on", {"temperature": 45}),
-    "关闭热水器": ("设备控制", "热水器", "off", {}),
+    key: (
+        value.get("action", ""),
+        value.get("device", ""),
+        value.get("device_action", ""),
+        dict(value.get("params", {}) or {}),
+    )
+    for key, value in (LLM_DECISION_RULES.get("device_action_map", {}) or {}).items()
 }
 
 SCENE_ACTION_MAP = {
@@ -118,7 +117,7 @@ ACTION_HINTS = (
 )
 
 SOFT_COMMAND_NORMALIZATIONS = (
-    (("\u6709\u70b9\u95f7", "\u95f7\u5f97\u5f88", "\u95f7\u5f97\u614c", "\u5c4b\u91cc\u95f7", "\u95f7"), "\u6253\u5f00\u7a7a\u8c03"),
+    (("有点闷", "闷得很", "闷得慌", "屋里闷", "闷"), "打开空调"),
     (("有点热", "好热", "太热", "闷热", "热"), "打开空调"),
     (("有点冷", "好冷", "太冷", "冷"), "打开暖气"),
     (("太亮", "有点亮", "亮一点太多", "刺眼"), "调暗灯光"),
@@ -130,6 +129,18 @@ SOFT_COMMAND_NORMALIZATIONS = (
     (("起床", "早安"), "切换早安模式"),
     (("待客", "来客人", "客人来了"), "切换待客模式"),
 )
+
+SCENE_KEYWORDS = tuple(LLM_DECISION_RULES.get("scene_keywords", []) or [])
+SWITCH_KEYWORDS = tuple(LLM_DECISION_RULES.get("switch_keywords", []) or [])
+COMFORT_KEYWORDS = tuple(LLM_DECISION_RULES.get("comfort_keywords", []) or [])
+EXPLICIT_DEVICES = tuple(LLM_DECISION_RULES.get("explicit_devices", []) or [])
+EXPLICIT_VERBS = tuple(LLM_DECISION_RULES.get("explicit_verbs", []) or [])
+SUPPORTED_DEVICES = tuple(LLM_DECISION_RULES.get("supported_devices", []) or [])
+SUPPORTED_SCENES = tuple(LLM_DECISION_RULES.get("supported_scenes", []) or [])
+DEFAULT_CLARIFICATION_REPLY = str(
+    LLM_DECISION_RULES.get("clarification_reply", "请问你是想控制设备、切换场景，还是创建定时任务？") or ""
+).strip()
+COMFORT_DEFAULT_PROMPT = str(LLM_DECISION_RULES.get("comfort_default_prompt", "") or "").strip()
 
 
 class LLMDecider:
@@ -219,7 +230,8 @@ class LLMDecider:
                 text = self._cloud_client.complete(prompt, max_tokens=256)
                 parsed = self._parse_intent_output(text)
                 if parsed.get("decision_confidence", 0.0) > 0:
-                    return parsed
+                    # 后处理：关键字覆盖 LLM 分类（确保舒适度/场景关键词不被误判为闲聊）
+                    return self._post_process_intent(parsed, route_text or query)
             except Exception as exc:
                 logger.warning("Cloud intent planning failed: %s; falling back to mock", exc)
         return self._mock_plan_intent(query, route_text, context)
@@ -269,7 +281,8 @@ class LLMDecider:
         prompt = self._build_prompt(query, candidates, context, rag_context, context_summary=context_summary)
         try:
             text = self._cloud_client.complete(prompt, max_tokens=256)
-            return self._parse_output(text)
+            parsed = self._parse_output(text)
+            return self._post_process_decision(parsed, query, candidates, context)
         except Exception as exc:
             logger.warning("Cloud decision failed: %s; falling back to local", exc)
             return self.decide_local(query, candidates, context, rag_context=rag_context)
@@ -286,22 +299,156 @@ class LLMDecider:
             return self.decide_cloud(query, candidates, context, rag_context=rag_context, context_summary=context_summary)
         return self.decide_local(query, candidates, context, rag_context=rag_context)
 
+    def rescue_intent_with_cloud(
+        self,
+        query: str,
+        normalized_query: str = "",
+        context=None,
+        context_summary: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
+        route_text = str(normalized_query or query or "").strip()
+        fallback = {
+            "intent_type": "clarification_needed",
+            "route": "clarify",
+            "reply_message": DEFAULT_CLARIFICATION_REPLY,
+            "normalized_goal": route_text,
+            "requires_candidates": False,
+            "requires_automation": False,
+            "decision_confidence": 0.0,
+            "reasoning": "cloud_rescue_unavailable",
+        }
+        if not self.is_cloud_available():
+            return fallback
+        prompt = self._build_cloud_rescue_intent_prompt(query, route_text, context_summary=context_summary)
+        try:
+            text = self._cloud_client.complete(prompt, max_tokens=320)
+            parsed = self._parse_intent_output(text)
+            if parsed.get("intent_type"):
+                return self._post_process_intent(parsed, parsed.get("normalized_goal") or route_text or query)
+        except Exception as exc:
+            logger.warning("Cloud rescue intent failed: %s", exc)
+        return fallback
+
+    def rescue_decision_with_cloud(
+        self,
+        query: str,
+        context,
+        rag_context: str = "",
+        context_summary: Optional[Dict[str, Any]] = None,
+        candidate_actions: Optional[List[str]] = None,
+    ) -> Dict[str, Any]:
+        fallback = {
+            "action": "无法理解",
+            "device": "",
+            "scene": "",
+            "device_action": "",
+            "params": {},
+            "confidence": 0.0,
+            "reasoning": "cloud_rescue_unavailable",
+        }
+        if not self.is_cloud_available():
+            return fallback
+        prompt = self._build_cloud_rescue_decision_prompt(
+            query,
+            rag_context=rag_context,
+            context_summary=context_summary,
+            candidate_actions=candidate_actions,
+        )
+        try:
+            text = self._cloud_client.complete(prompt, max_tokens=320)
+            parsed = self._parse_output(text)
+            return self._normalize_rescue_command(parsed)
+        except Exception as exc:
+            logger.warning("Cloud rescue decision failed: %s", exc)
+        return fallback
+
+    def _normalize_rescue_command(self, command: Dict[str, Any]) -> Dict[str, Any]:
+        normalized = dict(command or {})
+        action_aliases = {
+            "device_control": "设备控制",
+            "scene_switch": "场景切换",
+            "info_query": "信息查询",
+        }
+        device_action_aliases = {
+            "turn_on": "on",
+            "turn_off": "off",
+        }
+        action = str(normalized.get("action", "") or "").strip()
+        normalized["action"] = action_aliases.get(action, action)
+        device_action = str(normalized.get("device_action", "") or "").strip()
+        normalized["device_action"] = device_action_aliases.get(device_action, device_action)
+        normalized.setdefault("device", "")
+        normalized.setdefault("scene", "")
+        normalized.setdefault("params", {})
+        normalized.setdefault("confidence", 0.0)
+        normalized.setdefault("reasoning", "")
+        if not isinstance(normalized["params"], dict):
+            normalized["params"] = {}
+        return normalized
+
+    def _render_prompt_template(self, template_name: str, values: Dict[str, Any]) -> str:
+        template = str(PROMPT_TEMPLATES.get(template_name, "") or "").strip()
+        if not template:
+            return ""
+        rendered = template
+        for key, value in values.items():
+            rendered = rendered.replace(f"__{key}__", str(value))
+        return rendered
+
     def _build_intent_prompt(
         self,
         query: str,
         normalized_query: str,
         context_summary: Optional[Dict[str, Any]] = None,
     ) -> str:
-        return (
-            f"用户原始输入: {query}\n"
-            f"归一化输入: {normalized_query}\n"
-            f"环境摘要: {json.dumps(context_summary or {}, ensure_ascii=False)}\n\n"
-            "请判断这条输入属于哪一类，并输出 JSON。\n"
-            "intent_type 只能是 chat_reply、action_command、clarification_needed、automation_request。\n"
-            "必须包含 intent_type, reply_message, normalized_goal, requires_candidates, "
-            "requires_automation, decision_confidence, reasoning 字段。\n"
-            '{"intent_type":"","reply_message":"","normalized_goal":"","requires_candidates":false,'
-            '"requires_automation":false,"decision_confidence":0.0,"reasoning":""}'
+        return self._render_prompt_template(
+            "intent",
+            {
+                "QUERY": query,
+                "NORMALIZED_QUERY": normalized_query,
+                "CONTEXT_SUMMARY": json.dumps(context_summary or {}, ensure_ascii=False),
+            },
+        )
+
+    def _build_cloud_rescue_intent_prompt(
+        self,
+        query: str,
+        normalized_query: str,
+        context_summary: Optional[Dict[str, Any]] = None,
+    ) -> str:
+        return self._render_prompt_template(
+            "cloud_rescue_intent",
+            {
+                "QUERY": query,
+                "NORMALIZED_QUERY": normalized_query,
+                "CONTEXT_SUMMARY": json.dumps(context_summary or {}, ensure_ascii=False),
+                "SUPPORTED_DEVICES": "、".join(SUPPORTED_DEVICES),
+                "SUPPORTED_SCENES": "、".join(SUPPORTED_SCENES),
+            },
+        )
+
+    def _build_cloud_rescue_decision_prompt(
+        self,
+        query: str,
+        rag_context: str = "",
+        context_summary: Optional[Dict[str, Any]] = None,
+        candidate_actions: Optional[List[str]] = None,
+    ) -> str:
+        candidate_block = ""
+        if candidate_actions:
+            candidate_block = "本地候选(仅供参考): " + "、".join(str(item) for item in candidate_actions if item) + "\n"
+        rag_block = f"参考知识:\n{rag_context}\n" if rag_context else ""
+        return self._render_prompt_template(
+            "cloud_rescue_decision",
+            {
+                "QUERY": query,
+                "CONTEXT_SUMMARY": json.dumps(context_summary or {}, ensure_ascii=False),
+                "SUPPORTED_DEVICES": "、".join(SUPPORTED_DEVICES),
+                "SUPPORTED_SCENES": "、".join(SUPPORTED_SCENES),
+                "COMFORT_DEFAULT_PROMPT": COMFORT_DEFAULT_PROMPT,
+                "CANDIDATE_BLOCK": candidate_block,
+                "RAG_BLOCK": rag_block,
+            },
         )
 
     def _build_prompt(
@@ -321,15 +468,14 @@ class LLMDecider:
             "occupancy": getattr(context, "members_home", 0),
             "scene": getattr(context, "current_scene", ""),
         }
-        return (
-            f"当前环境摘要:\n{json.dumps(cloud_context, ensure_ascii=False, indent=2)}\n"
-            f"{rag_block}"
-            f"用户输入: {query}\n\n"
-            f"候选动作:\n{candidate_str}\n\n"
-            "请只从候选动作中选择最合适的一项，并输出固定 JSON。\n"
-            "必须包含 action, device, scene, device_action, params, confidence, reasoning 字段。\n"
-            '{"action":"","device":"","scene":"","device_action":"","params":{},'
-            '"confidence":0.0,"reasoning":""}'
+        return self._render_prompt_template(
+            "decision",
+            {
+                "QUERY": query,
+                "CLOUD_CONTEXT": json.dumps(cloud_context, ensure_ascii=False, indent=2),
+                "RAG_BLOCK": rag_block,
+                "CANDIDATE_STR": candidate_str,
+            },
         )
 
     def _mock_plan_intent(self, query: str, normalized_query: str, context) -> Dict[str, Any]:
@@ -351,6 +497,22 @@ class LLMDecider:
                 "reasoning": safety["reason"],
             }
 
+        # 先检查软命令归一化（优先于闲聊匹配）
+        # 但如果原始文本包含时间条件（如"晚上7:00"或"五一"），则跳过
+        has_time_condition = self._looks_like_automation_request(combined_text)
+        soft_normalized = self._normalize_goal(route_text or raw_text)
+        if soft_normalized and self._looks_like_action(soft_normalized) and not has_time_condition:
+            return {
+                "intent_type": "action_command",
+                "route": "action",
+                "reply_message": "",
+                "normalized_goal": soft_normalized,
+                "requires_candidates": True,
+                "requires_automation": False,
+                "decision_confidence": 0.92,
+                "reasoning": "软命令归一化识别为可执行控制意图",
+            }
+
         chat_reply = self._match_chat_reply(combined_text, lowered)
         if chat_reply:
             return {
@@ -360,7 +522,7 @@ class LLMDecider:
                 "normalized_goal": "",
                 "requires_candidates": False,
                 "requires_automation": False,
-                "decision_confidence": 0.98,
+                "decision_confidence": DECISION_CONFIDENCE.get("chat_reply", 0.98),
                 "reasoning": "识别为寒暄或礼貌回复",
             }
 
@@ -372,7 +534,7 @@ class LLMDecider:
                 "normalized_goal": route_text,
                 "requires_candidates": False,
                 "requires_automation": False,
-                "decision_confidence": 0.88,
+                "decision_confidence": DECISION_CONFIDENCE.get("ambiguous_clarify", 0.88),
                 "reasoning": "输入包含指代性表达，缺少明确动作目标",
             }
 
@@ -384,7 +546,7 @@ class LLMDecider:
                 "normalized_goal": raw_text or route_text,
                 "requires_candidates": False,
                 "requires_automation": True,
-                "decision_confidence": 0.96,
+                "decision_confidence": DECISION_CONFIDENCE.get("automation_request", 0.96),
                 "reasoning": "识别到时间条件与动作组合，判断为自动化请求",
             }
 
@@ -397,7 +559,7 @@ class LLMDecider:
                 "normalized_goal": normalized_goal,
                 "requires_candidates": True,
                 "requires_automation": False,
-                "decision_confidence": 0.92,
+                "decision_confidence": DECISION_CONFIDENCE.get("action_command", 0.92),
                 "reasoning": "识别为可执行控制意图",
             }
 
@@ -409,18 +571,18 @@ class LLMDecider:
                 "normalized_goal": route_text,
                 "requires_candidates": True,
                 "requires_automation": False,
-                "decision_confidence": 0.82,
+                "decision_confidence": DECISION_CONFIDENCE.get("action_command_weak", 0.82),
                 "reasoning": "识别到控制动作，但需要候选约束进一步确认",
             }
 
         return {
             "intent_type": "clarification_needed",
             "route": "clarify",
-            "reply_message": "请问你是想控制设备、切换场景，还是创建定时任务？",
+            "reply_message": DEFAULT_CLARIFICATION_REPLY,
             "normalized_goal": route_text,
             "requires_candidates": False,
             "requires_automation": False,
-            "decision_confidence": 0.55,
+            "decision_confidence": DECISION_CONFIDENCE.get("needs_clarification", 0.55),
             "reasoning": "未识别出稳定的执行目标，需要澄清",
         }
 
@@ -469,9 +631,9 @@ class LLMDecider:
                 "device": "空调",
                 "scene": "",
                 "device_action": "on",
-                "params": {"temperature": 26},
+                "params": {"temperature": DECISION_CONFIDENCE.get("ac_temp_hot", 26)},
                 "confidence": confidence,
-                "reasoning": f"[CoT] 舒适度关键词结合温度{getattr(context, 'temperature', 26)}°C，优先开启空调",
+                "reasoning": f"[CoT] 舒适度关键词结合温度{getattr(context, 'temperature', DECISION_CONFIDENCE.get('ac_temp_hot', 26))}°C，优先开启空调",
             }
         if "冷" in query:
             return {
@@ -479,7 +641,7 @@ class LLMDecider:
                 "device": "空调",
                 "scene": "",
                 "device_action": "on",
-                "params": {"temperature": 28},
+                "params": {"temperature": DECISION_CONFIDENCE.get("ac_temp_cold", 28)},
                 "confidence": confidence,
                 "reasoning": "[CoT] 冷感关键词，开启空调制热升温",
             }
@@ -525,6 +687,27 @@ class LLMDecider:
             "reasoning": f"[CoT] {reason}，切换到{scene}",
         }
 
+    def _post_process_decision(
+        self,
+        parsed: Dict[str, Any],
+        query: str,
+        candidates: List[Dict[str, Any]],
+        context,
+    ) -> Dict[str, Any]:
+        """
+        后处理 Cloud LLM 返回的决策结果。
+
+        只在 action 完全无效（空或"无法理解"）时才 fallback 到本地 mock。
+        有效的 action（如 "设备控制"、"场景切换"）原样返回，
+        由调用方（web server / CLI）负责校验和归一化。
+        """
+        action = parsed.get("action", "").strip()
+        # action 为空或明显无效时 fallback
+        if not action or action in ("无法理解", "None", "null", ""):
+            logger.warning("Cloud decision returned empty/invalid action=%r; falling back to mock", action)
+            return self._mock_decide(query, candidates, context)
+        return parsed
+
     def _parse_intent_output(self, output: str) -> Dict[str, Any]:
         try:
             start = output.find("{")
@@ -545,7 +728,7 @@ class LLMDecider:
         return {
             "intent_type": "clarification_needed",
             "route": "clarify",
-            "reply_message": "请问你是想控制设备、切换场景，还是创建定时任务？",
+            "reply_message": DEFAULT_CLARIFICATION_REPLY,
             "normalized_goal": "",
             "requires_candidates": False,
             "requires_automation": False,
@@ -573,14 +756,16 @@ class LLMDecider:
 
     def ask_clarification(self, query: str, candidates: List[Dict[str, Any]]) -> str:
         device_options = []
+        clarification_keywords = list(SUPPORTED_DEVICES) + ["模式"]
         for candidate in candidates:
             action = candidate.get("action", "")
-            for keyword in ["空调", "灯光", "电视", "风扇", "窗户", "音响", "模式"]:
+            for keyword in clarification_keywords:
                 if keyword in action and keyword not in device_options:
                     device_options.append("场景" if keyword == "模式" else keyword)
 
         if not device_options:
-            device_options = ["空调", "灯光", "电视", "场景"]
+            default_options = list(SUPPORTED_DEVICES[:3]) if SUPPORTED_DEVICES else ["空调", "灯光", "电视"]
+            device_options = default_options + ["场景"]
         options = "、".join(device_options[:4])
         return f"请问你想调节哪个目标？{options}？"
 
@@ -603,22 +788,67 @@ class LLMDecider:
             return False
         return any(hint in text for hint in ACTION_HINTS) or text in DEVICE_ACTION_MAP or text in SCENE_ACTION_MAP
 
+    def _looks_like_scene_switch_request(self, text: str) -> bool:
+        """Recognize implicit scene switch requests like '切换到睡眠模式'."""
+        text = str(text or "").strip()
+        if not text:
+            return False
+        return any(sk in text for sk in SCENE_KEYWORDS) and any(sw in text for sw in SWITCH_KEYWORDS)
+
+    def _looks_like_comfort_request(self, text: str) -> bool:
+        """Recognize implicit comfort/environment adjustment requests like '有点热'."""
+        text = str(text or "").strip()
+        if not text:
+            return False
+        return any(ck in text for ck in COMFORT_KEYWORDS)
+
+    def _post_process_intent(self, parsed: Dict[str, Any], query: str) -> Dict[str, Any]:
+        """
+        Override LLM intent classification when clear comfort/action keywords are present.
+        This ensures consistent behavior across cloud providers.
+        Also applies soft-command normalization to the normalized_goal.
+        """
+        if parsed.get("intent_type") == "chat_reply" and self._looks_like_comfort_request(query):
+            normalized = self._normalize_goal(query)
+            return {
+                "intent_type": "action_command",
+                "route": "action",
+                "reply_message": "",
+                "normalized_goal": normalized or query,
+                "requires_candidates": True,
+                "requires_automation": False,
+                "decision_confidence": 0.85,
+                "reasoning": "识别为舒适度/环境调节请求（后处理覆盖LLM分类）",
+            }
+        if parsed.get("intent_type") == "chat_reply" and self._looks_like_scene_switch_request(query):
+            normalized = self._normalize_goal(query)
+            return {
+                "intent_type": "action_command",
+                "route": "action",
+                "reply_message": "",
+                "normalized_goal": normalized or query,
+                "requires_candidates": True,
+                "requires_automation": False,
+                "decision_confidence": DECISION_CONFIDENCE.get("ambiguous_clarify", 0.88),
+                "reasoning": "识别为场景切换请求（后处理覆盖LLM分类）",
+            }
+        if parsed.get("intent_type") == "action_command" and parsed.get("route") == "clarify":
+            parsed["route"] = "action"
+            parsed["requires_automation"] = False
+            parsed["requires_candidates"] = True
+            # 归一化 normalized_goal（如"热"→"打开空调"）
+            ng = parsed.get("normalized_goal", "")
+            if ng:
+                normalized = self._normalize_goal(ng)
+                if normalized and self._looks_like_action(normalized):
+                    parsed["normalized_goal"] = normalized
+        return parsed
+
     def _normalize_goal(self, text: str) -> str:
         text = str(text or "").strip()
         if not text:
             return ""
-        explicit_devices = (
-            "\u7a7a\u8c03",
-            "\u706f\u5149",
-            "\u706f",
-            "\u7535\u89c6",
-            "\u97f3\u54cd",
-            "\u98ce\u6247",
-            "\u7a97\u6237",
-            "\u70ed\u6c34\u5668",
-        )
-        explicit_verbs = ("\u6253\u5f00", "\u5f00\u542f", "\u5173\u95ed", "\u5173\u6389", "\u8c03\u9ad8", "\u8c03\u4f4e", "\u8c03\u4eae", "\u8c03\u6697")
-        if any(device in text for device in explicit_devices) and any(verb in text for verb in explicit_verbs):
+        if any(device in text for device in EXPLICIT_DEVICES) and any(verb in text for verb in EXPLICIT_VERBS):
             return text
         for keywords, normalized in SOFT_COMMAND_NORMALIZATIONS:
             if any(keyword in text for keyword in keywords):

@@ -1,0 +1,330 @@
+{
+  "device_action_map": {
+    "打开空调": {
+      "action": "设备控制",
+      "device": "空调",
+      "device_action": "on",
+      "params": {
+        "temperature": 26
+      }
+    },
+    "关闭空调": {
+      "action": "设备控制",
+      "device": "空调",
+      "device_action": "off",
+      "params": {}
+    },
+    "调高空调温度": {
+      "action": "设备控制",
+      "device": "空调",
+      "device_action": "adjust",
+      "params": {
+        "temperature": 28
+      }
+    },
+    "调低空调温度": {
+      "action": "设备控制",
+      "device": "空调",
+      "device_action": "adjust",
+      "params": {
+        "temperature": 24
+      }
+    },
+    "打开灯光": {
+      "action": "设备控制",
+      "device": "灯光",
+      "device_action": "on",
+      "params": {
+        "brightness": 100
+      }
+    },
+    "关闭灯光": {
+      "action": "设备控制",
+      "device": "灯光",
+      "device_action": "off",
+      "params": {}
+    },
+    "调亮灯光": {
+      "action": "设备控制",
+      "device": "灯光",
+      "device_action": "adjust",
+      "params": {
+        "brightness": 100
+      }
+    },
+    "调暗灯光": {
+      "action": "设备控制",
+      "device": "灯光",
+      "device_action": "adjust",
+      "params": {
+        "brightness": 30
+      }
+    },
+    "打开电视": {
+      "action": "设备控制",
+      "device": "电视",
+      "device_action": "on",
+      "params": {}
+    },
+    "关闭电视": {
+      "action": "设备控制",
+      "device": "电视",
+      "device_action": "off",
+      "params": {}
+    },
+    "打开风扇": {
+      "action": "设备控制",
+      "device": "风扇",
+      "device_action": "on",
+      "params": {}
+    },
+    "关闭风扇": {
+      "action": "设备控制",
+      "device": "风扇",
+      "device_action": "off",
+      "params": {}
+    },
+    "打开窗户": {
+      "action": "设备控制",
+      "device": "窗户",
+      "device_action": "open",
+      "params": {}
+    },
+    "关闭窗户": {
+      "action": "设备控制",
+      "device": "窗户",
+      "device_action": "close",
+      "params": {}
+    },
+    "打开音响": {
+      "action": "设备控制",
+      "device": "音响",
+      "device_action": "on",
+      "params": {
+        "volume": 30
+      }
+    },
+    "关闭音响": {
+      "action": "设备控制",
+      "device": "音响",
+      "device_action": "off",
+      "params": {}
+    },
+    "打开暖气": {
+      "action": "设备控制",
+      "device": "空调",
+      "device_action": "on",
+      "params": {
+        "temperature": 24,
+        "mode": "制热"
+      }
+    },
+    "打开热水器": {
+      "action": "设备控制",
+      "device": "热水器",
+      "device_action": "on",
+      "params": {
+        "temperature": 45
+      }
+    },
+    "关闭热水器": {
+      "action": "设备控制",
+      "device": "热水器",
+      "device_action": "off",
+      "params": {}
+    }
+  },
+  "scene_action_map": {
+    "切换睡眠模式": "睡眠模式",
+    "切换待客模式": "待客模式",
+    "切换离家模式": "离家模式",
+    "切换观影模式": "观影模式",
+    "切换起床模式": "起床模式",
+    "切换回家模式": "回家模式",
+    "切换工作模式": "工作模式",
+    "切换早安模式": "早安模式",
+    "切换晚归模式": "晚归模式"
+  },
+  "chat_keywords": {
+    "你好": "你好，我可以帮你控制设备、切换场景，或者创建简单定时任务。",
+    "您好": "你好，我可以帮你控制设备、切换场景，或者创建简单定时任务。",
+    "hello": "你好，我可以帮你控制设备、切换场景，或者创建简单定时任务。",
+    "hi": "你好，我可以帮你控制设备、切换场景，或者创建简单定时任务。",
+    "谢谢": "不客气，我在。",
+    "thanks": "不客气，我在。",
+    "thank you": "不客气，我在。",
+    "再见": "好的，有需要随时叫我。",
+    "bye": "好的，有需要随时叫我。",
+    "拜拜": "好的，有需要随时叫我。"
+  },
+  "ambiguous_patterns": [
+    "像昨天那样",
+    "像之前那样",
+    "和昨天一样",
+    "你看着办",
+    "随便"
+  ],
+  "automation_time_patterns": [
+    "\\d{1,2}:\\d{2}",
+    "(早上|上午|中午|下午|晚上|今晚|明早|明天早上)?\\s*\\d{1,2}点(?:半|\\d{1,2}分)?",
+    "(节假日|元旦|春节|清明|五一|劳动节|端午|中秋|国庆|圣诞)"
+  ],
+  "action_hints": [
+    "再暗",
+    "暗一点",
+    "再亮",
+    "亮一点",
+    "关掉它",
+    "启动",
+    "打开",
+    "关闭",
+    "关掉",
+    "调高",
+    "调低",
+    "调亮",
+    "调暗",
+    "切换",
+    "设置",
+    "查询",
+    "查看",
+    "睡眠模式",
+    "待客模式",
+    "离家模式",
+    "观影模式",
+    "起床模式",
+    "回家模式",
+    "工作模式",
+    "早安模式",
+    "晚归模式",
+    "空调",
+    "灯光",
+    "电视",
+    "音响",
+    "风扇",
+    "窗户",
+    "热水器"
+  ],
+  "soft_command_normalizations": [
+    {
+      "keywords": ["有点闷", "闷得很", "闷得慌", "屋里闷", "闷"],
+      "normalized": "打开空调"
+    },
+    {
+      "keywords": ["有点热", "好热", "太热", "闷热", "热"],
+      "normalized": "打开空调"
+    },
+    {
+      "keywords": ["有点冷", "好冷", "太冷", "冷"],
+      "normalized": "打开暖气"
+    },
+    {
+      "keywords": ["太亮", "有点亮", "亮一点太多", "刺眼"],
+      "normalized": "调暗灯光"
+    },
+    {
+      "keywords": ["太暗", "有点暗", "看不清"],
+      "normalized": "调亮灯光"
+    },
+    {
+      "keywords": ["我要走了", "我走了", "出门", "离家", "准备走", "马上走"],
+      "normalized": "切换离家模式"
+    },
+    {
+      "keywords": ["回家了", "我回来了", "到家了", "回家"],
+      "normalized": "切换回家模式"
+    },
+    {
+      "keywords": ["睡觉", "困了", "睡了", "晚安"],
+      "normalized": "切换睡眠模式"
+    },
+    {
+      "keywords": ["看电影", "观影", "电影模式"],
+      "normalized": "切换观影模式"
+    },
+    {
+      "keywords": ["起床", "早安"],
+      "normalized": "切换早安模式"
+    },
+    {
+      "keywords": ["待客", "来客人", "客人来了"],
+      "normalized": "切换待客模式"
+    },
+    {
+      "keywords": ["关掉所有电器", "关闭所有电器", "关闭全部电器", "关掉全部电器", "全关电器"],
+      "normalized": "切换离家模式"
+    },
+    {
+      "keywords": ["关掉所有家电", "关闭所有家电", "关闭全部家电", "关掉全部家电", "全关家电"],
+      "normalized": "切换离家模式"
+    }
+  ],
+  "scene_keywords": [
+    "睡眠",
+    "待客",
+    "离家",
+    "观影",
+    "起床",
+    "回家",
+    "工作",
+    "早安",
+    "晚归"
+  ],
+  "switch_keywords": [
+    "切换",
+    "进入",
+    "开",
+    "启动"
+  ],
+  "comfort_keywords": [
+    "热",
+    "冷",
+    "闷",
+    "亮",
+    "暗",
+    "吵",
+    "安静",
+    "困"
+  ],
+  "explicit_devices": [
+    "空调",
+    "灯光",
+    "灯",
+    "电视",
+    "音响",
+    "风扇",
+    "窗户",
+    "热水器"
+  ],
+  "explicit_verbs": [
+    "打开",
+    "开启",
+    "关闭",
+    "关掉",
+    "调高",
+    "调低",
+    "调亮",
+    "调暗"
+  ],
+  "supported_devices": [
+    "空调",
+    "灯光",
+    "电视",
+    "音响",
+    "风扇",
+    "窗户",
+    "热水器"
+  ],
+  "supported_scenes": [
+    "睡眠模式",
+    "待客模式",
+    "离家模式",
+    "观影模式",
+    "起床模式",
+    "回家模式",
+    "工作模式",
+    "早安模式",
+    "晚归模式"
+  ],
+  "clarification_reply": "请问你是想控制设备、切换场景，还是创建定时任务？",
+  "comfort_default_prompt": "舒适度默认映射：热/闷 -> 空调 on temperature=26；冷 -> 空调 adjust temperature=28；亮一点 -> 灯光 adjust brightness=100；暗一点 -> 灯光 adjust brightness=30。"
+}

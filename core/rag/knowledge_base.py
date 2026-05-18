@@ -10,13 +10,14 @@ import os
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
+from core.config import RAG_CONFIG
 from core.utils.embedding import encode, get_model
 
 logger = logging.getLogger(__name__)
 
-DATA_DIR = "data"
+DATA_DIR = RAG_CONFIG.get("data_dir", "data")
 os.makedirs(DATA_DIR, exist_ok=True)
-DEFAULT_COLLECTION_NAME = "homemind_kb"
+DEFAULT_COLLECTION_NAME = RAG_CONFIG.get("chroma_collection_name", "homemind_kb")
 DEFAULT_BACKUP_PATH = os.path.join(DATA_DIR, "kb_backup.enc")
 
 CHROMA_AVAILABLE = False
@@ -83,7 +84,9 @@ class KnowledgeBase:
             {"id": "preset_10", "content": "\"有点闷\" 在温度28°C以上时，优先推荐开空调降温", "category": "用户习惯", "accepted": True},
         ]
 
-    def query(self, text: str, top_k: int = 3, category: Optional[str] = None) -> List[Dict]:
+    def query(self, text: str, top_k: int = None, category: Optional[str] = None) -> List[Dict]:
+        if top_k is None:
+            top_k = RAG_CONFIG.get("top_k", 3)
         results = []
 
         user_results = self._search_memory(text, top_k, category)
@@ -149,8 +152,9 @@ class KnowledgeBase:
             return []
 
         sims = np.dot(doc_embs / doc_norms, query_emb / query_norm)
+        threshold = RAG_CONFIG.get("vector_similarity_threshold", 0.1)
         top_indices = np.argsort(sims)[-top_k:][::-1]
-        return [pool[index] for index in top_indices if sims[index] > 0.1]
+        return [pool[index] for index in top_indices if sims[index] > threshold]
 
     def _keyword_search(self, pool: List[Dict], text: str, top_k: int, category: Optional[str] = None) -> List[Dict]:
         scored = []
@@ -203,68 +207,6 @@ class KnowledgeBase:
         except Exception as exc:
             logger.warning("ChromaDB count failed: %s", exc)
             return 0
-
-    def get_status(self) -> Dict[str, Any]:
-        return {
-            "chromadb_importable": CHROMA_AVAILABLE,
-            "chromadb_enabled": self._collection is not None,
-            "collection_name": self._collection_name,
-            "persist_dir": self.persist_dir,
-            "collection_count": self._collection_count(),
-            "memory_store_count": len(self.memory_store),
-            "preset_count": len(self.preset_knowledge),
-        }
-
-    def _upsert_collection_record(self, record: Dict[str, Any]) -> None:
-        if self._collection is None:
-            return
-        try:
-            emb = self._get_embedding(record["content"])
-            payload = dict(record)
-            record_id = self._ensure_record_id(payload)
-            if hasattr(self._collection, "upsert"):
-                self._collection.upsert(
-                    embeddings=[emb],
-                    documents=[payload["content"]],
-                    metadatas=[payload],
-                    ids=[record_id],
-                )
-            else:
-                try:
-                    self._collection.delete(ids=[record_id])
-                except Exception:
-                    pass
-                self._collection.add(
-                    embeddings=[emb],
-                    documents=[payload["content"]],
-                    metadatas=[payload],
-                    ids=[record_id],
-                )
-        except Exception as exc:
-            logger.warning("ChromaDB add failed for record_id=%s: %s", record.get("record_id"), exc)
-
-    def _rehydrate_collection(self, records: Optional[List[Dict[str, Any]]] = None, clear_existing: bool = False) -> int:
-        if self._collection is None:
-            return 0
-        records = list(records if records is not None else self.memory_store)
-        if not records:
-            return 0
-        ids = []
-        for record in records:
-            record_id = self._ensure_record_id(record)
-            if record_id:
-                ids.append(record_id)
-        if clear_existing and ids:
-            try:
-                self._collection.delete(ids=ids)
-            except Exception as exc:
-                logger.warning("ChromaDB rehydrate delete failed: %s", exc)
-        restored = 0
-        for record in records:
-            self._upsert_collection_record(record)
-            restored += 1
-        logger.info("Knowledge base rehydrated into ChromaDB, records=%s", restored)
-        return restored
 
     def get_status(self) -> Dict[str, Any]:
         """Return runtime storage status for health checks and UI diagnostics."""

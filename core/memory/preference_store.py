@@ -128,9 +128,7 @@ class PreferenceStore:
         entry["total"] = int(entry.get("total", 0)) + 1
         if feedback == "\u63a5\u53d7":
             entry["accepted"] = int(entry.get("accepted", 0)) + 1
-        if feedback in ("接受", "accept"):
-            entry["accepted"] = int(entry.get("accepted", 0)) + 1
-        if feedback in ("接受", "accepted"):
+        elif feedback in ("接受", "accepted"):
             entry["accepted"] = int(entry.get("accepted", 0)) + 1
         entry["accepted"] = min(int(entry.get("accepted", 0)), int(entry.get("total", 0)))
         self.save()

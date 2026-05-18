@@ -1,0 +1,8 @@
+用户原始输入: __QUERY__
+归一化输入: __NORMALIZED_QUERY__
+环境摘要: __CONTEXT_SUMMARY__
+
+请判断这条输入属于哪一类，并输出 JSON。
+intent_type 只能是 chat_reply、action_command、clarification_needed、automation_request。
+必须包含 intent_type, reply_message, normalized_goal, requires_candidates, requires_automation, decision_confidence, reasoning 字段。
+{"intent_type":"","reply_message":"","normalized_goal":"","requires_candidates":false,"requires_automation":false,"decision_confidence":0.0,"reasoning":""}

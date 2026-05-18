@@ -9,6 +9,8 @@ import os
 from typing import Dict, List, Optional, Any
 from abc import ABC, abstractmethod
 
+from core.config import GATEWAY_CONFIG
+
 logger = logging.getLogger(__name__)
 
 
@@ -49,9 +51,10 @@ class ProtocolInterface(ABC):
 class MatterProtocol(ProtocolInterface):
     """Matter 协议支持"""
 
-    def __init__(self, controller_ip: str = "192.168.1.100", port: int = 5580):
-        self.controller_ip = controller_ip
-        self.port = port
+    def __init__(self, controller_ip: str = None, port: int = None):
+        cfg = GATEWAY_CONFIG.get("matter", {})
+        self.controller_ip = controller_ip or cfg.get("controller_ip", "192.168.1.100")
+        self.port = port if port is not None else cfg.get("port", 5580)
         self._connected = False
         self._devices: Dict[str, Dict] = {}
 
@@ -91,12 +94,18 @@ class MatterProtocol(ProtocolInterface):
 class MQTTProtocol(ProtocolInterface):
     """MQTT 协议支持"""
 
-    def __init__(self, broker: str = "192.168.1.100", port: int = 1883,
+    def __init__(self, broker: str = None, port: int = None,
                  username: str = "", password: str = "", use_tls: bool = False,
                  cert_path: str = ""):
+        cfg = GATEWAY_CONFIG.get("mqtt", {})
+        if broker is None:
+            broker = cfg.get("broker", "localhost")
+        if port is None:
+            default_port = cfg.get("tls_port", 8883) if use_tls else cfg.get("port", 1883)
+            port = default_port
         self.broker = broker
         self.use_tls = bool(use_tls)
-        self.port = 8883 if self.use_tls and port == 1883 else port
+        self.port = port
         self.username = username
         self.password = password
         self.cert_path = cert_path
@@ -143,8 +152,9 @@ class MQTTProtocol(ProtocolInterface):
 class XiaomiProtocol(ProtocolInterface):
     """小米米家协议支持"""
 
-    def __init__(self, gateway_ip: str = "192.168.1.50", did: str = ""):
-        self.gateway_ip = gateway_ip
+    def __init__(self, gateway_ip: str = None, did: str = ""):
+        cfg = GATEWAY_CONFIG.get("xiaomi", {})
+        self.gateway_ip = gateway_ip or cfg.get("gateway_ip", "192.168.1.50")
         self.did = did
         self._connected = False
         self._devices: Dict[str, Dict] = {}
@@ -185,7 +195,12 @@ class XiaomiProtocol(ProtocolInterface):
 class HomeAssistantProtocol(ProtocolInterface):
     """Home Assistant API 支持"""
 
-    def __init__(self, url: str = "https://192.168.1.200:8123", token: str = ""):
+    def __init__(self, url: str = None, token: str = ""):
+        cfg = GATEWAY_CONFIG.get("home_assistant", {})
+        if url is None:
+            ip = cfg.get("default_ip", "192.168.1.200")
+            port = cfg.get("default_port", 8123)
+            url = f"http://{ip}:{port}"
         self.url = url.rstrip("/")
         if self.url.startswith("http://"):
             logger.warning("[HomeAssistant] Forcing HTTPS")
@@ -267,6 +282,19 @@ class SmartHomeGateway:
             "home_assistant": HomeAssistantProtocol,
         }
 
+        def _gateway_cfg(name, *keys, default=None):
+            """从 GATEWAY_CONFIG 读取，fallback 到传入的 JSON config。"""
+            val = GATEWAY_CONFIG.get(name, {}).get(*keys) if keys else GATEWAY_CONFIG.get(name, {})
+            if val is not None:
+                return val
+            cfg = self.config.get(name, {})
+            for k in keys[:-1]:
+                if isinstance(cfg, dict):
+                    cfg = cfg.get(k, {})
+                else:
+                    return default
+            return cfg.get(keys[-1], default) if isinstance(cfg, dict) else default
+
         for name, cls in protocol_map.items():
             if name in self.config:
                 cfg = self.config[name]
@@ -274,13 +302,13 @@ class SmartHomeGateway:
                     try:
                         if name == "matter":
                             protocol = cls(
-                                controller_ip=cfg.get("controller_ip", "192.168.1.100"),
-                                port=cfg.get("port", 5580)
+                                controller_ip=cfg.get("controller_ip", GATEWAY_CONFIG.get("matter", {}).get("controller_ip", "192.168.1.100")),
+                                port=cfg.get("port", GATEWAY_CONFIG.get("matter", {}).get("port", 5580))
                             )
                         elif name == "mqtt":
                             protocol = cls(
-                                broker=cfg.get("broker", "192.168.1.100"),
-                                port=cfg.get("port", 1883),
+                                broker=cfg.get("broker", GATEWAY_CONFIG.get("mqtt", {}).get("broker", "localhost")),
+                                port=cfg.get("port", GATEWAY_CONFIG.get("mqtt", {}).get("port", 1883)),
                                 username=cfg.get("username", ""),
                                 password=cfg.get("password", ""),
                                 use_tls=cfg.get("use_tls", False),
@@ -288,12 +316,13 @@ class SmartHomeGateway:
                             )
                         elif name == "xiaomi":
                             protocol = cls(
-                                gateway_ip=cfg.get("gateway_ip", "192.168.1.50"),
+                                gateway_ip=cfg.get("gateway_ip", GATEWAY_CONFIG.get("xiaomi", {}).get("gateway_ip", "192.168.1.50")),
                                 did=cfg.get("did", "")
                             )
                         elif name == "home_assistant":
+                            ha_cfg = GATEWAY_CONFIG.get("home_assistant", {})
                             protocol = cls(
-                                url=cfg.get("url", "https://192.168.1.200:8123"),
+                                url=cfg.get("url", f"http://{ha_cfg.get('default_ip', '192.168.1.200')}:{ha_cfg.get('default_port', 8123)}"),
                                 token=cfg.get("token", "")
                             )
                         else:

@@ -1,0 +1,10 @@
+当前环境摘要:
+__CLOUD_CONTEXT__
+__RAG_BLOCK__用户输入: __QUERY__
+
+候选动作:
+__CANDIDATE_STR__
+
+请只从候选动作中选择最合适的一项，并输出固定 JSON。
+必须包含 action, device, scene, device_action, params, confidence, reasoning 字段。
+{"action":"","device":"","scene":"","device_action":"","params":{},"confidence":0.0,"reasoning":""}

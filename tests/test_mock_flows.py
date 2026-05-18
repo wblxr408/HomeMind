@@ -4,6 +4,8 @@ from pathlib import Path
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+LIVING_ROOM_LIGHT_ID = "light.living_room_01"
+LIVING_ROOM_AC_ID = "climate.living_room_05"
 DATA_KEY_FILES = [
     REPO_ROOT / "data" / ".key",
     REPO_ROOT / "data" / ".key.salt",
@@ -32,6 +34,7 @@ class HomeMindCliMockFlowTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         os.environ["HOMEMIND_STORAGE_KEY"] = "test-storage-key"
+        os.environ["LLM_BACKEND"] = "mock"
 
     @classmethod
     def tearDownClass(cls):
@@ -89,7 +92,7 @@ class HomeMindWebMockFlowTests(unittest.TestCase):
         self.assertIn("storage_security", payload)
         self.assertIn("agent_init_metrics", payload)
         self.assertIn("startup_metrics", payload)
-        self.assertIn("air_conditioner", payload["devices"])
+        self.assertIn(LIVING_ROOM_AC_ID, payload["devices"])
 
     def test_init_agent_reuses_existing_instance_without_restarting_threads(self):
         first_agent = self.web_server.agent
@@ -124,7 +127,10 @@ class HomeMindWebMockFlowTests(unittest.TestCase):
         self.assertIn("睡眠模式", sleep_payload["response"])
 
     def test_device_and_scene_endpoints_apply_mock_state_changes(self):
-        device_response = self.client.post("/api/devices/light/control", json={"action": "on", "params": {}})
+        device_response = self.client.post(
+            f"/api/devices/{LIVING_ROOM_LIGHT_ID}/control",
+            json={"action": "on", "params": {}},
+        )
         scene_response = self.client.post("/api/scenes/sleep/switch")
 
         self.assertEqual(device_response.status_code, 200)
@@ -138,7 +144,7 @@ class HomeMindWebMockFlowTests(unittest.TestCase):
 
         self.assertEqual(scene_payload["status"], "success")
         self.assertEqual(scene_payload["scene"], "sleep")
-        self.assertTrue(scene_payload["devices"]["light"]["is_on"])
+        self.assertFalse(scene_payload["devices"][LIVING_ROOM_LIGHT_ID]["is_on"])
 
     def test_info_dqn_and_kb_endpoints_work_in_mock_mode(self):
         probe_text = "kb_probe_unique_26_temp"
